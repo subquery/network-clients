@@ -1,0 +1,22 @@
+{
+  "name": "@subql/hooks-client",
+  "version": "0.1.0",
+  "description": "SubQuery client sdk for hooks",
+  "main": "dist/index.js",
+  "author": "SubQuery Pte Limited",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.13.2"
+  },
+  "devDependencies": {
+    "typescript": "^4.6.4"
+  },
+  "peerDependencies": {
+    "react": "^17"
+  },
+  "stableVersion": "0.1.0"
+}

@@ -1,0 +1,41 @@
+{
+  "name": "@subql/client",
+  "version": "0.1.0",
+  "description": "Clinet sdks for Subquery Network",
+  "scripts": {
+    "build": "yarn workspaces run build",
+    "lint": "eslint . --ext .ts,.tsx",
+    "postinstall": "husky install",
+    "test": "jest --passWithNoTests"
+  },
+  "author": "SubQuery Pte Limited",
+  "license": "Apache-2.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@subql/contract-sdk": "0.6.1-5",
+    "@types/react": "^18.0.12",
+    "@typescript-eslint/eslint-plugin": "^5.27.0",
+    "@typescript-eslint/parser": "^5.27.0",
+    "eslint": "^8.17.0",
+    "eslint-plugin-header": "^3.1.1",
+    "eslint-plugin-prettier": "^4.0.0",
+    "flag": "^5.0.1",
+    "husky": "^8.0.1",
+    "jest": "^28.1.0",
+    "lint-staged": "^13.0.0",
+    "prettier": "^2.6.2",
+    "react": "^18.1.0",
+    "ts-jest": "^28.0.4",
+    "ts-node": "^10.8.1"
+  },
+  "packageManager": "yarn@3.1.1",
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --cache --fix",
+      "prettier --write"
+    ]
+  }
+}

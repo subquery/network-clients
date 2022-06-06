@@ -1,0 +1,82 @@
+name: "Release"
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+jobs:
+  pre-ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: 'Block Concurrent Executions'
+        uses: softprops/turnstyle@v1
+        with:
+          poll-interval-seconds: 10
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+
+  Build-Publish:
+    name: Build-Publish
+    needs: pre-ci
+    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/client'"
+    runs-on: ubuntu-latest
+    steps:
+      #Check out
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+    #Identify changes
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-contract-client
+        with:
+          paths: packages/contract
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-ipfs-client
+        with:
+          paths: packages/ipfs
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-hooks-client
+        with:
+          paths: packages/hooks
+      - run: yarn
+
+      - name: build
+        run: yarn build
+
+      #Publish to npm and github releases
+      - name: Publish contract-client
+        if: steps.changed-contract-client.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/contract-client
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish ipfs-client
+        if: steps.changed-ipfs-client.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/ipfs-client
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish hooks-client
+        if: steps.changed-hooks-client.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/hooks-client
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+

@@ -1,0 +1,19 @@
+{
+  "name": "@subql/ipfs-client",
+  "version": "0.1.0",
+  "description": "SubQuery client sdk for IPFS",
+  "main": "dist/index.js",
+  "author": "SubQuery Pte Limited",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "buffer": "^6.0.3",
+    "ipfs-http-client": "^57.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^4.6.4"
+  },
+  "stableVersion": "0.1.0"
+}
