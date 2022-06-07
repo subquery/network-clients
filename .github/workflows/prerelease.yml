@@ -37,41 +37,29 @@ jobs:
           node-version: 16
 
       - uses: marceloprado/has-changed-path@v1
-        id: changed-contract-client
+        id: changed-network-client
         with:
-          paths: packages/contract
+          paths: packages/network-clients
 
       - uses: marceloprado/has-changed-path@v1
-        id: changed-ipfs-client
+        id: changed-react-hooks
         with:
-          paths: packages/ipfs
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-hooks-client
-        with:
-          paths: packages/hooks
+          paths: packages/react-hooks
 
       - run: yarn
 
       - name: build
         run: yarn build
 
-      - name: Bump contract-client & deploy
-        if: steps.changed-contract-client.outputs.changed == 'true'
+      - name: Bump network-clients & deploy
+        if: steps.changed-network-clients.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/contract
           npm-token: ${{ secrets.NPM_TOKEN }}
 
-      - name: Bump ipfs-client & deploy
-        if: steps.changed-ipfs-client.outputs.changed == 'true'
-        uses: ./.github/actions/create-prerelease
-        with:
-          package-path: packages/ipfs
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Bump hooks-client & deploy
-        if: steps.changed-hooks-client.outputs.changed == 'true'
+      - name: Bump react-hooks & deploy
+        if: steps.changed-react-hooks.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/hooks

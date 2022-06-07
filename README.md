@@ -1,17 +1,13 @@
-# Subql Client SDK
+# Subquery Network - Client SDK
 
-Subql Client SDK provides various tools to make build subql services and dapps easily.
+Subql Network Client SDK provides various tools to make build subql services and dapps more easier.
 
-## Client SDKS
+## Network SDKS
 
-### [Contract Client](packages/contract/)
+### [Network Clients](packages/network-clients/)
 
-Contract Client, export contract sdk and contract client to interact with Subquery Network.
+Network Clients provide contract sdk and contract client and ipfs client to interact with Subquery Network.
 
-### [IPFS Client](packages/ipfs/)
+### [Hooks Client](packages/react-hooks/)
 
-IPFS Client, support to fetch resources from IPFS and add resources to IPFS.
-
-### [Hooks Client](packages/hooks/)
-
-Hooks Client, export various useful hooks.
+React Hooks Client, export various useful hooks.

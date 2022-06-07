@@ -16,6 +16,10 @@ export const CIDv1 = new RegExp(
   /Qm[1-9A-HJ-NP-Za-km-z]{44,}|b[A-Za-z2-7]{58,}|B[A-Z2-7]{58,}|z[1-9A-HJ-NP-Za-km-z]{48,}|F[0-9A-F]{50,}/i,
 );
 
+export function isCID(cid: string): boolean {
+  return CIDv0.test(cid) || CIDv1.test(cid);
+}
+
 export function cidToBytes32(cid: string): string {
   return `0x${Buffer.from(utils.base58.decode(cid)).slice(2).toString('hex')}`;
 }

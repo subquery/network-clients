@@ -3,3 +3,5 @@
 
 export * from '@subql/contract-sdk';
 export * from './contractClient';
+export * from './networkClient';
+export * from './ipfsClient';

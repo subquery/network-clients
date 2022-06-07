@@ -28,7 +28,7 @@ export class ContractClient {
   }
 
   async latestRewardCollected(indexer: string): Promise<boolean> {
-    if (utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
+    if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
 
     const [currentEra, lastClaimedEra, lastSettledEra] = await Promise.all([
       this._sdk.eraManager.eraNumber(),
@@ -40,7 +40,7 @@ export class ContractClient {
   }
 
   async dailyRewardCap(indexer: string): Promise<BigNumber> {
-    if (utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
+    if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
 
     const threshold = await this._sdk.serviceAgreementRegistry.threshold();
     const totalStakingAmount = await this._sdk.staking.getTotalStakingAmount(indexer);
@@ -49,7 +49,7 @@ export class ContractClient {
   }
 
   async dailyRewardCapcity(indexer: string): Promise<BigNumber> {
-    if (utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
+    if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
 
     const dailyRewardCap = await this.dailyRewardCap(indexer);
     const sumDailyReward = await this._sdk.serviceAgreementRegistry.sumDailyReward(indexer);
@@ -69,7 +69,7 @@ export class ContractClient {
   }
 
   async closedSAContract(address: string): Promise<Contract | undefined> {
-    if (utils.isAddress(address)) throw new Error(`Invalid address: ${address}`);
+    if (!utils.isAddress(address)) throw new Error(`Invalid address: ${address}`);
 
     const agreementContract = await this._sdk.initContract(ClosedServiceAgreement__factory, address);
     return agreementContract;

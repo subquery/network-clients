@@ -3,7 +3,7 @@
 
 import buffer from 'buffer';
 import { IPFSHTTPClient } from 'ipfs-http-client';
-import { CIDv0, CIDv1, concatU8A } from './utils';
+import { concatU8A, isCID } from './utils';
 
 const Buffer = buffer.Buffer;
 
@@ -17,10 +17,6 @@ export class IPFSClient {
 
   static create(client: IPFSHTTPClient): IPFSClient {
     return new IPFSClient(client);
-  }
-
-  isCID(cid: string): boolean {
-    return CIDv0.test(cid) || CIDv1.test(cid);
   }
 
   async cat(cid: string, encoding: BufferEncoding = 'utf8'): Promise<string> {
@@ -45,7 +41,7 @@ export class IPFSClient {
 
   async image(url: string): Promise<string> {
     const cid = url.replace('ipfs://', '');
-    if (!this.isCID(cid)) throw new Error(`Invalid cid: ${cid}`);
+    if (!isCID(cid)) throw new Error(`Invalid cid: ${cid}`);
 
     const data = await this.cat(cid, 'base64');
     return `data:image/png;base64,${data}`;

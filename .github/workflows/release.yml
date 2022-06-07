@@ -37,46 +37,33 @@ jobs:
 
     #Identify changes
       - uses: marceloprado/has-changed-path@v1
-        id: changed-contract-client
+        id: changed-network-clients
         with:
-          paths: packages/contract
+          paths: packages/network-clients
 
       - uses: marceloprado/has-changed-path@v1
-        id: changed-ipfs-client
+        id: changed-react-hooks
         with:
-          paths: packages/ipfs
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-hooks-client
-        with:
-          paths: packages/hooks
+          paths: packages/react-hooks
       - run: yarn
 
       - name: build
         run: yarn build
 
       #Publish to npm and github releases
-      - name: Publish contract-client
-        if: steps.changed-contract-client.outputs.changed == 'true'
+      - name: Publish network-clients
+        if: steps.changed-network-clients.outputs.changed == 'true'
         uses: ./.github/actions/create-release
         with:
-          package-path: packages/contract-client
+          package-path: packages/network-clients
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish ipfs-client
-        if: steps.changed-ipfs-client.outputs.changed == 'true'
+      - name: Publish react-hooks
+        if: steps.changed-react-hooks.outputs.changed == 'true'
         uses: ./.github/actions/create-release
         with:
-          package-path: packages/ipfs-client
-          repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish hooks-client
-        if: steps.changed-hooks-client.outputs.changed == 'true'
-        uses: ./.github/actions/create-release
-        with:
-          package-path: packages/hooks-client
+          package-path: packages/react-hooks
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 

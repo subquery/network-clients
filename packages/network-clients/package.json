@@ -1,7 +1,7 @@
 {
-  "name": "@subql/hooks-client",
+  "name": "@subql/network-clients",
   "version": "0.1.0",
-  "description": "SubQuery client sdk for hooks",
+  "description": "SubQuery client sdk for network",
   "main": "dist/index.js",
   "author": "SubQuery Pte Limited",
   "license": "Apache-2.0",
@@ -9,14 +9,15 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "class-transformer": "^0.5.1",
-    "class-validator": "^0.13.2"
+    "buffer": "^6.0.3",
+    "ethers": "^5.6.8",
+    "ipfs-http-client": "^57.0.1"
   },
   "devDependencies": {
     "typescript": "^4.6.4"
   },
   "peerDependencies": {
-    "react": "^17"
+    "@subql/contract-sdk": "^0.6.1"
   },
   "stableVersion": "0.1.0"
 }
