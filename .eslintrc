@@ -1,11 +1,11 @@
 {
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "project": "tsconfig.json",
     "sourceType": "module"
   },
   "plugins": ["@typescript-eslint/eslint-plugin", "header"],
   "extends": [
+    "eslint:recommended",
     "plugin:@typescript-eslint/recommended"
   ],
   "root": true,
@@ -14,7 +14,7 @@
     "jest": true,
     "browser": true
   },
-  "ignorePatterns": [".eslintrc.js"],
+  "ignorePatterns": ["**/packages/**/dist/**", "/test/jest-setup.ts"],
   "rules": {
     "@typescript-eslint/interface-name-prefix": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
