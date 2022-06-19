@@ -37,7 +37,7 @@ jobs:
           node-version: 16
 
       - uses: marceloprado/has-changed-path@v1
-        id: changed-network-client
+        id: changed-network-clients
         with:
           paths: packages/network-clients
 

@@ -1,7 +1,6 @@
-/*
- * For a detailed explanation regarding each configuration property and type check, visit:
- * https://jestjs.io/docs/configuration
- */
+// Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
 
 export default {
   // Automatically clear mock calls, instances, contexts and results before every test
