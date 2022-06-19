@@ -1,6 +1,6 @@
 {
   "name": "@subql/network-client",
-  "version": "0.1.1-0",
+  "version": "0.1.0",
   "description": "Clinet sdks for Subquery Network",
   "scripts": {
     "build": "yarn workspaces run build",
