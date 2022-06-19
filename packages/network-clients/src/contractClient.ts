@@ -11,7 +11,7 @@ export class ContractClient {
     this._sdk = sdk;
   }
 
-  static create(sdk: ContractSDK) {
+  public static create(sdk: ContractSDK) {
     return new ContractClient(sdk);
   }
 
@@ -27,7 +27,7 @@ export class ContractClient {
     return BigNumber.from(1e12);
   }
 
-  async latestRewardCollected(indexer: string): Promise<boolean> {
+  public async latestRewardCollected(indexer: string): Promise<boolean> {
     if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
 
     const [currentEra, lastClaimedEra, lastSettledEra] = await Promise.all([
@@ -39,7 +39,7 @@ export class ContractClient {
     return currentEra.eq(lastClaimedEra.add(1)) && lastSettledEra.lte(lastClaimedEra);
   }
 
-  async dailyRewardCap(indexer: string): Promise<BigNumber> {
+  public async dailyRewardCap(indexer: string): Promise<BigNumber> {
     if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
 
     const threshold = await this._sdk.serviceAgreementRegistry.threshold();
@@ -48,7 +48,7 @@ export class ContractClient {
     return totalStakingAmount.mul(this.perMill).div(threshold);
   }
 
-  async dailyRewardCapcity(indexer: string): Promise<BigNumber> {
+  public async dailyRewardCapcity(indexer: string): Promise<BigNumber> {
     if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
 
     const dailyRewardCap = await this.dailyRewardCap(indexer);
@@ -57,7 +57,7 @@ export class ContractClient {
     return dailyRewardCap.sub(sumDailyReward);
   }
 
-  async cancelOfferPenaltyFee(offerId: number): Promise<BigNumber> {
+  public async cancelOfferPenaltyFee(offerId: number): Promise<BigNumber> {
     const offer = await this._sdk.purchaseOfferMarket.offers(offerId);
     if (offer.deposit.eq(0)) throw new Error(`Invalid offerId: ${offerId}`);
 
@@ -68,7 +68,7 @@ export class ContractClient {
     return penaltyFee;
   }
 
-  async closedSAContract(address: string): Promise<Contract | undefined> {
+  public async closedSAContract(address: string): Promise<Contract | undefined> {
     if (!utils.isAddress(address)) throw new Error(`Invalid address: ${address}`);
 
     const agreementContract = await this._sdk.initContract(ClosedServiceAgreement__factory, address);

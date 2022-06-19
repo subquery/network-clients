@@ -15,11 +15,11 @@ export class IPFSClient {
     this._client = client
   }
 
-  static create(client: IPFSHTTPClient): IPFSClient {
+  public static create(client: IPFSHTTPClient): IPFSClient {
     return new IPFSClient(client);
   }
 
-  async cat(cid: string, encoding: BufferEncoding = 'utf8'): Promise<string> {
+  public async cat(cid: string, encoding: BufferEncoding = 'utf8'): Promise<string> {
     const results = this._client.cat(cid);
     
     let raw: Uint8Array | undefined;
@@ -34,12 +34,12 @@ export class IPFSClient {
     return Buffer.from(raw).toString(encoding);
   }
 
-  async add(entry: string): Promise<string> {
+  public async add(entry: string): Promise<string> {
     const result = await this._client.add(entry, { pin: true });
     return result.cid.toV0().toString();
   }
 
-  async image(url: string): Promise<string> {
+  public async image(url: string): Promise<string> {
     const cid = url.replace('ipfs://', '');
     if (!isCID(cid)) throw new Error(`Invalid cid: ${cid}`);
 

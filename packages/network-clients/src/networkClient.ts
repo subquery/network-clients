@@ -18,11 +18,11 @@ export class NetworkClient {
     this._sdk = sdk;
   }
 
-  static create(sdk: ContractSDK, ipfs: IPFSHTTPClient) {
+  public static create(sdk: ContractSDK, ipfs: IPFSHTTPClient) {
     return new NetworkClient(sdk, ipfs);
   }
 
-  async indexerMetadata(indexer: string): Promise<IndexerMetadata> {
+  public async indexerMetadata(indexer: string): Promise<IndexerMetadata> {
     if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
 
     const metadataBytes32 = await this._sdk.indexerRegistry.metadataByIndexer(indexer);
@@ -32,7 +32,7 @@ export class NetworkClient {
     return JSON.parse(metadataStr);
   }
 
-  async projectMetadata(cid: string) {
+  public async projectMetadata(cid: string) {
     if (!isCID(cid)) throw new Error(`Invalid cid: ${cid}`);
     // get project metadata
     // cat project metadata
