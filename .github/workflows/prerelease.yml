@@ -52,14 +52,14 @@ jobs:
         run: yarn build
 
       - name: Bump network-clients & deploy
-        # if: steps.changed-network-clients.outputs.changed == 'true'
+        if: steps.changed-network-clients.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/network-clients
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump react-hooks & deploy
-        # if: steps.changed-react-hooks.outputs.changed == 'true'
+        if: steps.changed-react-hooks.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/react-hooks
