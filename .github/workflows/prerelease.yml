@@ -17,7 +17,7 @@ jobs:
         with:
           poll-interval-seconds: 10
         env:
-          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
   Bump-Prerelease-Publish:
@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 100
-          token: ${{ secrets.REPO_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js environment
         uses: actions/setup-node@v2
@@ -70,4 +70,4 @@ jobs:
         with:
           message: '[SKIP CI] Prerelease'
         env:
-          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

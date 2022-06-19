@@ -17,7 +17,7 @@ jobs:
         with:
           poll-interval-seconds: 10
         env:
-          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   Build-Publish:
     name: Build-Publish
@@ -56,7 +56,7 @@ jobs:
         uses: ./.github/actions/create-release
         with:
           package-path: packages/network-clients
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish react-hooks
@@ -64,6 +64,6 @@ jobs:
         uses: ./.github/actions/create-release
         with:
           package-path: packages/react-hooks
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 
