@@ -3,7 +3,7 @@
 
 import buffer from 'buffer';
 import { IPFSHTTPClient } from 'ipfs-http-client';
-import { concatU8A, isCID } from './utils';
+import { concatU8A, isCID } from './utils/ipfs';
 
 const Buffer = buffer.Buffer;
 
