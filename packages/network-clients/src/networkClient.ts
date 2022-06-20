@@ -7,7 +7,7 @@ import { utils } from 'ethers';
 
 import { ContractClient } from "./contractClient";
 import { IPFSClient } from "./ipfsClient";
-import { bytes32ToCid, isCID } from './utils';
+import { bytes32ToCid, isCID } from './utils/ipfs';
 import { IndexerMetadata } from './types';
 
 export class NetworkClient {

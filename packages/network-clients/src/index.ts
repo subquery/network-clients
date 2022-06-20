@@ -6,3 +6,4 @@ export * from './contractClient';
 export * from './networkClient';
 export * from './ipfsClient';
 export * from './queryClient';
+export * from './utils';
