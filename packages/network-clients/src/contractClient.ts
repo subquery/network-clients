@@ -45,6 +45,8 @@ export class ContractClient {
     const threshold = await this._sdk.serviceAgreementRegistry.threshold();
     const totalStakingAmount = await this._sdk.staking.getTotalStakingAmount(indexer);
 
+    if (!threshold || threshold.eq(0)) return BigNumber.from(0);
+
     return totalStakingAmount.mul(this.perMill).div(threshold);
   }
 
@@ -79,7 +81,10 @@ export class ContractClient {
   public async closedSAContract(address: string): Promise<Contract | undefined> {
     if (!utils.isAddress(address)) throw new Error(`Invalid address: ${address}`);
 
-    const agreementContract = await this._sdk.initContract(ClosedServiceAgreement__factory, address);
+    const agreementContract = await this._sdk.initContract(
+      ClosedServiceAgreement__factory,
+      address
+    );
     return agreementContract;
   }
 }
