@@ -2,11 +2,31 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EvmRpcProvider, calcEthereumTransactionParams } from '@acala-network/eth-providers';
+import fetch from 'node-fetch';
 import { BigNumber } from 'ethers';
 
 const substrate = 'wss://node-6870830370282213376.rz.onfinality.io/ws?apikey=0f273197-e4d5-45e2-b23e-03b015cb7000';
+const evmHost = 'http://ec2-54-253-236-26.ap-southeast-2.compute.amazonaws.com:3001';
 
-export async function getOverrides(): Promise<{
+type Overrides = {
+  gasLimit: BigNumber;
+  gasPrice: BigNumber;
+};
+
+export async function getOverrides(): Promise<Overrides> {
+  try {
+    const res = await fetch(`${evmHost}/overrides`);
+    const result = await res.json();
+
+    return result as Overrides;
+  } catch (e) {
+    throw Error('Failed to get gas config');
+  }
+}
+
+
+// FIXME: need to fix this for frontend usage
+async function _getOverrides(): Promise<{
   gasLimit: BigNumber;
   gasPrice: BigNumber;
   type: number;
