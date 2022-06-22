@@ -57,13 +57,21 @@ export class ContractClient {
     return dailyRewardCap.sub(sumDailyReward);
   }
 
+  public async cancelOfferUnspentBalance(offerId: number): Promise<BigNumber> {
+    const offer = await this._sdk.purchaseOfferMarket.offers(offerId);
+    if (offer.deposit.eq(0)) throw new Error(`Invalid offerId: ${offerId}`);
+
+    const unspentValue = offer.deposit.mul(offer.limit - offer.numAcceptedContracts);
+    return unspentValue;
+  }
+
   public async cancelOfferPenaltyFee(offerId: number): Promise<BigNumber> {
     const offer = await this._sdk.purchaseOfferMarket.offers(offerId);
     if (offer.deposit.eq(0)) throw new Error(`Invalid offerId: ${offerId}`);
 
     const penaltyRate = await this._sdk.purchaseOfferMarket.penaltyRate();
-    const unfulfilledValue = offer.deposit.mul(offer.limit - offer.numAcceptedContracts);
-    const penaltyFee = penaltyRate.mul(unfulfilledValue).div(this.perMill);
+    const unspentValue = await this.cancelOfferUnspentBalance(offerId);
+    const penaltyFee = penaltyRate.mul(unspentValue).div(this.perMill);
 
     return penaltyFee;
   }
