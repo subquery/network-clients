@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { BigNumber } from 'ethers';
-import fetch from 'node-fetch';
+import axios from 'axios';
 
 const evmHost = 'http://ec2-54-253-236-26.ap-southeast-2.compute.amazonaws.com:3001';
 
@@ -13,8 +13,9 @@ type Overrides = {
 
 export async function getOverrides(): Promise<Overrides> {
   try {
-    const res = await fetch(`${evmHost}/overrides`);
-    const result = await res.json();
+    const url = `${evmHost}/overrides`;
+    const res = await axios.get(url);
+    const result = await res.data;
 
     return result as Overrides;
   } catch (e) {
