@@ -4,16 +4,18 @@
 import { BigNumber } from 'ethers';
 import axios from 'axios';
 
-const evmHost = 'http://ec2-54-253-236-26.ap-southeast-2.compute.amazonaws.com:3001';
+const evmHost = 'http://ec2-54-253-236-26.ap-southeast-2.compute.amazonaws.com:7001';
+
+type GasLevel = 'high' | 'low';
 
 type Overrides = {
   gasLimit: BigNumber;
   gasPrice: BigNumber;
 };
 
-export async function getOverrides(): Promise<Overrides> {
+export async function getEthGas(level: GasLevel = 'low'): Promise<Overrides> {
   try {
-    const url = `${evmHost}/overrides`;
+    const url = `${evmHost}/eth-gas?level=${level}`;
     const res = await axios.get(url);
     const result = await res.data;
 
