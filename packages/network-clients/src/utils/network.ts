@@ -4,7 +4,7 @@
 import { BigNumber } from 'ethers';
 import axios from 'axios';
 
-const evmHost = 'http://ec2-54-253-236-26.ap-southeast-2.compute.amazonaws.com:7001';
+const evmHost = 'http://ec2-13-211-57-210.ap-southeast-2.compute.amazonaws.com';
 
 type GasLevel = 'high' | 'low';
 
