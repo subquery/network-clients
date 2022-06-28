@@ -56,7 +56,7 @@ export class ContractClient {
     const dailyRewardCap = await this.dailyRewardCap(indexer);
     const sumDailyReward = await this._sdk.serviceAgreementRegistry.sumDailyReward(indexer);
 
-    return dailyRewardCap.sub(sumDailyReward);
+    return dailyRewardCap.gt(sumDailyReward) ? dailyRewardCap.sub(sumDailyReward) : BigNumber.from(0);
   }
 
   public async cancelOfferUnspentBalance(offerId: number): Promise<BigNumber> {
