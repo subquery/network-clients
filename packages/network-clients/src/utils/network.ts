@@ -3,8 +3,6 @@
 
 import axios from 'axios';
 
-const evmHost = 'https://sq-airdrop-backend.thechaindata.com';
-
 type GasLevel = 'high' | 'low';
 
 type EthGas = {
@@ -12,14 +10,24 @@ type EthGas = {
   gasPrice: string;
 };
 
+const gasOptions = {
+  low: { gasLimit: '1000010', storageLimit: '7100' },
+  high: { gasLimit: '1200000', storageLimit: '14000' },
+};
+
 export async function getEthGas(level: GasLevel = 'low'): Promise<EthGas> {
   try {
-    const url = `${evmHost}/evm/gas?level=${level}`;
-    const res = await axios.get(url);
-    const result = await res.data;
+    const { gasLimit, storageLimit } = gasOptions[level];
+    const body = {
+      "jsonrpc": "2.0",
+      "method": "eth_getEthGas",
+      "params": [{ gasLimit, storageLimit }],
+      "id": new Date()
+    };
 
-    return result as EthGas;
+    const res = await axios.post('https://tc7-eth.aca-dev.network', body);
+    return res.data.result as EthGas;
   } catch (e) {
-    throw Error('Failed to get gas config');
+    throw Error(`Failed to get gas config ${e}`);
   }
 }
