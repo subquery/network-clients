@@ -3,7 +3,7 @@
 
 import { ContractSDK } from '@subql/contract-sdk';
 import { IPFSHTTPClient } from 'ipfs-http-client';
-import { utils } from 'ethers';
+import { utils, constants } from 'ethers';
 
 import { ContractClient } from "./contractClient";
 import { IPFSClient } from "./ipfsClient";
@@ -29,8 +29,11 @@ export class NetworkClient {
     if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
 
     const metadataBytes32 = await this._sdk.indexerRegistry.metadataByIndexer(indexer);
-    const cid = bytes32ToCid(metadataBytes32);
+    if (!metadataBytes32 || metadataBytes32 === constants.HashZero) {
+      throw new Error('Empty indexer metadata');
+    }
 
+    const cid = bytes32ToCid(metadataBytes32);
     const metadataStr = await this._ipfs.cat(cid);
     return JSON.parse(metadataStr);
   }
