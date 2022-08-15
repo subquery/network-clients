@@ -15,8 +15,8 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@subql/contract-sdk": "^0.7.0",
-    "ipfs-http-client": "^53.0.1",
+    "@subql/contract-sdk": "^0.7.1-10",
+    "@types/jest": "^28.1.6",
     "@types/react": "^18.0.12",
     "@typescript-eslint/eslint-plugin": "^5.27.0",
     "@typescript-eslint/parser": "^5.27.0",
@@ -25,6 +25,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "flag": "^5.0.1",
     "husky": "^8.0.1",
+    "ipfs-http-client": "^53.0.1",
     "jest": "^28.1.0",
     "lint-staged": "^13.0.0",
     "prettier": "^2.6.2",
