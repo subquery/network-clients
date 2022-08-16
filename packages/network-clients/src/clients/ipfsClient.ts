@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import buffer from 'buffer';
-import { IPFSHTTPClient } from 'ipfs-http-client';
-import { concatU8A, isCID } from './utils/ipfs';
+import { IPFSHTTPClient, create } from 'ipfs-http-client';
+import { concatU8A, isCID } from '../utils';
 
 const Buffer = buffer.Buffer;
 
@@ -11,17 +11,18 @@ export class IPFSClient {
 
   private _client: IPFSHTTPClient;
 
-  constructor(client: IPFSHTTPClient) {
-    this._client = client
+  constructor(url: string) {
+    this._client = create({url});
   }
 
-  public static create(client: IPFSHTTPClient): IPFSClient {
-    return new IPFSClient(client);
+  public async getJSON<T>(cid: string): Promise<T> {
+    const raw = await this.cat(cid);
+    return JSON.parse(raw);
   }
 
   public async cat(cid: string, encoding: BufferEncoding = 'utf8'): Promise<string> {
     const results = this._client.cat(cid);
-    
+
     let raw: Uint8Array | undefined;
     for await (const result of results) {
       raw = raw ? concatU8A(raw, result) : result;
@@ -30,7 +31,7 @@ export class IPFSClient {
     if (!raw) {
       throw new Error(`Unable to fetch data from ipfs: ${cid}`);
     }
-  
+
     return Buffer.from(raw).toString(encoding);
   }
 

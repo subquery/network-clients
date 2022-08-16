@@ -2,41 +2,64 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ContractSDK } from '@subql/contract-sdk';
-import { IPFSHTTPClient } from 'ipfs-http-client';
-import { utils, constants } from 'ethers';
+import type { Provider as AbstractProvider } from '@ethersproject/abstract-provider';
+import { Signer, providers} from 'ethers';
 
-import { ContractClient } from "./contractClient";
-import { IPFSClient } from "./ipfsClient";
-import { bytes32ToCid, isCID } from './utils/ipfs';
-import { IndexerMetadata } from './types';
+import { ContractClient } from "./clients/contractClient";
+import { IPFSClient } from "./clients/ipfsClient";
+import { GraphqlQueryClient } from "./clients/queryClient";
+
+import { isCID } from './utils';
+import { DEFAULT_IPFS_URL, NETWORK_CONFIGS, SQNetworks } from "./config";
+import assert from "assert";
+import { Indexer, IndexerMetadata } from "./models/indexer";
+import { EraBasedValue } from "./models/common";
+
+type Provider = AbstractProvider | Signer;
 
 export class NetworkClient {
-  private readonly _contractClient: ContractClient;
-  private readonly _ipfs: IPFSClient;
-  private readonly _sdk: ContractSDK;
+  private _contractClient: ContractClient;
+  private _ipfs: IPFSClient;
 
-  constructor(sdk: ContractSDK, ipfs: IPFSHTTPClient) {
-    this._contractClient = ContractClient.create(sdk);
-    this._ipfs = IPFSClient.create(ipfs);
-    this._sdk = sdk;
+  constructor(private _sdk: ContractSDK, private _gqlClient: GraphqlQueryClient, ipfsUrl?: string) {
+    this._ipfs = new IPFSClient(ipfsUrl ?? DEFAULT_IPFS_URL);
+    this._contractClient = new ContractClient(_sdk);
   }
 
-  public static create(sdk: ContractSDK, ipfs: IPFSHTTPClient) {
-    return new NetworkClient(sdk, ipfs);
+  public static async create(network: SQNetworks, provider?: Provider, ipfsUrl?: string) {
+    const config = NETWORK_CONFIGS[network];
+    assert(config, `config for ${network} is missing`);
+    const sdk = await ContractSDK.create(provider ?? new providers.StaticJsonRpcProvider(config.defaultEndpoint),
+        config.sdkOptions);
+    const gqlClient = new GraphqlQueryClient(config);
+    return new NetworkClient(sdk, gqlClient, ipfsUrl);
   }
 
-  public async indexerMetadata(indexer: string): Promise<IndexerMetadata> {
-    if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
+  public async getIndexer(address: string): Promise<Indexer> {
+    const {controller, commission, totalStake, metadata: cid} = await this._gqlClient.getIndexer(address);
+    const metadata = cid ? await this._ipfs.getJSON<IndexerMetadata>(cid) : undefined;
 
-    const metadataBytes32 = await this._sdk.indexerRegistry.metadataByIndexer(indexer);
-    if (!metadataBytes32 || metadataBytes32 === constants.HashZero) {
-      throw new Error('Empty indexer metadata');
+    return {
+      metadata,
+      address,
+      controller,
+      commission: new EraBasedValue(commission.era, commission.value.value, commission.valueAfter.value, 2),
+      totalStake: new EraBasedValue(totalStake.era, totalStake.value.value, totalStake.valueAfter.value),
     }
-
-    const cid = bytes32ToCid(metadataBytes32);
-    const metadataStr = await this._ipfs.cat(cid);
-    return JSON.parse(metadataStr);
   }
+
+  // public async indexerMetadata(indexer: string): Promise<IndexerMetadata> {
+  //   if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
+  //
+  //   const metadataBytes32 = await this._sdk.indexerRegistry.metadataByIndexer(indexer);
+  //   if (!metadataBytes32 || metadataBytes32 === constants.HashZero) {
+  //     throw new Error('Empty indexer metadata');
+  //   }
+  //
+  //   const cid = bytes32ToCid(metadataBytes32);
+  //   const metadataStr = await this._ipfs.cat(cid);
+  //   return JSON.parse(metadataStr);
+  // }
 
   public async projectMetadata(cid: string) {
     if (!isCID(cid)) throw new Error(`Invalid cid: ${cid}`);

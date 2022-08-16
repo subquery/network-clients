@@ -1,7 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ContractSDK, ClosedServiceAgreement__factory } from '@subql/contract-sdk';
+import { ContractSDK } from '@subql/contract-sdk';
 import { BigNumber, Contract, utils } from 'ethers';
 
 export class ContractClient {
@@ -30,13 +30,13 @@ export class ContractClient {
   public async latestRewardCollected(indexer: string): Promise<boolean> {
     if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
 
-    const [currentEra, lastClaimedEra, lastSettledEra] = await Promise.all([
+    const [currentEra, {lastClaimEra}, lastSettledEra] = await Promise.all([
       this._sdk.eraManager.eraNumber(),
-      this._sdk.rewardsDistributor.getLastClaimEra(indexer),
+      this._sdk.rewardsDistributor.getRewardInfo(indexer),
       this._sdk.rewardsDistributor.getLastSettledEra(indexer),
     ]);
 
-    return currentEra.eq(lastClaimedEra.add(1)) && lastSettledEra.lte(lastClaimedEra);
+    return currentEra.eq(lastClaimEra.add(1)) && lastSettledEra.lte(lastClaimEra);
   }
 
   public async dailyRewardCap(indexer: string): Promise<BigNumber> {
@@ -78,13 +78,4 @@ export class ContractClient {
     return penaltyFee;
   }
 
-  public async closedSAContract(address: string): Promise<Contract | undefined> {
-    if (!utils.isAddress(address)) throw new Error(`Invalid address: ${address}`);
-
-    const agreementContract = await this._sdk.initContract(
-      ClosedServiceAgreement__factory,
-      address
-    );
-    return agreementContract;
-  }
 }

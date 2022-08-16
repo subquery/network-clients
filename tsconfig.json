@@ -19,6 +19,8 @@
     "noFallthroughCasesInSwitch": true,               /* Enable error reporting for fallthrough cases in switch statements. */
     "noImplicitOverride": true,                       /* Ensure overriding members in derived classes are marked with an override modifier. */
     "skipLibCheck": true,                             /* Skip type checking all .d.ts files. */
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
     "types": ["node", "jest"],
   },
   "include": ["packages/**/*","test"],
