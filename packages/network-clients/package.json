@@ -7,7 +7,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "codegen-gql": "apollo client:codegen --endpoint='https://api.subquery.network/sq/subquery/subquery-network-subql-project' --target=typescript --tagName=gql --useReadOnlyTypes --passthroughCustomScalars --customScalarsPrefix=GraphQL_ --outputFlat src/__generated__ --excludes src/schema.gql",
-    "build": "tsc -b"
+    "build": "yarn codegen-gql && tsc -b"
   },
   "dependencies": {
     "@apollo/client": "^3.6.9",
