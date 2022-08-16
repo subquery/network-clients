@@ -9,3 +9,4 @@ const client = await NetworkClient.create(SQNetworks.TESTNET);
 # ChangeLogs
 
 [CHANGELOG.md](./CHANGELOG.md)
+
