@@ -3,13 +3,13 @@
 
 import { ContractSDK } from '@subql/contract-sdk';
 import type { Provider as AbstractProvider } from '@ethersproject/abstract-provider';
-import { utils, constants, Signer, providers, ethers } from 'ethers';
+import { Signer, providers} from 'ethers';
 
 import { ContractClient } from "./clients/contractClient";
 import { IPFSClient } from "./clients/ipfsClient";
 import { GraphqlQueryClient } from "./clients/queryClient";
 
-import { bytes32ToCid, isCID } from './utils';
+import { isCID } from './utils';
 import { DEFAULT_IPFS_URL, NETWORK_CONFIGS, SQNetworks } from "./config";
 import assert from "assert";
 import { Indexer, IndexerMetadata } from "./models/indexer";
@@ -29,10 +29,8 @@ export class NetworkClient {
   public static async create(network: SQNetworks, provider?: Provider, ipfsUrl?: string) {
     const config = NETWORK_CONFIGS[network];
     assert(config, `config for ${network} is missing`);
-    console.time()
     const sdk = await ContractSDK.create(provider ?? new providers.StaticJsonRpcProvider(config.defaultEndpoint),
         config.sdkOptions);
-    console.timeEnd()
     const gqlClient = new GraphqlQueryClient(config);
     return new NetworkClient(sdk, gqlClient, ipfsUrl);
   }
