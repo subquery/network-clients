@@ -1,6 +1,8 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { MessageTypes, TypedMessage } from '@metamask/eth-sig-util';
+
 export interface AuthMessage {
   indexer: string;
   deploymentId: string;
@@ -37,20 +39,20 @@ const domain = {
   chainId: 1287,
 };
 
-export function buildTypedMessage(message: Message): string {
+export function buildTypedMessage(message: Message): TypedMessage<MessageTypes> {
   const messageType = message.consumer ? ConsumerMessageType : IndexerMessageType;
-  return JSON.stringify({
+  return {
     types: {
       EIP712Domain,
       messageType,
     },
     primaryType: 'messageType',
     domain,
-    message,
-  });
+    message, // FIXME: type issue
+  };
 }
 
-export function authRequestBody(message: Message, signature: string) {
+export function createAuthRequestBody(message: Message, signature: string) {
   const { consumer, indexer, agreement, deploymentId, timestamp } = message;
   const baseBody = {
     indexer,
