@@ -16,7 +16,8 @@
   ],
   "devDependencies": {
     "@actions/core": "^1.9.1",
-    "@subql/contract-sdk": "^0.10.1",
+    "@apollo/client": "^3.6.9",
+    "@subql/contract-sdk": "^0.10.2-22",
     "@types/jest": "^28.1.6",
     "@types/react": "^18.0.12",
     "@typescript-eslint/eslint-plugin": "^5.27.0",

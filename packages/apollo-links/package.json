@@ -1,0 +1,25 @@
+{
+  "name": "@subql/apollo-links",
+  "version": "0.2.0",
+  "description": "SubQuery Network - graphql links",
+  "main": "dist/index.js",
+  "author": "SubQuery Pte Limited",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.6.9",
+    "buffer": "^6.0.3",
+    "ethers": "^5.6.8",
+    "graphql": "^16.5.0"
+  },
+  "devDependencies": {
+    "apollo": "^2.34.0",
+    "typescript": "^4.6.4"
+  },
+  "peerDependencies": {
+    "@subql/contract-sdk": "^0.10.2-22",
+    "ipfs-http-client": "^53.0.1"
+  }
+}

@@ -77,5 +77,4 @@ export class ContractClient {
 
     return penaltyFee;
   }
-
 }
