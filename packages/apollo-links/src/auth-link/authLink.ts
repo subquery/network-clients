@@ -2,17 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client';
+import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
+import jwt_decode from 'jwt-decode';
 import axios from 'axios';
 import buffer from 'buffer';
-import jwt_decode from 'jwt-decode';
-import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
 
 import { AuthMessage, createAuthRequestBody, buildTypedMessage, Message } from './eip712';
 
 const Buffer = buffer.Buffer;
 
-export interface AuthOptions extends AuthMessage {
-  pk?: string;
+export interface AuthOptions extends Message {
+  authUrl: string;
+  pk: string;
+  chainId?: number;
 }
 
 export class AuthLink extends ApolloLink {
@@ -49,13 +51,13 @@ export class AuthLink extends ApolloLink {
     return exp < currentDate;
   }
 
-  private signMssage(msg: Message): string {
+  private signMessage(msg: AuthMessage): string {
     const { pk } = this._options;
     if (!pk) return '';
 
     return signTypedData({
       privateKey: Buffer.from(pk, 'hex'),
-      data: buildTypedMessage(msg),
+      data: buildTypedMessage(msg, this._options.chainId),
       version: SignTypedDataVersion.V4
     });
   }
@@ -64,14 +66,14 @@ export class AuthLink extends ApolloLink {
     if (!this.isTokenExpired()) return this._token;
     
     const message = this.generateMessage();
-    const signature = this.signMssage(message);
-    const body = createAuthRequestBody(message, signature);
+    const signature = this.signMessage(message);
+    const body = createAuthRequestBody(message, signature, this._options.chainId);
 
-    // FIXME: 1. try to get token from cache first, get url from `indexer` metadata
-    const { indexer } = this._options;
-    const url = 'http://ec2-13-239-36-188.ap-southeast-2.compute.amazonaws.com/token'
-    const res = await axios.post(url, body);
+    const res = await axios.post(this._options.authUrl, body);
     this._token = res.data.token;
+
+    // FIXME: remove this later
+    console.log('>>>auth token:', this._token);
 
     return this._token;
   }
