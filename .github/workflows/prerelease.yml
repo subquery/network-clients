@@ -46,6 +46,11 @@ jobs:
         with:
           paths: packages/react-hooks
 
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-apollo-links
+        with:
+          paths: packages/apollo-links
+
       - run: yarn
 
       - name: build
@@ -63,6 +68,13 @@ jobs:
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/react-hooks
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump apollo-links & deploy
+        if: steps.changed-apollo-links.outputs.changed == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/apollo-links
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Commit changes
