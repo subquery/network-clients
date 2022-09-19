@@ -45,6 +45,12 @@ jobs:
         id: changed-react-hooks
         with:
           paths: packages/react-hooks
+      
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-apollo-links
+        with:
+          paths: packages/apollo-links
+
       - run: yarn
 
       - name: build
@@ -64,6 +70,14 @@ jobs:
         uses: ./.github/actions/create-release
         with:
           package-path: packages/react-hooks
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish apollo-links
+        if: steps.changed-apollo-links.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/apollo-links
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 

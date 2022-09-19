@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ContractSDK } from '@subql/contract-sdk';
-import { BigNumber, Contract, utils } from 'ethers';
+import { BigNumber, utils } from 'ethers';
 
 export class ContractClient {
   private readonly _sdk: ContractSDK;
@@ -33,7 +33,7 @@ export class ContractClient {
     const [currentEra, {lastClaimEra}, lastSettledEra] = await Promise.all([
       this._sdk.eraManager.eraNumber(),
       this._sdk.rewardsDistributor.getRewardInfo(indexer),
-      this._sdk.rewardsDistributor.getLastSettledEra(indexer),
+      this._sdk.rewardsStaking.getLastSettledEra(indexer),
     ]);
 
     return currentEra.eq(lastClaimEra.add(1)) && lastSettledEra.lte(lastClaimEra);
@@ -77,5 +77,4 @@ export class ContractClient {
 
     return penaltyFee;
   }
-
 }
