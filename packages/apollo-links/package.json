@@ -1,6 +1,6 @@
 {
   "name": "@subql/apollo-links",
-  "version": "0.2.0",
+  "version": "0.2.1-0",
   "description": "SubQuery Network - graphql links",
   "main": "dist/index.js",
   "author": "SubQuery Pte Limited",
@@ -10,12 +10,12 @@
   },
   "dependencies": {
     "@apollo/client": "^3.6.9",
+    "@metamask/eth-sig-util": "4.0.1",
     "axios": "^0.27.2",
     "buffer": "^6.0.3",
     "ethers": "^5.6.8",
     "graphql": "^16.5.0",
-    "jwt-decode": "^3.1.2",
-    "@metamask/eth-sig-util": "4.0.1"
+    "jwt-decode": "^3.1.2"
   },
   "devDependencies": {
     "apollo": "^2.34.0",
