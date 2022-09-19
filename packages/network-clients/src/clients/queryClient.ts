@@ -1,7 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ApolloClient, ApolloQueryResult, HttpLink, InMemoryCache } from '@apollo/client/core';
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import fetch from 'cross-fetch';
 import { GqlEndpoint, NetworkConfig } from "../config";
 import { GetIndexer, GetIndexer_indexer } from "../__generated__/GetIndexer";

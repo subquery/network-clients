@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SdkOptions } from "@subql/contract-sdk/types";
-import deploymentDetails from '@subql/contract-sdk/publish/testnet.json';
+import deploymentDetails from '@subql/contract-sdk/publish/moonbase.json';
 
 export enum SQNetworks {
     TESTNET = 'testnet',
