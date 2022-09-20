@@ -3,7 +3,6 @@
 
 import { NetworkClient } from '../packages/network-clients/src';
 import { SQNetworks } from "../packages/network-clients/src/config";
-import { utils, BigNumber } from 'ethers';
 
 const TEST_INDEXER = '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04';
 
@@ -20,8 +19,7 @@ describe('network client', () => {
 
     it('can get maxUnstakeAmount value',  async() => {
         const amount = await client.maxUnstakeAmount(TEST_INDEXER);
-        const maxUnstakeAmount = utils.formatEther(BigNumber.from(amount ?? 0).toString())
-        expect(maxUnstakeAmount).toBeTruthy();
+        expect(amount).toBeTruthy();
     });
 });
 
