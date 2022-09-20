@@ -21,7 +21,14 @@ export interface NetworkConfig {
 }
 
 export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig | undefined> = {
-    [SQNetworks.KEPLER]: undefined, [SQNetworks.MAINNET]: undefined,
+    [SQNetworks.KEPLER]: {
+        gql: {
+            [GqlEndpoint.Explorer]: 'https://api.subquery.network/sq/subquery/kepler-testnet-subql-project',
+        },
+        defaultEndpoint: "https://moonbeam-alpha.api.onfinality.io/public",
+        sdkOptions: {deploymentDetails},
+    },
+    [SQNetworks.MAINNET]: undefined,
     [SQNetworks.TESTNET]: {
         gql: {
             [GqlEndpoint.Explorer]: 'https://api.subquery.network/sq/subquery/subquery-network-subql-project',
