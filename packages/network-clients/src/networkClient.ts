@@ -63,8 +63,8 @@ export class NetworkClient {
   // }
 
   public async maxUnstakeAmount(address: string): Promise<BigNumber> {
-    const indexerLeverageLimit = await this._sdk.staking.indexerLeverageLimit();
-    const minimumStakingAmount = await this._sdk.indexerRegistry.minimumStakingAmount();
+    const leverageLimit = await this._sdk.staking.indexerLeverageLimit();
+    const minStakingAmount = await this._sdk.indexerRegistry.minimumStakingAmount();
 
     const { totalStake }  = await this._gqlClient.getIndexer(address);
     const { amount } = await this._gqlClient.getDelegation(address, address);
@@ -72,7 +72,7 @@ export class NetworkClient {
     const totalStakingAmountAfter = BigNumber.from(totalStake?.after ?? 0); 
     const ownStakeAfter = BigNumber.from(amount?.valueAfter?.value ?? 0);
 
-    const maxUnstakeAmount = min(ownStakeAfter.sub(minimumStakingAmount), ownStakeAfter.mul(indexerLeverageLimit)).sub(totalStakingAmountAfter).div(indexerLeverageLimit.sub(1))
+    const maxUnstakeAmount = min(ownStakeAfter.sub(minStakingAmount), ownStakeAfter.mul(leverageLimit)).sub(totalStakingAmountAfter).div(leverageLimit.sub(1))
     return maxUnstakeAmount.isNegative() ? BigNumber.from(0) : maxUnstakeAmount;
   }
 
