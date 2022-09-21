@@ -2,5 +2,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from '@subql/contract-sdk';
-export * from './networkClient';
+export * from './clients';
 export * from './utils';

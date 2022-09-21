@@ -6,15 +6,15 @@ import type { Provider as AbstractProvider } from '@ethersproject/abstract-provi
 import { Signer, providers } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
 
-import { ContractClient } from "./clients/contractClient";
-import { IPFSClient } from "./clients/ipfsClient";
-import { GraphqlQueryClient } from "./clients/queryClient";
+import { ContractClient } from "./contractClient";
+import { IPFSClient } from "./ipfsClient";
+import { GraphqlQueryClient } from "./queryClient";
 
-import { isCID, min } from './utils';
-import { DEFAULT_IPFS_URL, NETWORK_CONFIGS, SQNetworks } from "./config";
+import { isCID, min } from '../utils';
+import { DEFAULT_IPFS_URL, NETWORK_CONFIGS, SQNetworks } from "../config";
 import assert from "assert";
-import { Indexer, IndexerMetadata } from "./models/indexer";
-import { EraBasedValue } from "./models/common";
+import { Indexer, IndexerMetadata } from "../models/indexer";
+import { EraBasedValue } from "../models/common";
 
 type Provider = AbstractProvider | Signer;
 
