@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import axios from 'axios';
-import { BigNumber } from 'ethers';
 
 type GasLevel = 'high' | 'low';
 
@@ -31,8 +30,4 @@ export async function getEthGas(level: GasLevel = 'low'): Promise<EthGas> {
   } catch (e) {
     throw Error(`Failed to get gas config ${e}`);
   }
-}
-
-export function min(a: BigNumber, b: BigNumber): BigNumber {
-  return a.lte(b) ? a : b;
 }

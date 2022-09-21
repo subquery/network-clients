@@ -4,13 +4,13 @@
 import { ApolloQueryResult } from '@apollo/client/core';
 
 export async function wrapApolloResult<T>(_result: Promise<ApolloQueryResult<T>>): Promise<T> {
-  const result = await _result;
-  if (result.error) {
-    throw result.error;
+  const { error, data } = await _result;
+  if (error) {
+    throw error;
   }
-  if (result.data) {
-    return result.data;
+  if (data) {
+    return data;
   }
-  console.error(result);
+
   throw new Error('unknown gql query error');
 }
