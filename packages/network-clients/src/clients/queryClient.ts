@@ -7,6 +7,8 @@ import { GqlEndpoint, NetworkConfig } from "../config";
 import { GetIndexer, GetIndexer_indexer } from "../__generated__/GetIndexer";
 import { GET_INDEXER } from "../graphql/indexer";
 import { wrapApolloResult } from "../utils/apollo";
+import { GET_DELEGATION } from '../graphql/staking';
+import { GetDelegation, GetDelegation_delegation } from '../__generated__/GetDelegation';
 
 type ApolloClients = { [key: string]: ApolloClient<unknown> };
 
@@ -43,6 +45,18 @@ export class GraphqlQueryClient {
       throw new Error(`indexer not found`);
     } else {
       return result.indexer;
+    }
+  }
+
+  async getDelegation(indexer: string, delegator: string): Promise<GetDelegation_delegation> {
+    const result = await wrapApolloResult(this.explorerClient.query<GetDelegation>({
+      query: GET_DELEGATION,
+      variables: {id: `${indexer}:${delegator}`},
+    }));
+    if (!result || !result.delegation) {
+      throw new Error(`delegation not found`);
+    } else {
+      return result.delegation;
     }
   }
 }
