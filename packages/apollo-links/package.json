@@ -24,10 +24,5 @@
   "peerDependencies": {
     "@subql/contract-sdk": "^0.10.2-22",
     "ipfs-http-client": "^53.0.1"
-  },
-  "resolutions": {
-    "moment": "2.29.4",
-    "parse-path": "5.0.0",
-    "parse-url": "2.29.4"
   }
 }
