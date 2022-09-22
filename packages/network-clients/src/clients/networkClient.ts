@@ -15,6 +15,7 @@ import { DEFAULT_IPFS_URL, NETWORK_CONFIGS, SQNetworks } from '../config';
 import assert from 'assert';
 import { Indexer, IndexerMetadata } from '../models/indexer';
 import { parseRawEraValue } from '../utils/parseEraValue';
+import { formatEther } from 'ethers/lib/utils';
 
 type Provider = AbstractProvider | Signer;
 
@@ -93,14 +94,18 @@ export class NetworkClient {
   // }
 
   public async maxUnstakeAmount(address: string): Promise<BigNumber> {
+    const currentEra = await this._sdk.eraManager.eraNumber();
     const leverageLimit = await this._sdk.staking.indexerLeverageLimit();
     const minStakingAmount = await this._sdk.indexerRegistry.minimumStakingAmount();
 
     const { totalStake } = await this._gqlClient.getIndexer(address);
-    const { amount } = await this._gqlClient.getDelegation(address, address);
+    const { amount: ownStake } = await this._gqlClient.getDelegation(address, address);
 
-    const totalStakingAmountAfter = BigNumber.from(totalStake?.after ?? 0);
-    const ownStakeAfter = BigNumber.from(amount?.valueAfter?.value ?? 0);
+    const sortedTotalStake = parseRawEraValue(totalStake, currentEra.toNumber());
+    const sortedOwnStake = parseRawEraValue(ownStake, currentEra.toNumber());
+
+    const totalStakingAmountAfter = BigNumber.from(sortedTotalStake?.after ?? 0);
+    const ownStakeAfter = BigNumber.from(sortedOwnStake?.after ?? 0);
 
     if (leverageLimit.eq(1)) return ownStakeAfter.sub(minStakingAmount);
 
@@ -108,7 +113,7 @@ export class NetworkClient {
       ownStakeAfter.sub(minStakingAmount),
       (ownStakeAfter.mul(leverageLimit).sub(totalStakingAmountAfter)).div(leverageLimit.sub(1))
     );
-
+    
     return maxUnstakeAmount.isNegative() ? BigNumber.from(0) : maxUnstakeAmount;
   }
 
