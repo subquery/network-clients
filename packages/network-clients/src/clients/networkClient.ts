@@ -92,7 +92,7 @@ export class NetworkClient {
 
     const maxUnstakeAmount = min(
       ownStakeAfter.sub(minStakingAmount),
-      ownStakeAfter.mul(leverageLimit).sub(totalStakingAmountAfter).div(leverageLimit.sub(1))
+      (ownStakeAfter.mul(leverageLimit).sub(totalStakingAmountAfter)).div(leverageLimit.sub(1))
     );
 
     return maxUnstakeAmount.isNegative() ? BigNumber.from(0) : maxUnstakeAmount;
