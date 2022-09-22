@@ -14,7 +14,7 @@ import { isCID, min } from '../utils';
 import { DEFAULT_IPFS_URL, NETWORK_CONFIGS, SQNetworks } from '../config';
 import assert from 'assert';
 import { Indexer, IndexerMetadata } from '../models/indexer';
-import { EraBasedValue } from '../models/common';
+import { parseRawEraValue } from '../utils/parseEraValue';
 
 type Provider = AbstractProvider | Signer;
 
@@ -39,29 +39,43 @@ export class NetworkClient {
   }
 
   public async getIndexer(address: string): Promise<Indexer> {
+    const currentEra = await this._sdk.eraManager.eraNumber();
+    const leverageLimit = await this._sdk.staking.indexerLeverageLimit();
     const {
       controller,
       commission,
       totalStake,
       metadata: cid,
     } = await this._gqlClient.getIndexer(address);
+    const { amount: ownStake } = await this._gqlClient.getDelegation(address, address);
+
     const metadata = cid ? await this._ipfs.getJSON<IndexerMetadata>(cid) : undefined;
+
+    const sortedTotalStake = parseRawEraValue(totalStake, currentEra.toNumber());
+    const sortedOwnStake = parseRawEraValue(ownStake, currentEra.toNumber());
+
+    const delegated = {
+      current: sortedTotalStake.current.sub(sortedTotalStake.current),
+      after: sortedTotalStake.after.sub(sortedTotalStake.after),
+    };
+
+    const capacity = {
+      current:
+        sortedOwnStake.current.mul(leverageLimit).sub(sortedTotalStake.current) ||
+        BigNumber.from(0),
+      after:
+        sortedOwnStake.after.mul(leverageLimit).sub(sortedTotalStake.after) || BigNumber.from(0),
+    };
 
     return {
       metadata,
       address,
       controller,
-      commission: new EraBasedValue(
-        commission.era,
-        commission.value.value,
-        commission.valueAfter.value,
-        2
-      ),
-      totalStake: new EraBasedValue(
-        totalStake.era,
-        totalStake.value.value,
-        totalStake.valueAfter.value
-      ),
+      commission: parseRawEraValue(commission, currentEra.toNumber()),
+      totalStake: sortedTotalStake,
+      ownStake: sortedOwnStake,
+      delegated,
+      capacity,
     };
   }
 
