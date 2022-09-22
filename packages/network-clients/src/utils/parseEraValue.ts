@@ -18,7 +18,7 @@ export interface EraValue<T = BigNumber> {
   valueAfter: T;
 }
 
-export type CurrentEraValue<T = BigNumber> = { current: BigNumber; after: BigNumber };
+export type CurrentEraValue<T = BigNumber> = { current: T; after: T };
 
 function jsonBigIntToBigInt(value: JSONBigInt | BigNumberish): BigNumber {
   if (isBigNumberish(value)) {
@@ -37,17 +37,13 @@ export function convertRawEraValue(raw: RawEraValue | EraValue): EraValue<BigNum
   };
 }
 
-export function isEraValue<T = BigNumber>(value: unknown): value is EraValue<T> {
-  return (
-    !!value &&
-    (value as EraValue).era !== undefined &&
-    (value as EraValue).era !== null &&
-    !!(value as EraValue).value &&
-    !!(value as EraValue).valueAfter
-  );
+export function isEraValue<T = BigNumber>(eraValue: GraphQL_JSON): eraValue is EraValue<T> {
+  const { era, value, valueAfter } = eraValue ?? {};
+
+  return !!(era && value && valueAfter);
 }
 
-export function parseRawEraValue(value: unknown, curEra: number): CurrentEraValue {
+export function parseRawEraValue(value: GraphQL_JSON, curEra: number): CurrentEraValue {
   assert(isEraValue(value), `Value is not of type EraValue: ${JSON.stringify(value)}`);
   const eraValue = convertRawEraValue(value);
 
@@ -55,7 +51,9 @@ export function parseRawEraValue(value: unknown, curEra: number): CurrentEraValu
     return { current: eraValue.valueAfter, after: eraValue.valueAfter };
   }
 
-  const after = eraValue.value.eq(eraValue.valueAfter) ? eraValue.value : eraValue.valueAfter;
+  const sortedValueAfter = eraValue.value.eq(eraValue.valueAfter)
+    ? eraValue.value
+    : eraValue.valueAfter;
 
-  return { current: eraValue.value, after };
+  return { current: eraValue.value, after: sortedValueAfter };
 }
