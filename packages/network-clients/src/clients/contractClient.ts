@@ -30,7 +30,7 @@ export class ContractClient {
   public async latestRewardCollected(indexer: string): Promise<boolean> {
     if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
 
-    const [currentEra, {lastClaimEra}, lastSettledEra] = await Promise.all([
+    const [currentEra, { lastClaimEra }, lastSettledEra] = await Promise.all([
       this._sdk.eraManager.eraNumber(),
       this._sdk.rewardsDistributor.getRewardInfo(indexer),
       this._sdk.rewardsStaking.getLastSettledEra(indexer),
@@ -56,7 +56,9 @@ export class ContractClient {
     const dailyRewardCap = await this.dailyRewardCap(indexer);
     const sumDailyReward = await this._sdk.serviceAgreementRegistry.sumDailyReward(indexer);
 
-    return dailyRewardCap.gt(sumDailyReward) ? dailyRewardCap.sub(sumDailyReward) : BigNumber.from(0);
+    return dailyRewardCap.gt(sumDailyReward)
+      ? dailyRewardCap.sub(sumDailyReward)
+      : BigNumber.from(0);
   }
 
   public async cancelOfferUnspentBalance(offerId: number): Promise<BigNumber> {

@@ -6,15 +6,15 @@ import type { Provider as AbstractProvider } from '@ethersproject/abstract-provi
 import { Signer, providers } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
 
-import { ContractClient } from "./clients/contractClient";
-import { IPFSClient } from "./clients/ipfsClient";
-import { GraphqlQueryClient } from "./clients/queryClient";
+import { ContractClient } from './contractClient';
+import { IPFSClient } from './ipfsClient';
+import { GraphqlQueryClient } from './queryClient';
 
-import { isCID, min } from './utils';
-import { DEFAULT_IPFS_URL, NETWORK_CONFIGS, SQNetworks } from "./config";
-import assert from "assert";
-import { Indexer, IndexerMetadata } from "./models/indexer";
-import { EraBasedValue } from "./models/common";
+import { isCID, min } from '../utils';
+import { DEFAULT_IPFS_URL, NETWORK_CONFIGS, SQNetworks } from '../config';
+import assert from 'assert';
+import { Indexer, IndexerMetadata } from '../models/indexer';
+import { EraBasedValue } from '../models/common';
 
 type Provider = AbstractProvider | Signer;
 
@@ -30,23 +30,39 @@ export class NetworkClient {
   public static async create(network: SQNetworks, provider?: Provider, ipfsUrl?: string) {
     const config = NETWORK_CONFIGS[network];
     assert(config, `config for ${network} is missing`);
-    const sdk = await ContractSDK.create(provider ?? new providers.StaticJsonRpcProvider(config.defaultEndpoint),
-        config.sdkOptions);
+    const sdk = await ContractSDK.create(
+      provider ?? new providers.StaticJsonRpcProvider(config.defaultEndpoint),
+      config.sdkOptions
+    );
     const gqlClient = new GraphqlQueryClient(config);
     return new NetworkClient(sdk, gqlClient, ipfsUrl);
   }
 
   public async getIndexer(address: string): Promise<Indexer> {
-    const {controller, commission, totalStake, metadata: cid} = await this._gqlClient.getIndexer(address);
+    const {
+      controller,
+      commission,
+      totalStake,
+      metadata: cid,
+    } = await this._gqlClient.getIndexer(address);
     const metadata = cid ? await this._ipfs.getJSON<IndexerMetadata>(cid) : undefined;
 
     return {
       metadata,
       address,
       controller,
-      commission: new EraBasedValue(commission.era, commission.value.value, commission.valueAfter.value, 2),
-      totalStake: new EraBasedValue(totalStake.era, totalStake.value.value, totalStake.valueAfter.value),
-    }
+      commission: new EraBasedValue(
+        commission.era,
+        commission.value.value,
+        commission.valueAfter.value,
+        2
+      ),
+      totalStake: new EraBasedValue(
+        totalStake.era,
+        totalStake.value.value,
+        totalStake.valueAfter.value
+      ),
+    };
   }
 
   // public async indexerMetadata(indexer: string): Promise<IndexerMetadata> {
@@ -66,15 +82,20 @@ export class NetworkClient {
     const leverageLimit = await this._sdk.staking.indexerLeverageLimit();
     const minStakingAmount = await this._sdk.indexerRegistry.minimumStakingAmount();
 
-    const { totalStake }  = await this._gqlClient.getIndexer(address);
+    const { totalStake } = await this._gqlClient.getIndexer(address);
     const { amount } = await this._gqlClient.getDelegation(address, address);
 
-    const totalStakingAmountAfter = BigNumber.from(totalStake?.after ?? 0); 
+    const totalStakingAmountAfter = BigNumber.from(totalStake?.after ?? 0);
     const ownStakeAfter = BigNumber.from(amount?.valueAfter?.value ?? 0);
 
     if (leverageLimit.eq(1)) return ownStakeAfter.sub(minStakingAmount);
 
-    const maxUnstakeAmount = min(ownStakeAfter.sub(minStakingAmount), ownStakeAfter.mul(leverageLimit)).sub(totalStakingAmountAfter).div(leverageLimit.sub(1))
+    const maxUnstakeAmount = min(
+      ownStakeAfter.sub(minStakingAmount),
+      ownStakeAfter.mul(leverageLimit)
+    )
+      .sub(totalStakingAmountAfter)
+      .div(leverageLimit.sub(1));
     return maxUnstakeAmount.isNegative() ? BigNumber.from(0) : maxUnstakeAmount;
   }
 

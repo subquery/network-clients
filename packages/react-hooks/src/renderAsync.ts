@@ -1,7 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { AsyncData, Handlers, HandlersArray, RenderResult } from "./utils";
+import { AsyncData, Handlers, HandlersArray, RenderResult } from './utils';
 
 export function renderAsync<T>(data: AsyncData<T>, handlers: Handlers<T>): RenderResult {
   if (data.data !== undefined) {
@@ -20,7 +20,10 @@ export function renderAsync<T>(data: AsyncData<T>, handlers: Handlers<T>): Rende
   return null;
 }
 
-export function renderAsyncArray<T extends any[]>(data: AsyncData<T>, handlers: HandlersArray<T>): RenderResult {
+export function renderAsyncArray<T extends any[]>(
+  data: AsyncData<T>,
+  handlers: HandlersArray<T>
+): RenderResult {
   if (data.data !== undefined) {
     try {
       if (data.data === null || (Array.isArray(data.data) && !data.data.length)) {

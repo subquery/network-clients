@@ -8,11 +8,10 @@ import { concatU8A, isCID } from '../utils';
 const Buffer = buffer.Buffer;
 
 export class IPFSClient {
-
   private _client: IPFSHTTPClient;
 
   constructor(url: string) {
-    this._client = create({url});
+    this._client = create({ url });
   }
 
   public async getJSON<T>(cid: string): Promise<T> {

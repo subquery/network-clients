@@ -27,7 +27,7 @@ export class CancellablePromise<T> extends Promise<T> {
             return;
           }
           reject(e);
-        },
+        }
       );
     });
   }
