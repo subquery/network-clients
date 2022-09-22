@@ -9,7 +9,7 @@ export function mergeAsync<T1, T2, T3, T4>(
   v1: AsyncData<T1>,
   v2: AsyncData<T2>,
   v3?: AsyncData<T3>,
-  v4?: AsyncData<T4>,
+  v4?: AsyncData<T4>
 ): AsyncData<[T1 | undefined, T2 | undefined, T3 | undefined, T4 | undefined]> {
   return {
     loading: v1.loading || v2.loading || !!v3?.loading || !!v4?.loading,

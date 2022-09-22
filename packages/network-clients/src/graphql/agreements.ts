@@ -4,34 +4,37 @@
 import { gql } from '@apollo/client/core';
 
 export const SERVICE_AGREEMENT_FIELDS = gql`
-    fragment ServiceAgreementFields on ServiceAgreement {
+  fragment ServiceAgreementFields on ServiceAgreement {
+    id
+    deploymentId
+    indexerAddress
+    consumerAddress
+    period
+    value
+    startTime
+    deployment {
+      id
+      version
+      project {
         id
-        deploymentId
-        indexerAddress
-        consumerAddress
-        period
-        value
-        startTime
-        deployment {
-            id
-            version
-            project {
-                id
-                metadata
-            }
-        }
+        metadata
+      }
     }
+  }
 `;
 
 export const GET_SERVICE_AGREEMENTS = gql`
-    ${SERVICE_AGREEMENT_FIELDS}
-    query GetServiceAgreements($address: String!) {
-        serviceAgreements(
-            filter: { indexerAddress: { equalTo: $address }, or: { consumerAddress: { equalTo: $address } } }
-        ) {
-            nodes {
-                ...ServiceAgreementFields
-            }
-        }
+  ${SERVICE_AGREEMENT_FIELDS}
+  query GetServiceAgreements($address: String!) {
+    serviceAgreements(
+      filter: {
+        indexerAddress: { equalTo: $address }
+        or: { consumerAddress: { equalTo: $address } }
+      }
+    ) {
+      nodes {
+        ...ServiceAgreementFields
+      }
     }
+  }
 `;

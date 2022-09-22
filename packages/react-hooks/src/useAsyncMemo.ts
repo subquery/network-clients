@@ -8,7 +8,7 @@ import { AsyncData } from './utils';
 export function useAsyncMemo<T>(
   factory: () => Promise<T> | undefined | null,
   deps: DependencyList,
-  initial: T | undefined = undefined,
+  initial: T | undefined = undefined
 ): AsyncData<T> & { refetch: (retainCurrent?: boolean) => void } {
   const [result, setResult] = useState<AsyncData<T>>({ data: initial, loading: false });
 
@@ -21,7 +21,7 @@ export function useAsyncMemo<T>(
     task.current = new CancellablePromise(
       promise
         .then((data) => setResult({ data, loading: false }))
-        .catch((error) => setResult({ error, loading: false })),
+        .catch((error) => setResult({ error, loading: false }))
     );
 
     return () => {
@@ -34,15 +34,18 @@ export function useAsyncMemo<T>(
       const promise = factory();
       if (promise === undefined || promise === null) return;
 
-      setResult((current: AsyncData<T>) => ({ loading: true, data: retainCurrent ? current.data : undefined }));
+      setResult((current: AsyncData<T>) => ({
+        loading: true,
+        data: retainCurrent ? current.data : undefined,
+      }));
 
       task.current = new CancellablePromise(
         promise
           .then((data) => setResult({ data, loading: false }))
-          .catch((error) => setResult({ error, loading: false })),
+          .catch((error) => setResult({ error, loading: false }))
       );
     },
-    [factory],
+    [factory]
   );
 
   return { ...result, refetch };

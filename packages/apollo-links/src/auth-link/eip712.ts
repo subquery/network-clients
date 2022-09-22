@@ -34,10 +34,13 @@ const IndexerMessageType = [
   { name: 'deploymentId', type: 'string' },
 ];
 
-export function buildTypedMessage(message: AuthMessage, chainId = 1287): TypedMessage<MessageTypes> {
+export function buildTypedMessage(
+  message: AuthMessage,
+  chainId = 1287
+): TypedMessage<MessageTypes> {
   const messageType = message.consumer ? ConsumerMessageType : IndexerMessageType;
   const domain = { name: 'Subquery', chainId };
-  
+
   return {
     types: {
       EIP712Domain,

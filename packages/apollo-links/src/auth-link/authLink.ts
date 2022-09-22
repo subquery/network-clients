@@ -30,7 +30,7 @@ export class AuthLink extends ApolloLink {
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
     operation.setContext(async ({ headers }: { headers: HeadersInit }) => {
       const token = await this.requestToken();
-      return ({ headers: { authorization: `Bearer ${token}`, ...headers } }); 
+      return { headers: { authorization: `Bearer ${token}`, ...headers } };
     });
 
     return forward ? forward(operation) : null;
@@ -58,13 +58,13 @@ export class AuthLink extends ApolloLink {
     return signTypedData({
       privateKey: Buffer.from(pk, 'hex'),
       data: buildTypedMessage(msg, this._options.chainId),
-      version: SignTypedDataVersion.V4
+      version: SignTypedDataVersion.V4,
     });
   }
 
   private async requestToken(): Promise<string> {
     if (!this.isTokenExpired()) return this._token;
-    
+
     const message = this.generateMessage();
     const signature = this.signMessage(message);
     const body = createAuthRequestBody(message, signature, this._options.chainId);

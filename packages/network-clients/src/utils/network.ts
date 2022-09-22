@@ -20,10 +20,10 @@ export async function getEthGas(level: GasLevel = 'low'): Promise<EthGas> {
   try {
     const { gasLimit, storageLimit } = gasOptions[level];
     const body = {
-      "jsonrpc": "2.0",
-      "method": "eth_getEthGas",
-      "params": [{ gasLimit, storageLimit }],
-      "id": new Date()
+      jsonrpc: '2.0',
+      method: 'eth_getEthGas',
+      params: [{ gasLimit, storageLimit }],
+      id: new Date(),
     };
 
     const res = await axios.post('https://tc7-eth.aca-dev.network', body);
