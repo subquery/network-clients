@@ -26,8 +26,8 @@
     "ipfs-http-client": "^53.0.1"
   },
   "resolutions": {
-    "moment": "2.29.4",
-    "parse-path": "5.0.0",
-    "parse-url": "2.29.4"
+    "moment": "^2.29.4",
+    "parse-path": "^5.0.0",
+    "parse-url": "^2.29.4"
   }
 }
