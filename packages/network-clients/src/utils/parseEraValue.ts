@@ -23,13 +23,13 @@ export function convertRawEraValue(raw: RawEraValue | EraValue): EraValue<BigNum
   };
 }
 
-export function isEraValue<T = BigNumber>(eraValue: GraphQL_JSON): eraValue is EraValue<T> {
+export function isEraValue(eraValue: RawEraValue) {
   const { era, value, valueAfter } = eraValue ?? {};
 
   return !!(era && value && valueAfter);
 }
 
-export function parseRawEraValue(value: GraphQL_JSON, curEra: number): CurrentEraValue {
+export function parseRawEraValue(value: RawEraValue, curEra: number): CurrentEraValue {
   assert(isEraValue(value), `Value is not of type EraValue: ${JSON.stringify(value)}`);
   const eraValue = convertRawEraValue(value);
 
