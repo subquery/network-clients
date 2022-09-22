@@ -4,21 +4,7 @@
 import assert from 'assert';
 import { BigNumber, BigNumberish } from 'ethers';
 import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
-
-type JSONBigInt = {
-  type: 'bigint';
-  value: string; // Hex encoded string
-};
-// Subql project type
-export type RawEraValue = EraValue<JSONBigInt>;
-
-export interface EraValue<T = BigNumber> {
-  era: number;
-  value: T;
-  valueAfter: T;
-}
-
-export type CurrentEraValue<T = BigNumber> = { current: T; after: T };
+import { CurrentEraValue, EraValue, JSONBigInt, RawEraValue } from '../models/eraValue';
 
 function jsonBigIntToBigInt(value: JSONBigInt | BigNumberish): BigNumber {
   if (isBigNumberish(value)) {

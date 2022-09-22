@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as yup from 'yup';
-import { CurrentEraValue } from '../utils/parseEraValue';
+import { CurrentEraValue } from './eraValue';
 
 export interface Indexer {
   metadata?: IndexerMetadata;
