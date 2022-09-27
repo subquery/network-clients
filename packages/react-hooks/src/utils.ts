@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ReactElement } from 'react';
-
-export type AsyncData<T> = Readonly<{ data?: T; loading: boolean; error?: Error }>;
+import { AsyncData } from './types';
 
 export function mergeAsync<T1, T2, T3, T4>(
   v1: AsyncData<T1>,
