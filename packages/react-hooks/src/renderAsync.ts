@@ -1,7 +1,8 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { AsyncData, Handlers, HandlersArray, RenderResult } from './utils';
+import { AsyncData } from './types';
+import { Handlers, HandlersArray, RenderResult } from './utils';
 
 export function renderAsync<T>(data: AsyncData<T>, handlers: Handlers<T>): RenderResult {
   if (data.data !== undefined) {

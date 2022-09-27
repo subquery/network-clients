@@ -3,4 +3,4 @@
 
 export * from './useAsyncMemo';
 export * from './renderAsync';
-export * from './utils';
+export * from './types';
