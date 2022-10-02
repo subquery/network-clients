@@ -1,81 +1,28 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { gql } from '@apollo/client/core';
+import { gql } from '@apollo/client';
 
-export const GET_DELEGATION = gql`
-  query GetDelegation($id: String!) {
-    delegation(id: $id) {
-      amount
-    }
-  }
-`;
-
-export const GET_ALL_DELEGATIONS = gql`
-  query GetAllDelegations($offset: Int) {
-    delegations(offset: $offset) {
-      nodes {
-        id
-        delegatorId
-        indexerId
-        amount
-        indexer {
-          metadata
-        }
-      }
-    }
-  }
-`;
-
-export const GET_DELEGATOR = gql`
-  query GetDelegator($address: String!) {
-    delegator(id: $address) {
-      id
-      totalDelegations
-    }
-  }
-`;
-
-export const GET_DELEGATIONS = gql`
-  query GetDelegations($delegator: String!, $offset: Int) {
-    delegations(filter: { delegatorId: { equalTo: $delegator } }, first: 10, offset: $offset) {
-      totalCount
-      nodes {
-        id
-        delegatorId
-        indexerId
-        amount
-        indexer {
-          metadata
-        }
-      }
-    }
-  }
-`;
-
-export const GET_WITHDRAWLS = gql`
-  query GetWithdrawls($delegator: String!, $offset: Int) {
-    withdrawls(
-      filter: { delegator: { equalTo: $delegator }, and: { claimed: { equalTo: false } } }
-      first: 10
-      offset: $offset
-    ) {
-      nodes {
-        id
-        index
-        delegator
-        indexer
-        startTime
-        amount
-        claimed
-      }
-    }
-  }
-`;
+//TODO: generate not working for this query
+// export const GET_WITHDRAWLS = gql`
+//   query GetWithdrawls($delegator: String!, $offset: Int) {
+//     withdrawls(filter: { delegator: { equalTo: $delegator }, status: { equalTo: ONGOING } }, offset: $offset) {
+//       nodes {
+//         id
+//         index
+//         delegator
+//         indexer
+//         startTime
+//         amount
+//         status
+//       }
+//     }
+//   }
+// `;
 
 export const GET_REWARDS = gql`
   query GetRewards($address: String!) {
-    rewards(filter: { delegatorAddress: { equalTo: $address } }) {
+    rewards(orderBy: CLAIMED_TIME_DESC, filter: { delegatorAddress: { equalTo: $address } }) {
       nodes {
         id
         delegatorAddress
@@ -84,7 +31,10 @@ export const GET_REWARDS = gql`
         claimedTime
       }
     }
-    unclaimedRewards(filter: { delegatorAddress: { equalTo: $address } }) {
+    unclaimedRewards(
+      filter: { delegatorAddress: { equalTo: $address }, amount: { greaterThan: "0" } }
+    ) {
+      totalCount
       nodes {
         id
         delegatorAddress
