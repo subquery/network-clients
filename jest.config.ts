@@ -1,7 +1,6 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-
 export default {
   // Automatically clear mock calls, instances, contexts and results before every test
   clearMocks: true,
@@ -23,11 +22,7 @@ export default {
   },
 
   // An array of file extensions your modules use
-  moduleFileExtensions: [
-    'js',
-    'ts',
-    'json',
-  ],
+  moduleFileExtensions: ['js', 'ts', 'json'],
 
   // The paths to modules that run some code to configure or set up the testing environment before each test
   setupFiles: ['./test/jest-setup.ts'],
