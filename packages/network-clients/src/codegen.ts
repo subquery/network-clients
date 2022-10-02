@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CodegenConfig } from '@graphql-codegen/cli';
+import { NETWORK_CONFIGS } from './config';
 
 const config: CodegenConfig = {
-  schema: 'https://api.subquery.network/sq/subquery/kepler-testnet-subql-project',
+  schema: NETWORK_CONFIGS.kepler?.gql.explorer,
   documents: ['./src/graphql/*.ts'],
   config: {
     preResolveTypes: true,
@@ -13,10 +14,16 @@ const config: CodegenConfig = {
     nonOptionalTypename: true,
     skipTypeNameForRoot: true,
     immutableTypes: true,
+    // scalars: [
+    //     { scalar: "GraphQL_Datetime", type: "Date" },
+    //     { scalar: "GraphQL_BigFloat", type: "bigint" || "string" },
+    //     { scalar: "GraphQL_JSON", type: "any" },
+    //     { scalar: "GraphQL_Cursor", type: "string" }
+    // ]
   },
-  hooks: {
-    afterAllFileWrite: ['prettier --write'],
-  },
+  // hooks: {
+  //   afterAllFileWrite: ['prettier --write'],
+  // },
   generates: {
     'src/__generated__/base-types.ts': {
       plugins: ['typescript'],
