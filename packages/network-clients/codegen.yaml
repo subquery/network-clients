@@ -1,0 +1,32 @@
+schema: 'https://api.subquery.network/sq/subquery/kepler-testnet-subql-project'
+documents:
+  - ./src/graphql/*.ts
+config:
+  preResolveTypes: true
+  namingConvention: keep
+  avoidOptionals: true
+  nonOptionalTypename: true
+  skipTypeNameForRoot: true
+  immutableTypes: true
+  scalars:
+    Date: Date
+    Datetime: Date 
+    BigFloat: bigint | string
+    BigInt: bigint
+    Cursor: string
+generates:
+  src/__generated__/base-types.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+  src/:
+    preset: near-operation-file
+    presetConfig:
+      folder: ../__generated__
+      extensions: .generated.ts
+      baseTypesPath: __generated__/base-types.ts
+    plugins:
+      - typescript-operations
+hooks:
+  afterAllFileWrite:
+    - prettier --write

@@ -6,7 +6,7 @@
   "author": "SubQuery Pte Limited",
   "license": "Apache-2.0",
   "scripts": {
-    "codegen-gql": "graphql-codegen --require dotenv/config --config ./src/codegen.ts",
+    "codegen-gql": "graphql-codegen --require dotenv/config --config codegen.yaml",
     "build": "yarn codegen-gql && tsc -b"
   },
   "dependencies": {
@@ -25,7 +25,6 @@
     "@graphql-codegen/near-operation-file-preset": "^2.4.1",
     "@graphql-codegen/typescript": "^2.7.3",
     "@graphql-codegen/typescript-operations": "^2.5.3",
-    "@graphql-codegen/typescript-react-apollo": "^3.3.3",
     "apollo": "^2.34.0",
     "typescript": "^4.6.4"
   },
