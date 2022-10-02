@@ -10,7 +10,7 @@ export const SERVICE_AGREEMENT_FIELDS = gql`
     indexerAddress
     consumerAddress
     period
-    # lockedAmount
+    lockedAmount
     startTime
     endTime
     deployment {

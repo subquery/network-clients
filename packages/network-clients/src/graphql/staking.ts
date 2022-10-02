@@ -3,22 +3,21 @@
 
 import { gql } from '@apollo/client';
 
-//TODO: generate not working for this query
-// export const GET_WITHDRAWLS = gql`
-//   query GetWithdrawls($delegator: String!, $offset: Int) {
-//     withdrawls(filter: { delegator: { equalTo: $delegator }, status: { equalTo: ONGOING } }, offset: $offset) {
-//       nodes {
-//         id
-//         index
-//         delegator
-//         indexer
-//         startTime
-//         amount
-//         status
-//       }
-//     }
-//   }
-// `;
+export const GET_WITHDRAWLS = gql`
+  query GetWithdrawls($delegator: String!, $offset: Int) {
+    withdrawls(filter: { delegator: { equalTo: $delegator }, status: { equalTo: ONGOING } }, offset: $offset) {
+      nodes {
+        id
+        index
+        delegator
+        indexer
+        startTime
+        amount
+        status
+      }
+    }
+  }
+`;
 
 export const GET_REWARDS = gql`
   query GetRewards($address: String!) {
