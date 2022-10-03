@@ -1,4 +1,4 @@
-schema: 'https://api.subquery.network/sq/subquery/kepler-testnet-subql-project'
+schema: ${KEPLER_SUBQL}
 documents:
   - ./src/graphql/*.ts
 config:
@@ -27,6 +27,6 @@ generates:
       baseTypesPath: __generated__/base-types.ts
     plugins:
       - typescript-operations
-hooks:
-  afterAllFileWrite:
-    - prettier --write
+# hooks:
+#   afterAllFileWrite:
+#     - prettier --write
