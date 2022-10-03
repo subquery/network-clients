@@ -4,4 +4,4 @@
 export * from '@subql/contract-sdk';
 export * from './clients';
 export * from './utils';
-export * from './types';
+export * from './__types__';

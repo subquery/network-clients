@@ -10,11 +10,9 @@ import { wrapApolloResult } from '../utils/apollo';
 import {
   GetDelegationQuery,
   GetDelegationQueryVariables,
-} from '../__generated__/delegations.generated';
-import {
   GetIndexerQuery,
   GetIndexerQueryVariables,
-} from '../__generated__/indexers.generated';
+} from '../__types__';
 
 type ApolloClients = { [key: string]: ApolloClient<unknown> };
 
