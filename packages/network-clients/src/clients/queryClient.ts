@@ -4,11 +4,15 @@
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import fetch from 'cross-fetch';
 import { GqlEndpoint, NetworkConfig } from '../config';
-import { GetIndexer, GetIndexer_indexer } from '../__generated__/GetIndexer';
-import { GET_INDEXER } from '../graphql/indexer';
+import { GET_DELEGATION } from '../graphql/delegations';
+import { GET_INDEXER } from '../graphql/indexers';
 import { wrapApolloResult } from '../utils/apollo';
-import { GET_DELEGATION } from '../graphql/staking';
-import { GetDelegation, GetDelegation_delegation } from '../__generated__/GetDelegation';
+import {
+  GetDelegationQuery,
+  GetDelegationQueryVariables,
+  GetIndexerQuery,
+  GetIndexerQueryVariables,
+} from '../__types__';
 
 type ApolloClients = { [key: string]: ApolloClient<unknown> };
 
@@ -36,9 +40,9 @@ export class GraphqlQueryClient {
 
   // QUERY REGISTRY QUERY FUNCTIONS
 
-  async getIndexer(address: string): Promise<GetIndexer_indexer> {
+  async getIndexer(address: string): Promise<any> {
     const result = await wrapApolloResult(
-      this.explorerClient.query<GetIndexer>({
+      this.explorerClient.query<GetIndexerQuery, GetIndexerQueryVariables>({
         query: GET_INDEXER,
         variables: { address },
       })
@@ -50,9 +54,9 @@ export class GraphqlQueryClient {
     }
   }
 
-  async getDelegation(indexer: string, delegator: string): Promise<GetDelegation_delegation> {
+  async getDelegation(indexer: string, delegator: string): Promise<any> {
     const result = await wrapApolloResult(
-      this.explorerClient.query<GetDelegation>({
+      this.explorerClient.query<GetDelegationQuery, GetDelegationQueryVariables>({
         query: GET_DELEGATION,
         variables: { id: `${indexer}:${delegator}` },
       })

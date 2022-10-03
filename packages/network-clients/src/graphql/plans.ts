@@ -1,17 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { gql } from '@apollo/client/core';
-
-const INDEXER_FIELDS = gql`
-  fragment IndexerFields on Indexer {
-    id
-    metadata
-    controller
-    commission
-    totalStake
-  }
-`;
+import { gql } from '@apollo/client';
 
 export const PLAN_TEMPLATE_FIELDS = gql`
   fragment PlanTemplateFields on PlanTemplate {
@@ -34,33 +24,23 @@ export const PLAN_FIELDS = gql`
   }
 `;
 
-export const GET_INDEXER = gql`
-  ${INDEXER_FIELDS}
-  query GetIndexer($address: String!) {
-    indexer(id: $address) {
-      ...IndexerFields
-    }
-  }
-`;
-
-export const GET_INDEXERS = gql`
-  ${INDEXER_FIELDS}
-  query GetIndexers($offset: Int, $order: IndexersOrderBy = ID_ASC) {
-    indexers(first: 10, offset: $offset, orderBy: [$order]) {
-      nodes {
-        ...IndexerFields
+export const GET_DEPLOYMENT_PLANS = gql`
+  ${PLAN_TEMPLATE_FIELDS}
+  ${PLAN_FIELDS}
+  query GetDeploymentPlans($address: String!, $deploymentId: String!) {
+    plans(
+      filter: {
+        creator: { equalTo: $address }
+        and: [
+          { active: { equalTo: true } }
+          { or: [{ deploymentId: { isNull: true } }, { deploymentId: { equalTo: $deploymentId } }] }
+        ]
       }
-    }
-  }
-`;
-
-export const GET_INDEXER_DELEGATORS = gql`
-  query GetIndexerDelegators($id: String!, $offset: Int) {
-    indexer(id: $id) {
-      delegations(first: 10, offset: $offset) {
-        nodes {
-          delegatorId
-          amount
+    ) {
+      nodes {
+        ...PlanFields
+        planTemplate {
+          ...PlanTemplateFields
         }
       }
     }

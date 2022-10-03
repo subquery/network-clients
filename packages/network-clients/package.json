@@ -6,7 +6,7 @@
   "author": "SubQuery Pte Limited",
   "license": "Apache-2.0",
   "scripts": {
-    "codegen-gql": "apollo client:codegen --endpoint='https://api.subquery.network/sq/subquery/subquery-network-subql-project' --target=typescript --tagName=gql --useReadOnlyTypes --passthroughCustomScalars --customScalarsPrefix=GraphQL_ --outputFlat src/__generated__ --excludes src/schema.gql",
+    "codegen-gql": "graphql-codegen --require dotenv/config --config codegen.yaml",
     "build": "yarn codegen-gql && tsc -b"
   },
   "dependencies": {
@@ -20,7 +20,13 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^2.13.1",
+    "@graphql-codegen/introspection": "^2.2.1",
+    "@graphql-codegen/near-operation-file-preset": "^2.4.1",
+    "@graphql-codegen/typescript": "^2.7.3",
+    "@graphql-codegen/typescript-operations": "^2.5.3",
     "apollo": "^2.34.0",
+    "create-ts-index": "^1.14.0",
     "typescript": "^4.6.4"
   },
   "peerDependencies": {
