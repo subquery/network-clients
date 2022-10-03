@@ -15,18 +15,19 @@ config:
     BigInt: bigint
     Cursor: string
 generates:
-  src/__generated__/base-types.ts:
+  src/types/base-types.ts:
     plugins:
       - typescript
       - typescript-operations
   src/:
     preset: near-operation-file
     presetConfig:
-      folder: ../__generated__
+      folder: ../types
       extensions: .generated.ts
-      baseTypesPath: __generated__/base-types.ts
+      baseTypesPath: types/base-types.ts
     plugins:
       - typescript-operations
-# hooks:
-#   afterAllFileWrite:
-#     - prettier --write
+hooks:
+  afterAllFileWrite:
+    - prettier --write
+    - yarn cti create ./src/types -i base-types --withoutbackup
