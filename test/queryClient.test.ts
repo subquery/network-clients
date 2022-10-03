@@ -6,6 +6,16 @@ import { NETWORK_CONFIGS } from '../packages/network-clients/src/config';
 import assert from 'assert';
 import { GET_INDEXER } from '../packages/network-clients/src/graphql/indexers';
 
+function iterate(obj: any){
+  Object.keys(obj).forEach(key => {
+  assert(obj[key], `field ${key} is undefined`)
+
+  if (typeof obj[key] === 'object' && obj[key] !== null) {
+          iterate(obj[key])
+      }
+  })
+}
+
 describe('query client', () => {
   let client: GraphqlQueryClient;
 
@@ -23,5 +33,7 @@ describe('query client', () => {
     });
 
     assert(result, 'cannot request query GET_INDEXER');
+    iterate(result.data.indexer);
+
   }, 16000)
 });

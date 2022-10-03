@@ -110,3 +110,4 @@ dist
 
 # Generated graphql types
 __types__
+__generated__
