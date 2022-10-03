@@ -107,6 +107,3 @@ dist
 .tern-port
 
 .DS_Store
-
-# Generated graphql types
-__generated__
