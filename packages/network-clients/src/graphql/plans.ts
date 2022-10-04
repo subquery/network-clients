@@ -1,7 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { gql } from '@apollo/client';
+import { gql } from '@apollo/client/core';
 
 export const PLAN_TEMPLATE_FIELDS = gql`
   fragment PlanTemplateFields on PlanTemplate {

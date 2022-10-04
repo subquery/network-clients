@@ -1,7 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client';
+import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
 import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
 import jwt_decode from 'jwt-decode';
 import axios from 'axios';
