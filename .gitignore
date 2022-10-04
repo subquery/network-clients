@@ -108,6 +108,6 @@ dist
 
 .DS_Store
 
-# Generated graphql types
+# Generated graphql types and hooks
 __types__
-__generated__
+__hooks__
