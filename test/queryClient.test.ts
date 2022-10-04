@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { GraphqlQueryClient } from '../packages/network-clients';
-import { NETWORK_CONFIGS } from '../packages/network-clients/src/config';
+import { NETWORK_CONFIGS } from '../packages/network-clients';
 import assert from 'assert';
-import { GET_INDEXER } from '../packages/network-clients/src/graphql/indexers';
+import { GET_INDEXER } from '../packages/network-clients';
 
 function deepAssert(obj: any){
   Object.keys(obj).forEach(key => {
