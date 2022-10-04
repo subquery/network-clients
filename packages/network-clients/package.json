@@ -12,7 +12,6 @@
   "dependencies": {
     "@apollo/client": "^3.6.9",
     "@ethersproject/bignumber": "^5.7.0",
-    "@subql/contract-sdk": "^0.10.2-34",
     "axios": "^0.27.2",
     "buffer": "^6.0.3",
     "cross-fetch": "^3.1.5",
@@ -23,6 +22,7 @@
   "devDependencies": {
     "@graphql-codegen/cli": "^2.13.1",
     "@graphql-codegen/introspection": "^2.2.1",
+    "@subql/contract-sdk": "^0.10.2-34",
     "@graphql-codegen/near-operation-file-preset": "^2.4.1",
     "@graphql-codegen/typescript": "^2.7.3",
     "@graphql-codegen/typescript-operations": "^2.5.3",
