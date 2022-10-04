@@ -24,20 +24,20 @@ export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig | undefined> = {
   [SQNetworks.KEPLER]: {
     gql: {
       [GqlEndpoint.Explorer]:
-        'https://api.subquery.network/sq/subquery/kepler-testnet-subql-project',
+        process.env.KEPLER_SUBQL ?? 'https://api.subquery.network/sq/subquery/kepler-testnet-subql-project',
     },
-    defaultEndpoint: 'https://moonbeam-alpha.api.onfinality.io/public',
+    defaultEndpoint: process.env.KEPLER_RPC ?? 'https://moonbeam-alpha.api.onfinality.io/public',
     sdkOptions: { deploymentDetails },
   },
   [SQNetworks.MAINNET]: undefined,
   [SQNetworks.TESTNET]: {
     gql: {
       [GqlEndpoint.Explorer]:
-        'https://api.subquery.network/sq/subquery/subquery-network-subql-project',
+        process.env.DEFAULT_IPFS_URL ?? 'https://api.subquery.network/sq/subquery/subquery-network-subql-project',
     },
-    defaultEndpoint: 'https://acala-mandala-adapter.api.onfinality.io/public',
+    defaultEndpoint: process.env.TESTNET_RPC ?? 'https://acala-mandala-adapter.api.onfinality.io/public',
     sdkOptions: { deploymentDetails },
   },
 };
 
-export const DEFAULT_IPFS_URL = 'https://interipfs.thechaindata.com/ipfs/api/v0';
+export const DEFAULT_IPFS_URL = process.env.DEFAULT_IPFS_URL ?? 'https://interipfs.thechaindata.com/ipfs/api/v0';

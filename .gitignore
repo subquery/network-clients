@@ -75,10 +75,6 @@ typings/
 .yarn/install-state.gz
 .pnp.*
 
-# dotenv environment variables file
-.env
-.env.test
-
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 
@@ -113,4 +109,5 @@ dist
 .DS_Store
 
 # Generated graphql types
+__types__
 __generated__
