@@ -1,5 +1,4 @@
-
-schema: "https://api.subquery.network/sq/subquery/kepler-testnet-subql-project"
+schema: ${KEPLER_SUBQL}
 documents:
   - ./src/graphql/*.ts
 config:
@@ -16,18 +15,21 @@ config:
     BigInt: bigint
     Cursor: string
 generates:
-  src/__generated__/base-types.ts:
+  src/__hooks__/base-types.ts:
     plugins:
       - typescript
+      - typescript-operations
   src/:
     preset: near-operation-file
     presetConfig:
-      folder: ../__generated__
+      folder: ../__hooks__
       extensions: .generated.ts
-      baseTypesPath: __generated__/base-types.ts
+      baseTypesPath: __hooks__/base-types.ts
+    config: 
+      importOperationTypesFrom: Types
     plugins:
-      - typescript-operations
       - typescript-react-apollo
 hooks:
   afterAllFileWrite:
-    - echo argv[0] >> src/__generated__/index.ts
+    - prettier --write
+    - yarn cti create ./src/__hooks__ -i base-types --withoutbackup
