@@ -4,7 +4,6 @@
 import { BigNumber } from 'ethers';
 
 export * from './ipfs';
-export * from './network';
 
 export function min(a: BigNumber, b: BigNumber): BigNumber {
   return a.lte(b) ? a : b;
