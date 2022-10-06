@@ -171,7 +171,7 @@ describe('query client', () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
       query: GET_ACCEPTED_OFFERS,
-      variables: {$address:address3,$offerId:''},
+      variables: {address:address3,offerId:'1'},
     });
     assert(result, 'cannot request query GET_ACCEPTED_OFFERS');
     expect(result.data).toBeTruthy()
