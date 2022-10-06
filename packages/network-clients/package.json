@@ -1,6 +1,6 @@
 {
   "name": "@subql/network-clients",
-  "version": "0.2.1-6",
+  "version": "0.2.1-9",
   "description": "SubQuery client sdk for network",
   "main": "dist/index.js",
   "author": "SubQuery Pte Limited",
@@ -10,7 +10,7 @@
     "build": "yarn codegen-gql && tsc -b"
   },
   "dependencies": {
-    "@apollo/client": "^3.6.9",
+    "@apollo/client": "^3.7.0",
     "@ethersproject/bignumber": "^5.7.0",
     "axios": "^0.27.2",
     "buffer": "^6.0.3",
@@ -30,7 +30,7 @@
     "typescript": "^4.6.4"
   },
   "peerDependencies": {
-    "@subql/contract-sdk": "^0.10.2-26",
+    "@subql/contract-sdk": "^0.10.2",
     "ipfs-http-client": "^53.0.1"
   }
 }

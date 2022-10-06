@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="17976939-3dc1-4c44-ac6b-f822bb41abd1" name="Changes" comment="resolve code confilct">
+      <change afterPath="$PROJECT_DIR$/packages/network-clients/src/graphql/index.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/packages/network-clients/src/models/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/apollo-links/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/apollo-links/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/apollo-links/src/auth-link/authLink.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/apollo-links/src/auth-link/authLink.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/network-clients/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/network-clients/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/network-clients/src/clients/networkClient.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/network-clients/src/clients/networkClient.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/network-clients/src/graphql/agreements.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/network-clients/src/graphql/agreements.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/network-clients/src/graphql/delegations.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/network-clients/src/graphql/delegations.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/network-clients/src/graphql/deployments.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/network-clients/src/graphql/deployments.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/network-clients/src/graphql/indexers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/network-clients/src/graphql/indexers.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/network-clients/src/graphql/offers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/network-clients/src/graphql/offers.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/network-clients/src/graphql/plans.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/network-clients/src/graphql/plans.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/network-clients/src/graphql/project.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/network-clients/src/graphql/project.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/network-clients/src/graphql/staking.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/network-clients/src/graphql/staking.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/network-clients/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/network-clients/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/network-clients/src/utils/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/network-clients/src/utils/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/network-clients/src/utils/network.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/react-hooks/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/react-hooks/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/react-hooks/src/graphql/agreements.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/react-hooks/src/graphql/agreements.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/react-hooks/src/graphql/delegations.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/react-hooks/src/graphql/delegations.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/react-hooks/src/graphql/deployments.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/react-hooks/src/graphql/deployments.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/react-hooks/src/graphql/indexers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/react-hooks/src/graphql/indexers.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/react-hooks/src/graphql/offers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/react-hooks/src/graphql/offers.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/react-hooks/src/graphql/plans.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/react-hooks/src/graphql/plans.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/react-hooks/src/graphql/project.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/react-hooks/src/graphql/project.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/react-hooks/src/graphql/staking.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/react-hooks/src/graphql/staking.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/networkClient.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/test/networkClient.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/queryClient.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/test/queryClient.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="GOROOT" url="file:///usr/local/go" />
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="feat/support-more-queries" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitToolBoxStore">
+    <option name="recentBranches">
+      <RecentBranches>
+        <option name="branchesForRepo">
+          <list>
+            <RecentBranchesForRepo>
+              <option name="branches">
+                <list>
+                  <RecentBranch>
+                    <option name="branchName" value="feat/queryclient_test" />
+                    <option name="lastUsedInstant" value="1665017948" />
+                  </RecentBranch>
+                  <RecentBranch>
+                    <option name="branchName" value="feat/support-more-queries" />
+                    <option name="lastUsedInstant" value="1665017889" />
+                  </RecentBranch>
+                  <RecentBranch>
+                    <option name="branchName" value="main" />
+                    <option name="lastUsedInstant" value="1665017396" />
+                  </RecentBranch>
+                </list>
+              </option>
+              <option name="repositoryRootUrl" value="file://$PROJECT_DIR$" />
+            </RecentBranchesForRepo>
+          </list>
+        </option>
+      </RecentBranches>
+    </option>
+  </component>
+  <component name="GoLibraries">
+    <option name="indexEntireGoPath" value="true" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2EKdaVaVFn2kaN4kClv76OzCN7b" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.go.format.on.save.advertiser.fired": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+    "RunOnceActivity.go.watchers.conflict.with.on.save.actions.check.performed": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "go.import.settings.migrated": "true",
+    "go.sdk.automatically.set": "true",
+    "last_opened_file_path": "/Users/louise/subqlnetwork/network-clients",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.standard": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.standard": "",
+    "nodejs.jest.jest_package": "/Users/louise/subqlnetwork/network-clients/node_modules/jest",
+    "nodejs_package_manager_path": "yarn",
+    "prettierjs.PrettierConfiguration.Package": "/Users/louise/subqlnetwork/network-clients/node_modules/prettier",
+    "ts.external.directory.path": "/Users/louise/subqlnetwork/network-clients/node_modules/typescript/lib"
+  }
+}]]></component>
+  <component name="RunManager" selected="Jest.query client.can query Delegation detail">
+    <configuration name="query client" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+      <node-interpreter value="project" />
+      <node-options value="" />
+      <jest-package value="$PROJECT_DIR$/node_modules/jest" />
+      <working-dir value="$PROJECT_DIR$" />
+      <envs />
+      <scope-kind value="SUITE" />
+      <test-file value="$PROJECT_DIR$/test/queryClient.test.ts" />
+      <test-names>
+        <test-name value="query client" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <configuration name="query client.can query Delegation detail" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+      <node-interpreter value="project" />
+      <node-options value="" />
+      <jest-package value="$PROJECT_DIR$/node_modules/jest" />
+      <working-dir value="$PROJECT_DIR$" />
+      <envs />
+      <scope-kind value="TEST" />
+      <test-file value="$PROJECT_DIR$/test/queryClient.test.ts" />
+      <test-names>
+        <test-name value="query client" />
+        <test-name value="can query Delegation detail" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <configuration name="query client.can query GET_DEPLOYMENT_INDEXERS_WITH_INDEXER" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+      <node-interpreter value="project" />
+      <node-options value="" />
+      <jest-package value="$PROJECT_DIR$/node_modules/jest" />
+      <working-dir value="$PROJECT_DIR$" />
+      <envs />
+      <scope-kind value="TEST" />
+      <test-file value="$PROJECT_DIR$/test/queryClient.test.ts" />
+      <test-names>
+        <test-name value="query client" />
+        <test-name value="can query GET_DEPLOYMENT_INDEXERS_WITH_INDEXER" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <configuration name="query client.can query get accepted offer" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+      <node-interpreter value="project" />
+      <node-options value="" />
+      <jest-package value="$PROJECT_DIR$/node_modules/jest" />
+      <working-dir value="$PROJECT_DIR$" />
+      <envs />
+      <scope-kind value="TEST" />
+      <test-file value="$PROJECT_DIR$/test/queryClient.test.ts" />
+      <test-names>
+        <test-name value="query client" />
+        <test-name value="can query get accepted offer" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <configuration name="query client.can query project agreements" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+      <node-interpreter value="project" />
+      <node-options value="" />
+      <jest-package value="$PROJECT_DIR$/node_modules/jest" />
+      <working-dir value="$PROJECT_DIR$" />
+      <envs />
+      <scope-kind value="TEST" />
+      <test-file value="$PROJECT_DIR$/test/queryClient.test.ts" />
+      <test-names>
+        <test-name value="query client" />
+        <test-name value="can query project agreements" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Jest.query client.can query Delegation detail" />
+        <item itemvalue="Jest.query client" />
+        <item itemvalue="Jest.query client.can query project agreements" />
+        <item itemvalue="Jest.query client.can query GET_DEPLOYMENT_INDEXERS_WITH_INDEXER" />
+        <item itemvalue="Jest.query client.can query get accepted offer" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="17976939-3dc1-4c44-ac6b-f822bb41abd1" name="Changes" comment="" />
+      <created>1662348274033</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1662348274033</updated>
+      <workItem from="1662348275299" duration="291000" />
+      <workItem from="1663631913454" duration="1759000" />
+      <workItem from="1663808763544" duration="2280000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="add jest test for queryClient" />
+    <MESSAGE value="resolve code confilct" />
+    <option name="LAST_COMMIT_MESSAGE" value="resolve code confilct" />
+  </component>
+  <component name="VgoProject">
+    <integration-enabled>false</integration-enabled>
+    <settings-migrated>true</settings-migrated>
+  </component>
+</project>

@@ -1,0 +1,184 @@
+Index: packages/network-clients/src/clients/networkClient.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>// Copyright 2020-2022 SubQuery Pte Ltd authors & contributors\n// SPDX-License-Identifier: Apache-2.0\n\nimport { ContractSDK } from '@subql/contract-sdk';\nimport type { Provider as AbstractProvider } from '@ethersproject/abstract-provider';\nimport { Signer, providers } from 'ethers';\nimport { BigNumber } from '@ethersproject/bignumber';\n\nimport { ContractClient } from './contractClient';\nimport { IPFSClient } from './ipfsClient';\nimport { GraphqlQueryClient } from './queryClient';\n\nimport { isCID, min } from '../utils';\nimport { DEFAULT_IPFS_URL, NETWORK_CONFIGS, SQNetworks } from '../config';\nimport assert from 'assert';\nimport { Indexer, IndexerMetadata } from '../models/indexer';\nimport { parseRawEraValue } from '../utils/parseEraValue';\nimport { formatEther } from 'ethers/lib/utils';\n\ntype Provider = AbstractProvider | Signer;\n\nexport class NetworkClient {\n  private _contractClient: ContractClient;\n  private _ipfs: IPFSClient;\n\n  constructor(private _sdk: ContractSDK, private _gqlClient: GraphqlQueryClient, ipfsUrl?: string) {\n    this._ipfs = new IPFSClient(ipfsUrl ?? DEFAULT_IPFS_URL);\n    this._contractClient = new ContractClient(_sdk);\n  }\n\n  public static async create(network: SQNetworks, provider?: Provider, ipfsUrl?: string) {\n    const config = NETWORK_CONFIGS[network];\n    assert(config, `config for ${network} is missing`);\n    const sdk = await ContractSDK.create(\n      provider ?? new providers.StaticJsonRpcProvider(config.defaultEndpoint),\n      config.sdkOptions\n    );\n    const gqlClient = new GraphqlQueryClient(config);\n    return new NetworkClient(sdk, gqlClient, ipfsUrl);\n  }\n\n  public async getIndexer(address: string): Promise<Indexer> {\n    const currentEra = await this._sdk.eraManager.eraNumber();\n    const leverageLimit = await this._sdk.staking.indexerLeverageLimit();\n    const {\n      controller,\n      commission,\n      totalStake,\n      metadata: cid,\n    } = await this._gqlClient.getIndexer(address);\n    const { amount: ownStake } = await this._gqlClient.getDelegation(address, address);\n\n    const metadata = cid ? await this._ipfs.getJSON<IndexerMetadata>(cid) : undefined;\n\n    const sortedTotalStake = parseRawEraValue(totalStake, currentEra.toNumber());\n    const sortedOwnStake = parseRawEraValue(ownStake, currentEra.toNumber());\n\n    const delegated = {\n      current: sortedTotalStake.current.sub(sortedTotalStake.current),\n      after: sortedTotalStake.after.sub(sortedTotalStake.after),\n    };\n\n    const capacity = {\n      current:\n        sortedOwnStake.current.mul(leverageLimit).sub(sortedTotalStake.current) ||\n        BigNumber.from(0),\n      after:\n        sortedOwnStake.after.mul(leverageLimit).sub(sortedTotalStake.after) || BigNumber.from(0),\n    };\n\n    return {\n      metadata,\n      address,\n      controller,\n      commission: parseRawEraValue(commission, currentEra.toNumber()),\n      totalStake: sortedTotalStake,\n      ownStake: sortedOwnStake,\n      delegated,\n      capacity,\n    };\n  }\n\n  // public async indexerMetadata(indexer: string): Promise<IndexerMetadata> {\n  //   if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);\n  //\n  //   const metadataBytes32 = await this._sdk.indexerRegistry.metadataByIndexer(indexer);\n  //   if (!metadataBytes32 || metadataBytes32 === constants.HashZero) {\n  //     throw new Error('Empty indexer metadata');\n  //   }\n  //\n  //   const cid = bytes32ToCid(metadataBytes32);\n  //   const metadataStr = await this._ipfs.cat(cid);\n  //   return JSON.parse(metadataStr);\n  // }\n\n  public async maxUnstakeAmount(address: string): Promise<BigNumber> {\n    const currentEra = await this._sdk.eraManager.eraNumber();\n    const leverageLimit = await this._sdk.staking.indexerLeverageLimit();\n    const minStakingAmount = await this._sdk.indexerRegistry.minimumStakingAmount();\n\n    const { totalStake } = await this._gqlClient.getIndexer(address);\n    const { amount: ownStake } = await this._gqlClient.getDelegation(address, address);\n\n    const sortedTotalStake = parseRawEraValue(totalStake, currentEra.toNumber());\n    const sortedOwnStake = parseRawEraValue(ownStake, currentEra.toNumber());\n\n    const totalStakingAmountAfter = BigNumber.from(sortedTotalStake?.after ?? 0);\n    const ownStakeAfter = BigNumber.from(sortedOwnStake?.after ?? 0);\n\n    if (leverageLimit.eq(1)) return ownStakeAfter.sub(minStakingAmount);\n\n    const maxUnstakeAmount = min(\n      ownStakeAfter.sub(minStakingAmount),\n      (ownStakeAfter.mul(leverageLimit).sub(totalStakingAmountAfter)).div(leverageLimit.sub(1))\n    );\n\n    return maxUnstakeAmount.isNegative() ? BigNumber.from(0) : maxUnstakeAmount;\n  }\n\n  public async projectMetadata(cid: string) {\n    if (!isCID(cid)) throw new Error(`Invalid cid: ${cid}`);\n    // get project metadata\n    // cat project metadata\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/packages/network-clients/src/clients/networkClient.ts b/packages/network-clients/src/clients/networkClient.ts
+--- a/packages/network-clients/src/clients/networkClient.ts	(revision 41a531f45bd0111c83448cf80edbf968a1e10eb1)
++++ b/packages/network-clients/src/clients/networkClient.ts	(date 1664852695009)
+@@ -122,4 +122,4 @@
+     // get project metadata
+     // cat project metadata
+   }
+-}
++}
+\ No newline at end of file
+Index: test/queryClient.test.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>// Copyright 2020-2022 SubQuery Pte Ltd authors & contributors\n// SPDX-License-Identifier: Apache-2.0\n\nimport { GraphqlQueryClient } from '../packages/network-clients';\nimport { NETWORK_CONFIGS } from '../packages/network-clients/src/config';\nimport assert from 'assert';\nimport { GET_INDEXER } from '../packages/network-clients/src/graphql/indexers';\n\nfunction iterate(obj: any){\n  Object.keys(obj).forEach(key => {\n  assert(obj[key], `field ${key} is undefined`)\n\n  if (typeof obj[key] === 'object' && obj[key] !== null) {\n          iterate(obj[key])\n      }\n  })\n}\n\ndescribe('query client', () => {\n  let client: GraphqlQueryClient;\n\n  beforeAll(async () => {\n    const config = NETWORK_CONFIGS.kepler;\n    assert(config, 'network config not defined');\n    client = new GraphqlQueryClient(config);\n  }, 160000);\n\n  it('can query indexer detail', async () => {\n    const apolloClient = client.explorerClient;\n    const result = await apolloClient.query({\n      query: GET_INDEXER,\n      variables: { address: '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04' },\n    });\n\n    assert(result, 'cannot request query GET_INDEXER');\n    iterate(result.data.indexer);\n\n  }, 16000)\n});\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/test/queryClient.test.ts b/test/queryClient.test.ts
+--- a/test/queryClient.test.ts	(revision 41a531f45bd0111c83448cf80edbf968a1e10eb1)
++++ b/test/queryClient.test.ts	(date 1664856464663)
+@@ -5,6 +5,23 @@
+ import { NETWORK_CONFIGS } from '../packages/network-clients/src/config';
+ import assert from 'assert';
+ import { GET_INDEXER } from '../packages/network-clients/src/graphql/indexers';
++import {
++  GET_ALL_DELEGATIONS,
++  GET_DELEGATION,
++  GET_DELEGATOR,
++  GET_INDEXER_DELEGATORS
++} from "@subql/network-clients/dist/graphql/delegations";
++import {
++  GET_EXPIRED_SERVICE_AGREEMENTS,
++  GET_SERVICE_AGREEMENTS,
++  GET_SPECIFIC_SERVICE_AGREEMENTS
++} from "@subql/network-clients/dist/graphql/agreements";
++import {
++  GET_ACCEPTED_OFFERS,
++  GET_DEPLOYMENT,
++  GET_DEPLOYMENT_INDEXERS,
++  GET_DEPLOYMENT_INDEXERS_WITH_INDEXER
++} from "@subql/network-clients/dist/graphql/deployments";
+ 
+ function iterate(obj: any){
+   Object.keys(obj).forEach(key => {
+@@ -18,6 +35,7 @@
+ 
+ describe('query client', () => {
+   let client: GraphqlQueryClient;
++  const date: Date = new Date();
+ 
+   beforeAll(async () => {
+     const config = NETWORK_CONFIGS.kepler;
+@@ -34,6 +52,122 @@
+ 
+     assert(result, 'cannot request query GET_INDEXER');
+     iterate(result.data.indexer);
++  }, 16000)
++
++  it('can query indexer delegator', async () => {
++    const apolloClient = client.explorerClient;
++    const result = await apolloClient.query({
++      query: GET_INDEXER_DELEGATORS,
++      variables: { id:'0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04' },
++    });
++    assert(result, 'cannot request query GET_INDEXER_DELEGATORS');
++    iterate(result.data.indexer);
++    console.log(result.data.indexer.delegations)
++    expect(result.data.indexer.delegations.nodes).toBeTruthy()
++    expect(result.data.indexer.delegation).toBeUndefined()
++  }, 16000)
++
++  it('can query Delegation detail', async () => {
++    const apolloClient = client.explorerClient;
++    const result = await apolloClient.query({
++      query: GET_DELEGATION,
++      variables: { id: '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04:0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04' },
++    });
++    assert(result, 'cannot request query GET_DELEGATION');
++    iterate(result.data.delegation);
++  }, 16000)
+ 
++  it('can query delegator detail', async () => {
++    const apolloClient = client.explorerClient;
++    const result = await apolloClient.query({
++      query: GET_DELEGATOR,
++      variables: { address:'0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04' },
++    });
++    assert(result, 'cannot request query GET_DELEGATOR');
++    iterate(result.data.delegator);
++    expect(result.data.delegator).toBeTruthy()
++  }, 16000)
++
++  it('can query all delegations', async () => {
++    const apolloClient = client.explorerClient;
++    const result = await apolloClient.query({
++      query: GET_ALL_DELEGATIONS,
++      variables: {},
++    });
++    assert(result, 'cannot request query GET_ALL_DELEGATIONS');
++    expect(result.data.delegations.nodes).toBeTruthy()
++  }, 16000)
++
++  it('can query indexer agreements', async () => {
++    const apolloClient = client.explorerClient;
++    const result = await apolloClient.query({
++      query: GET_SERVICE_AGREEMENTS,
++      variables: {address:'0xa40987037547C2cc5df0b06fFe52B7FdCCB7D4FC',now:date},
++    });
++    assert(result, 'cannot request query GET_SERVICE_AGREEMENTS');
++    console.log(result.data.serviceAgreements.nodes)
++    expect(result.data.serviceAgreements).toBeTruthy()
++  }, 16000)
++
++  it('can query expired agreements', async () => {
++    const apolloClient = client.explorerClient;
++    const result = await apolloClient.query({
++      query: GET_EXPIRED_SERVICE_AGREEMENTS,
++      variables: {address:'0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04',now:date},
++    });
++    assert(result, 'cannot request query GET_EXPIRED_SERVICE_AGREEMENTS');
++    expect(result.data.serviceAgreements.nodes).toBeTruthy()
++  }, 16000)
++
++  it('can query project agreements', async () => {
++    const apolloClient = client.explorerClient;
++    const result = await apolloClient.query({
++      query: GET_SPECIFIC_SERVICE_AGREEMENTS,
++      variables: {deploymentId:'Qmdpka4MpaUtGP7B3AAoPji4H6X7a2ir53a1mxnUumqMm4',now:date},
++    });
++    assert(result, 'cannot request query GET_SPECIFIC_SERVICE_AGREEMENTS');
++    console.log(result.data.serviceAgreements.nodes)
++    expect(result.data.serviceAgreements.nodes).toBeTruthy()
++  }, 16000)
++
++  it('can query deployment by projectCid', async () => {
++    const apolloClient = client.explorerClient;
++    const result = await apolloClient.query({
++      query: GET_DEPLOYMENT,
++      variables: {deploymentId:'Qmdpka4MpaUtGP7B3AAoPji4H6X7a2ir53a1mxnUumqMm4'},
++    });
++    assert(result, 'cannot request query GET_DEPLOYMENT');
++    expect(result.data.deployment.id).toEqual('Qmdpka4MpaUtGP7B3AAoPji4H6X7a2ir53a1mxnUumqMm4')
++  }, 16000)
++
++  it('can query deploymnet indexer', async () => {
++    const apolloClient = client.explorerClient;
++    const result = await apolloClient.query({
++      query: GET_DEPLOYMENT_INDEXERS,
++      variables: {deploymentId:'Qmdpka4MpaUtGP7B3AAoPji4H6X7a2ir53a1mxnUumqMm4'},
++    });
++    assert(result, 'cannot request query GET_DEPLOYMENT_INDEXERS');
++    expect(result.data.deploymentIndexers.totalCount).toEqual(2)
++  }, 16000)
++
++  it('can query GET_DEPLOYMENT_INDEXERS_WITH_INDEXER', async () => {
++    const apolloClient = client.explorerClient;
++    const result = await apolloClient.query({
++      query: GET_DEPLOYMENT_INDEXERS_WITH_INDEXER,
++      variables: {indexerAddress:'0xf9e4E6307a3186991F153249294815228D3a4634'},
++    });
++    assert(result, 'cannot request query GET_DEPLOYMENT_INDEXERS_WITH_INDEXER');
++    expect(result.data.deploymentIndexers).toBeTruthy()
++  }, 16000)
++
++  it('can query get accepted offer', async () => {
++    const apolloClient = client.explorerClient;
++    const result = await apolloClient.query({
++      query: GET_ACCEPTED_OFFERS,
++      variables: {$address:'0xf9e4E6307a3186991F153249294815228D3a4634',$offerId:''},
++    });
++    assert(result, 'cannot request query GET_ACCEPTED_OFFERS');
++    console.log(result.data)
++    expect(result.data).toBeTruthy()
+   }, 16000)
+ });
+diff --git a/.idea/.gitignore b/.idea/.gitignore
+new file mode 100644

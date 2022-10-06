@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { GraphqlQueryClient } from '../packages/network-clients';
-import { NETWORK_CONFIGS } from '../packages/network-clients/src/config';
+import { NETWORK_CONFIGS } from '../packages/network-clients';
 import assert from 'assert';
 import { GET_INDEXER } from "../packages/network-clients/src/graphql/indexers";
 import { GET_INDEXERS } from "../packages/network-clients/src/graphql/indexers";

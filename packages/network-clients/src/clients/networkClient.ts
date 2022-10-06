@@ -15,7 +15,6 @@ import { DEFAULT_IPFS_URL, NETWORK_CONFIGS, SQNetworks } from '../config';
 import assert from 'assert';
 import { Indexer, IndexerMetadata } from '../models/indexer';
 import { parseRawEraValue } from '../utils/parseEraValue';
-import { formatEther } from 'ethers/lib/utils';
 
 type Provider = AbstractProvider | Signer;
 
