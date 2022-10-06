@@ -155,7 +155,6 @@ describe('query client', () => {
       variables: {deploymentId:projectId},
     });
     assert(result, 'cannot request query GET_DEPLOYMENT_INDEXERS');
-    console.log(result.data)
   }, 16000)
 
   it('can query GET_DEPLOYMENT_INDEXERS_WITH_INDEXER', async () => {
@@ -175,7 +174,6 @@ describe('query client', () => {
       variables: {$address:address3,$offerId:''},
     });
     assert(result, 'cannot request query GET_ACCEPTED_OFFERS');
-    console.log(result.data)
     expect(result.data).toBeTruthy()
   }, 16000)
 
@@ -187,7 +185,6 @@ describe('query client', () => {
     });
     assert(result, 'cannot request query GET_INDEXERS');
     expect(result.data.indexers).toBeTruthy()
-    deepAssert(result.data)
   }, 16000)
 
   it('can query get own offer', async () => {
@@ -197,7 +194,6 @@ describe('query client', () => {
       variables: {consumer:consumer,now:date},
     });
     assert(result, 'cannot request query GET_OWN_OPEN_OFFERS');
-    console.log(result.data)
     expect(result.data).toBeTruthy()
   }, 16000)
 
@@ -208,7 +204,6 @@ describe('query client', () => {
       variables: {consumer:consumer,now:date},
     });
     assert(result, 'cannot request query GET_OWN_EXPIRED_OFFERS');
-    console.log(result.data)
     expect(result.data.offers).toBeDefined()
   }, 16000)
 
@@ -239,7 +234,6 @@ describe('query client', () => {
       variables: {deploymentId:projectId2,now:date},
     });
     assert(result, 'cannot request query GET_SPECIFIC_OPEN_OFFERS');
-    console.log(result.data)
     expect(result.data).toBeDefined()
   }, 16000)
 
