@@ -1,6 +1,6 @@
 schema: ${KEPLER_SUBQL}
 documents:
-  - ./src/graphql/*.ts
+  - node_modules/@subql/network-query/documents/registry/*.gql
 config:
   preResolveTypes: true
   namingConvention: keep
@@ -22,11 +22,14 @@ generates:
   src/:
     preset: near-operation-file
     presetConfig:
-      folder: ../__types__
+      folder: ../../../../../src/__types__
       extensions: .generated.ts
       baseTypesPath: __types__/base-types.ts
+    config: 
+      importOperationTypesFrom: Types
     plugins:
       - typescript-operations
+      - typescript-document-nodes #This will create queries that we need for tests
 hooks:
   afterAllFileWrite:
     - prettier --write

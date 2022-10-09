@@ -1,6 +1,6 @@
 schema: ${KEPLER_SUBQL}
 documents:
-  - ./src/graphql/*.ts
+  - node_modules/@subql/network-query/documents/registry/*.gql
 config:
   preResolveTypes: true
   namingConvention: keep
@@ -22,7 +22,7 @@ generates:
   src/:
     preset: near-operation-file
     presetConfig:
-      folder: ../__hooks__
+      folder: ../../../../../src/__hooks__
       extensions: .generated.ts
       baseTypesPath: __hooks__/base-types.ts
     config: 
