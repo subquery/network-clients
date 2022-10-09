@@ -1,10 +1,10 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GraphqlQueryClient } from '../packages/network-clients';
-import { NETWORK_CONFIGS } from '../packages/network-clients';
+import { GraphqlQueryClient } from '../packages/network-clients/src';
+import { NETWORK_CONFIGS } from '../packages/network-clients/src';
 import assert from 'assert';
-import { GET_INDEXER } from '../packages/network-clients';
+import { GetIndexer } from '../packages/network-clients/src';
 
 function deepAssert(obj: any){
   Object.keys(obj).forEach(key => {
@@ -25,7 +25,7 @@ describe('query client', () => {
   it('can query indexer detail', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_INDEXER,
+      query: GetIndexer,
       variables: { address: '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04' },
     });
 

@@ -42,6 +42,11 @@ jobs:
           paths: packages/network-clients
 
       - uses: marceloprado/has-changed-path@v1
+        id: changed-network-queries
+        with:
+          paths: packages/network-queries
+
+      - uses: marceloprado/has-changed-path@v1
         id: changed-react-hooks
         with:
           paths: packages/react-hooks
@@ -61,6 +66,13 @@ jobs:
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/network-clients
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump network-queries & deploy
+        if: steps.changed-network-queries.outputs.changed == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/network-queries
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump react-hooks & deploy
