@@ -1,0 +1,83 @@
+
+fragment PlanTemplateFields on PlanTemplate {
+  id
+  period
+  dailyReqCap
+  rateLimit
+  metadata
+  active
+}
+
+fragment PlanFields on Plan {
+  id
+  active
+  creator
+  deploymentId
+  price
+}
+
+query GetDeploymentPlans($address: String!, $deploymentId: String!) {
+  plans(
+    filter: {
+      creator: { equalTo: $address }
+      and: [
+        { active: { equalTo: true } }
+        { or: [{ deploymentId: { isNull: true } }, { deploymentId: { equalTo: $deploymentId } }] }
+      ]
+    }
+  ) {
+    nodes {
+      ...PlanFields
+      planTemplate {
+        ...PlanTemplateFields
+      }
+    }
+  }
+}
+
+query GetPlanTemplates($offset: Int) {
+  planTemplates(first: 10, offset: $offset, filter: { active: { equalTo: true } }) {
+    nodes {
+      ...PlanTemplateFields
+    }
+  }
+}
+
+query GetPlans($address: String!) {
+  plans(
+    filter: {
+      creator: { equalTo: $address }
+      and: { deploymentId: { isNull: true } }
+      active: { equalTo: true }
+    }
+  ) {
+    nodes {
+      ...PlanFields
+      planTemplate {
+        ...PlanTemplateFields
+      }
+    }
+  }
+}
+
+query GetSpecificPlans($address: String) {
+  deploymentIndexers(filter: { indexerId: { equalTo: $address } }) {
+    nodes {
+      deployment {
+        id
+        project {
+          id
+          metadata
+        }
+        plans(filter: { creator: { equalTo: $address }, and: { active: { equalTo: true } } }) {
+          nodes {
+            ...PlanFields
+            planTemplate {
+              ...PlanTemplateFields
+            }
+          }
+        }
+      }
+    }
+  }
+}

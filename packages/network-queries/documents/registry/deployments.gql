@@ -1,0 +1,68 @@
+fragment DeploymentIndexerFields on DeploymentIndexer {
+  id
+  indexerId
+  deploymentId
+  blockHeight
+  timestamp
+  status
+  indexer {
+    metadata
+  }
+}
+
+query GetDeployment($deploymentId: String!) {
+  deployment(id: $deploymentId) {
+    id
+    version
+    project {
+      id
+      metadata
+    }
+  }
+}
+
+query GetDeploymentIndexers($offset: Int, $deploymentId: String!) {
+  deploymentIndexers(
+    first: 20
+    offset: $offset
+    filter: { deploymentId: { equalTo: $deploymentId }, status: { notEqualTo: TERMINATED } }
+  ) {
+    totalCount
+    nodes {
+      ...DeploymentIndexerFields
+    }
+  }
+}
+
+query GetDeploymentIndexer($indexerAddress: String!, $deploymentId: String!) {
+  deploymentIndexers(
+    filter: { indexerId: { equalTo: $indexerAddress }, deploymentId: { equalTo: $deploymentId } }
+  ) {
+    nodes {
+      ...DeploymentIndexerFields
+    }
+  }
+}
+
+query GetDeploymentIndexersByIndexer($indexerAddress: String!) {
+  deploymentIndexers(filter: { indexerId: { equalTo: $indexerAddress } }) {
+    nodes {
+      ...DeploymentIndexerFields
+      deployment {
+        id
+        project {
+          id
+          metadata
+        }
+      }
+    }
+  }
+}
+
+query GetAcceptedOffers($address: String!, $offerId: String!) {
+  acceptedOffers(filter: { indexerId: { equalTo: $address }, offerId: { equalTo: $offerId } }) {
+    nodes {
+      id
+    }
+  }
+}

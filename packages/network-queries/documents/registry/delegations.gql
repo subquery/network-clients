@@ -1,0 +1,54 @@
+
+query GetIndexerDelegators($id: String!, $offset: Int) {
+  indexer(id: $id) {
+    delegations(offset: $offset, filter: { delegatorId: { notEqualTo: $id } }) {
+      nodes {
+        delegatorId
+        amount
+      }
+    }
+  }
+}
+
+query GetDelegation($id: String!) {
+  delegation(id: $id) {
+    amount
+  }
+}
+
+query GetAllDelegations($offset: Int) {
+  delegations(offset: $offset) {
+    nodes {
+      id
+      delegatorId
+      indexerId
+      amount
+      indexer {
+        metadata
+      }
+    }
+  }
+}
+
+query GetDelegator($address: String!) {
+  delegator(id: $address) {
+    id
+    totalDelegations
+  }
+}
+
+query GetDelegations($delegator: String!, $offset: Int) {
+  delegations(filter: { delegatorId: { equalTo: $delegator } }, offset: $offset) {
+    totalCount
+    nodes {
+      id
+      delegatorId
+      indexerId
+      amount
+      indexer {
+        metadata
+        active
+      }
+    }
+  }
+}

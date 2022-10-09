@@ -1,0 +1,14 @@
+
+query GetOrders($swapFrom: String!, $now: Datetime!) {
+  orders(
+    orderBy: EXPIRE_DATE_DESC
+    filter: { status: { equalTo: ACTIVE }, expireDate: { greaterThan: $now }, tokenGive: { equalTo: $swapFrom } }
+  ) {
+    totalCount
+    nodes {
+      id
+      sender
+      status
+    }
+  }
+}
