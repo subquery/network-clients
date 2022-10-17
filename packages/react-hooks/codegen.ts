@@ -8,7 +8,7 @@ dotenv.config();
 
 const config: CodegenConfig = {
   schema: process.env.KEPLER_SUBQL,
-  documents: './node_modules/@subql/network-query/documents/registry/*.gql',
+  documents: '../../node_modules/@subql/network-query/documents/registry/*.gql',
   config: {
     preResolveTypes: true,
     namingConvention: 'keep',
@@ -31,7 +31,7 @@ const config: CodegenConfig = {
     'src/': {
       preset: 'near-operation-file',
       presetConfig: {
-        folder: '../../../../../src/__hooks__',
+        folder: '../../../../../packages/react-hooks/src/__hooks__',
         extensions: '.generated.ts',
         baseTypesPath: '__hooks__/base-types.ts'
       },

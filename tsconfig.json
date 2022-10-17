@@ -24,10 +24,9 @@
     "types": ["node", "jest"],
     "baseUrl": ".",
     "paths": {
-      "@subql/network-clients": ["@subql/network-clients/src"]
+      "@network-clients": ["./packages/network-clients/src"]
     }
   },
   "include": ["packages/**/*","test"],
   "exclude": ["**/node_modules/**"],
-
 }
