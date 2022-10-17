@@ -4,11 +4,11 @@
 export default {
     projects: {
         registry: {
-            documents: 'packages/network-queries/documents/registry/*.gql',
+            documents: 'packages/network-query/documents/registry/*.gql',
             schema: 'https://api.subquery.network/sq/subquery/kepler-testnet-subql-project'
         },
         exchange: {
-            documents: 'packages/network-queries/documents/exchange/*.gql',
+            documents: 'packages/network-query/documents/exchange/*.gql',
             schema: 'https://api.subquery.network/sq/subquery/kepler-testnet-exchange-project'
         }
     }

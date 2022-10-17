@@ -42,9 +42,9 @@ jobs:
           paths: packages/network-clients
 
       - uses: marceloprado/has-changed-path@v1
-        id: changed-network-queries
+        id: changed-network-query
         with:
-          paths: packages/network-queries
+          paths: packages/network-query
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-react-hooks
@@ -70,11 +70,11 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish network-queries
-        if: steps.changed-network-queries.outputs.changed == 'true'
+      - name: Publish network-query
+        if: steps.changed-network-query.outputs.changed == 'true'
         uses: ./.github/actions/create-release
         with:
-          package-path: packages/network-queries
+          package-path: packages/network-query
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 
