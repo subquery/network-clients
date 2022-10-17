@@ -1,0 +1,38 @@
+# Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
+# SPDX-License-Identifier: Apache-2.0
+
+fragment ProjectFields on Project {
+  id
+  owner
+  metadata
+  currentVersion
+  currentDeployment
+  updatedTimestamp
+  createdTimestamp
+}
+
+query GetProject($id: String!) {
+  project(id: $id) {
+    ...ProjectFields
+  }
+}
+
+query GetProjects($offset: Int) {
+  projects(first: 10, offset: $offset) {
+    nodes {
+      ...ProjectFields
+    }
+  }
+}
+
+query GetProjectDeployments($projectId: String!) {
+  project(id: $projectId) {
+    deployments {
+      nodes {
+        id
+        version
+        createdTimestamp
+      }
+    }
+  }
+}
