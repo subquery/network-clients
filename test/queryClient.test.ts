@@ -1,8 +1,8 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GetAllDelegations, GraphqlQueryClient } from '@network-clients';
-import { NETWORK_CONFIGS } from '@network-clients';
+import { GetAllDelegations, GraphqlQueryClient } from '@subql/network-clients';
+import { NETWORK_CONFIGS } from '@subql/network-clients';
 import assert from 'assert';
 import {
   GetDelegation,
