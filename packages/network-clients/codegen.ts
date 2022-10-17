@@ -25,13 +25,13 @@ const config: CodegenConfig = {
     }
   },
   generates: {
-    'src/__hooks__/base-types.ts': {
+    'src/__types__/base-types.ts': {
       plugins: ['typescript', 'typescript-operations']
     },
     'src/': {
       preset: 'near-operation-file',
       presetConfig: {
-        folder: '../../../../../packages/react-hooks/src/__types__',
+        folder: '../../../../../packages/network-clients/src/__types__',
         extensions: '.generated.ts',
         baseTypesPath: '__types__/base-types.ts'
       },
