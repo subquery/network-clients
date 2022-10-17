@@ -22,7 +22,12 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "types": ["node", "jest"],
+    "baseUrl": ".",
+    "paths": {
+      "@subql/network-clients": ["@subql/network-clients/src"]
+    }
   },
   "include": ["packages/**/*","test"],
-  "exclude": ["**/node_modules/**"]
+  "exclude": ["**/node_modules/**"],
+
 }
