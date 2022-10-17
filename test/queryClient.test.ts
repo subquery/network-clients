@@ -1,11 +1,10 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GraphqlQueryClient } from '@subql/network-clients/src';
+import { GetAllDelegations, GraphqlQueryClient } from '@subql/network-clients/src';
 import { NETWORK_CONFIGS } from '@subql/network-clients/src';
 import assert from 'assert';
 import {
-  GetDelegations,
   GetDelegation,
   GetIndexer,
   GetIndexers,
@@ -101,8 +100,8 @@ describe('query client', () => {
   it('can query all delegations', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GetDelegations,
-      variables: {},
+      query: GetAllDelegations,
+      variables: { },
     });
     assert(result, 'cannot request query GET_ALL_DELEGATIONS');
     deepAssert(result.data.delegations);
@@ -149,7 +148,7 @@ describe('query client', () => {
     expect(result.data.deployment.id).toEqual(projectId)
   }, 16000)
 
-  it('can query deploymnet indexer', async () => {
+  it('can query deployment indexer', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
       query: GetDeploymentIndexers,
