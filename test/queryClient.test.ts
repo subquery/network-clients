@@ -10,27 +10,27 @@ import {
   GetIndexers,
   GetDelegator,
   GetIndexerDelegators
-} from "@network-clients";
+} from "@subql/network-clients";
 import {
   GetExpiredServiceAgreements,
   GetOngoingServiceAgreements,
   GetSpecificServiceAgreements
-} from "@network-clients";
+} from "@subql/network-clients";
 import {
   GetAcceptedOffers,
   GetDeployment,
   GetDeploymentIndexers,
   GetDeploymentIndexersByIndexer
-} from "@network-clients";
+} from "@subql/network-clients";
 import {
   GetAllOpenOffers,
   GetOwnExpiredOffers,
   GetOwnOpenOffers, 
   GetSpecificOpenOffers
-} from "@network-clients";
-import { GetDeploymentPlans, GetPlanTemplates, GetPlans } from "@network-clients";
-import { GetProject, GetProjectDeployments, GetProjects } from "@network-clients";
-import { GetIndexerRewards, GetRewards, GetWithdrawls } from "@network-clients";
+} from "@subql/network-clients";
+import { GetDeploymentPlans, GetPlanTemplates, GetPlans } from "@subql/network-clients";
+import { GetProject, GetProjectDeployments, GetProjects } from "@subql/network-clients";
+import { GetIndexerRewards, GetRewards, GetWithdrawls } from "@subql/network-clients";
 
 function deepAssert(obj: any){
   Object.keys(obj).forEach(key => {

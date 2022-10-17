@@ -22,10 +22,6 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "types": ["node", "jest"],
-    "baseUrl": ".",
-    "paths": {
-      "@network-clients": ["./packages/network-clients/src"]
-    }
   },
   "include": ["packages/**/*","test"],
   "exclude": ["**/node_modules/**"],
