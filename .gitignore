@@ -111,3 +111,6 @@ dist
 # Generated graphql types and hooks
 __types__
 __hooks__
+
+# idea
+.idea
