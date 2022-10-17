@@ -6,4 +6,4 @@ export * from './clients';
 export * from './models';
 export * from './utils';
 export * from './config';
-export * from './__types__';
+export * from './__graphql__';

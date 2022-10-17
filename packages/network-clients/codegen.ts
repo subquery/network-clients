@@ -25,15 +25,15 @@ const config: CodegenConfig = {
     }
   },
   generates: {
-    'src/__types__/base-types.ts': {
+    'src/__graphql__/base-types.ts': {
       plugins: ['typescript', 'typescript-operations']
     },
     'src/': {
       preset: 'near-operation-file',
       presetConfig: {
-        folder: '../../../../../packages/network-clients/src/__types__',
+        folder: '../../../../../packages/network-clients/src/__graphql__',
         extensions: '.generated.ts',
-        baseTypesPath: '__types__/base-types.ts'
+        baseTypesPath: '__graphql__/base-types.ts'
       },
       config: {
         importOperationTypesFrom: 'Types',
@@ -47,7 +47,7 @@ const config: CodegenConfig = {
   hooks: {
     afterAllFileWrite: [
       'prettier --write',
-      'yarn cti create ./src/__types__ -i base-types --withoutbackup'
+      'yarn cti create ./src/__graphql__ -i base-types --withoutbackup'
     ]
   }
 }
