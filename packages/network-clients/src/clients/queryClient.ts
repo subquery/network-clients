@@ -12,7 +12,7 @@ import {
   GetDelegationQueryVariables,
   GetIndexerQuery,
   GetIndexerQueryVariables,
-} from '../__graphql__';
+} from '@subql/network-query';
 
 type ApolloClients = { [key: string]: ApolloClient<unknown> };
 
