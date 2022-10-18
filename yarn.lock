@@ -61,9 +61,9 @@
     lru-cache "^7.10.1"
 
 "@apollo/utils.logger@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@apollo/utils.logger/-/utils.logger-1.0.0.tgz#6e3460a2250c2ef7c2c3b0be6b5e148a1596f12b"
-  integrity sha512-dx9XrjyisD2pOa+KsB5RcDbWIAdgC91gJfeyLCgy0ctJMjQe7yZK5kdWaWlaOoCeX0z6YI9iYlg7vMPyMpQF3Q==
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@apollo/utils.logger/-/utils.logger-1.0.1.tgz#aea0d1bb7ceb237f506c6bbf38f10a555b99a695"
+  integrity sha512-XdlzoY7fYNK4OIcvMD2G94RoFZbzTQaNP0jozmqqMudmaGo2I/2Jx71xlDJ801mWA/mbYRihyaw6KJii7k5RVA==
 
 "@apollographql/apollo-tools@0.5.4", "@apollographql/apollo-tools@^0.5.4":
   version "0.5.4"
@@ -2249,9 +2249,9 @@
     "@sinonjs/commons" "^1.7.0"
 
 "@subql/contract-sdk@^0.10.2-34":
-  version "0.10.2-36"
-  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-0.10.2-36.tgz#17f8ec267784d15bef9bba873379387e0e8ae1f7"
-  integrity sha512-8sFqyFTNjgTCEStR/tsiOU5w69FebmUYfFyTxO5j1jV3X3ghCA48AP0cw1MTAv/WmU4rpFPUkBRsBR+Zn8y53A==
+  version "0.10.2-37"
+  resolved "https://registry.yarnpkg.com/@subql/contract-sdk/-/contract-sdk-0.10.2-37.tgz#b628080dac2711de1c8522cafeb24c39c4a1ec3c"
+  integrity sha512-S0aH2h0i87FvyUnylzJ8v0ijWUmIcUN8iioPWJALBnwC1rtNeSsQtKfc2orauZRvvZOz2uxyHLKNFBt7VwUppw==
   dependencies:
     "@openzeppelin/contracts-upgradeable" "^4.5.2"
     "@polkadot/ui-keyring" "^2.9.4"

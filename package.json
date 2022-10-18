@@ -11,9 +11,6 @@
   "author": "SubQuery Pte Limited",
   "license": "Apache-2.0",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "devDependencies": {
     "@actions/core": "^1.9.1",
     "@apollo/client": "^3.7.0",
@@ -39,7 +36,12 @@
     "ts-jest": "^28.0.4",
     "ts-node": "^10.8.1"
   },
-  "packageManager": "yarn@3.1.1",
+  "workspaces": [
+    "packages/apollo-links",
+    "packages/network-query",
+    "packages/network-clients",
+    "packages/react-hooks"
+  ],
   "lint-staged": {
     "*.{ts,tsx}": [
       "eslint --cache --fix",
