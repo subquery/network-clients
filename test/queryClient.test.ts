@@ -1,36 +1,37 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GraphqlQueryClient } from '../packages/network-clients';
-import { NETWORK_CONFIGS } from '../packages/network-clients/src';
+import { GraphqlQueryClient } from '@subql/network-clients';
+import { NETWORK_CONFIGS } from '@subql/network-clients';
 import assert from 'assert';
-import { GET_INDEXER } from "../packages/network-clients/src/graphql/indexers";
-import { GET_INDEXERS } from "../packages/network-clients/src/graphql/indexers";
 import {
-  GET_ALL_DELEGATIONS,
-  GET_DELEGATION,
-  GET_DELEGATOR,
-  GET_INDEXER_DELEGATORS
-} from "@subql/network-clients/dist/graphql/delegations";
+  GetDelegation,
+  GetIndexer,
+  GetIndexers,
+  GetDelegator,
+  GetIndexerDelegators
+} from '@subql/network-query';
 import {
-  GET_EXPIRED_SERVICE_AGREEMENTS,
-  GET_SERVICE_AGREEMENTS,
-  GET_SPECIFIC_SERVICE_AGREEMENTS
-} from "@subql/network-clients/dist/graphql/agreements";
+  GetExpiredServiceAgreements,
+  GetOngoingServiceAgreements,
+  GetSpecificServiceAgreements
+} from '@subql/network-query';
 import {
-  GET_ACCEPTED_OFFERS,
-  GET_DEPLOYMENT,
-  GET_DEPLOYMENT_INDEXERS,
-  GET_DEPLOYMENT_INDEXERS_WITH_INDEXER
-} from "@subql/network-clients/dist/graphql/deployments";
+  GetAcceptedOffers,
+  GetDeployment,
+  GetDeploymentIndexers,
+  GetAllDelegations,
+  GetDeploymentIndexersByIndexer
+} from '@subql/network-query';
 import {
-  GET_ALL_OPEN_OFFERS,
-  GET_OWN_EXPIRED_OFFERS,
-  GET_OWN_OPEN_OFFERS, GET_SPECIFIC_OPEN_OFFERS
-} from "@subql/network-clients/dist/graphql/offers";
-import { GET_DEPLOYMENT_PLANS, GET_PLAN_TEMPLATES, GET_PLANS } from "@subql/network-clients/dist/graphql/plans";
-import { GET_PROJECT, GET_PROJECT_DEPLOYMENTS, GET_PROJECTS } from "@subql/network-clients/dist/graphql/project";
-import { GET_INDEXER_REWARDS, GET_REWARDS, GET_WITHDRAWLS } from "@subql/network-clients/dist/graphql/staking";
+  GetAllOpenOffers,
+  GetOwnExpiredOffers,
+  GetOwnOpenOffers, 
+  GetSpecificOpenOffers
+} from '@subql/network-query';
+import { GetDeploymentPlans, GetPlanTemplates, GetPlans } from '@subql/network-query';
+import { GetProject, GetProjectDeployments, GetProjects } from '@subql/network-query';
+import { GetIndexerRewards, GetRewards, GetWithdrawls } from '@subql/network-query';
 
 function deepAssert(obj: any){
   Object.keys(obj).forEach(key => {
@@ -60,7 +61,7 @@ describe('query client', () => {
   it('can query indexer detail', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_INDEXER,
+      query: GetIndexer,
       variables: { address:address1},
     });
     assert(result, 'cannot request query GET_INDEXER');
@@ -69,7 +70,7 @@ describe('query client', () => {
   it('can query indexer delegator', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_INDEXER_DELEGATORS,
+      query: GetIndexerDelegators,
       variables: { id:address1 },
     });
     assert(result, 'cannot request query GET_INDEXER_DELEGATORS');
@@ -80,7 +81,7 @@ describe('query client', () => {
   it('can query Delegation detail', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_DELEGATION,
+      query: GetDelegation,
       variables: { id: `${address1}:${address1}` },
     });
     assert(result, 'cannot request query GET_DELEGATION');
@@ -90,7 +91,7 @@ describe('query client', () => {
   it('can query delegator detail', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_DELEGATOR,
+      query: GetDelegator,
       variables: { address:address1 },
     });
     assert(result, 'cannot request query GET_DELEGATOR');
@@ -100,8 +101,8 @@ describe('query client', () => {
   it('can query all delegations', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_ALL_DELEGATIONS,
-      variables: {},
+      query: GetAllDelegations,
+      variables: { },
     });
     assert(result, 'cannot request query GET_ALL_DELEGATIONS');
     deepAssert(result.data.delegations);
@@ -110,7 +111,7 @@ describe('query client', () => {
   it('can query indexer agreements', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_SERVICE_AGREEMENTS,
+      query: GetOngoingServiceAgreements,
       variables: {address:address2,now:date},
     });
     assert(result, 'cannot request query GET_SERVICE_AGREEMENTS');
@@ -120,7 +121,7 @@ describe('query client', () => {
   it('can query expired agreements', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_EXPIRED_SERVICE_AGREEMENTS,
+      query: GetExpiredServiceAgreements,
       variables: {address:address2,now:date},
     });
     assert(result, 'cannot request query GET_EXPIRED_SERVICE_AGREEMENTS');
@@ -130,7 +131,7 @@ describe('query client', () => {
   it('can query project agreements', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_SPECIFIC_SERVICE_AGREEMENTS,
+      query: GetSpecificServiceAgreements,
       variables: {deploymentId:'Qmdpka4MpaUtGP7B3AAoPji4H6X7a2ir53a1mxnUumqMm4',now:date},
     });
     assert(result, 'cannot request query GET_SPECIFIC_SERVICE_AGREEMENTS');
@@ -141,17 +142,17 @@ describe('query client', () => {
   it('can query deployment by projectCid', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_DEPLOYMENT,
+      query: GetDeployment,
       variables: {deploymentId:projectId},
     });
     assert(result, 'cannot request query GET_DEPLOYMENT');
     expect(result.data.deployment.id).toEqual(projectId)
   }, 16000)
 
-  it('can query deploymnet indexer', async () => {
+  it('can query deployment indexer', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_DEPLOYMENT_INDEXERS,
+      query: GetDeploymentIndexers,
       variables: {deploymentId:projectId},
     });
     assert(result, 'cannot request query GET_DEPLOYMENT_INDEXERS');
@@ -160,7 +161,7 @@ describe('query client', () => {
   it('can query GET_DEPLOYMENT_INDEXERS_WITH_INDEXER', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_DEPLOYMENT_INDEXERS_WITH_INDEXER,
+      query: GetDeploymentIndexersByIndexer,
       variables: {indexerAddress:address3}
     });
     assert(result, 'cannot request query GET_DEPLOYMENT_INDEXERS_WITH_INDEXER');
@@ -170,7 +171,7 @@ describe('query client', () => {
   it('can query get accepted offer', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_ACCEPTED_OFFERS,
+      query: GetAcceptedOffers,
       variables: {address:address3,offerId:'1'},
     });
     assert(result, 'cannot request query GET_ACCEPTED_OFFERS');
@@ -180,7 +181,7 @@ describe('query client', () => {
   it('can query get indexers', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_INDEXERS,
+      query: GetIndexers,
       variables: {},
     });
     assert(result, 'cannot request query GET_INDEXERS');
@@ -190,7 +191,7 @@ describe('query client', () => {
   it('can query get own offer', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_OWN_OPEN_OFFERS,
+      query: GetOwnOpenOffers,
       variables: {consumer:consumer,now:date},
     });
     assert(result, 'cannot request query GET_OWN_OPEN_OFFERS');
@@ -200,7 +201,7 @@ describe('query client', () => {
   it('can query get expired offer', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_OWN_EXPIRED_OFFERS,
+      query: GetOwnExpiredOffers,
       variables: {consumer:consumer,now:date},
     });
     assert(result, 'cannot request query GET_OWN_EXPIRED_OFFERS');
@@ -210,7 +211,7 @@ describe('query client', () => {
   it('can query get expired offer', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_OWN_EXPIRED_OFFERS,
+      query: GetOwnExpiredOffers,
       variables: {consumer:consumer,now:date},
     });
     assert(result, 'cannot request query GET_OWN_EXPIRED_OFFERS');
@@ -220,7 +221,7 @@ describe('query client', () => {
   it('can query get all open offer', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_ALL_OPEN_OFFERS,
+      query: GetAllOpenOffers,
       variables: {now:date},
     });
     assert(result, 'cannot request query GET_ALL_OPEN_OFFERS');
@@ -230,7 +231,7 @@ describe('query client', () => {
   it('can query get project open offer', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_SPECIFIC_OPEN_OFFERS,
+      query: GetSpecificOpenOffers,
       variables: {deploymentId:projectId2,now:date},
     });
     assert(result, 'cannot request query GET_SPECIFIC_OPEN_OFFERS');
@@ -240,7 +241,7 @@ describe('query client', () => {
   it('can query get deployment plan', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_DEPLOYMENT_PLANS,
+      query: GetDeploymentPlans,
       variables: {deploymentId:'QmQnhLMgV3SrXbunjgHjnfdw32BAHQS3nNhLWKpNjtFTSZ',address:address2},
     });
     assert(result, 'cannot request query GET_DEPLOYMENT_PLANS');
@@ -250,7 +251,7 @@ describe('query client', () => {
   it('can query get plan templates', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_PLAN_TEMPLATES,
+      query: GetPlanTemplates,
       variables: {},
     });
     assert(result, 'cannot request query GET_PLAN_TEMPLATES');
@@ -260,7 +261,7 @@ describe('query client', () => {
   it('can query get plans', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_PLANS,
+      query: GetPlans,
       variables: {address:address2},
     });
     assert(result, 'cannot request query GET_PLANS');
@@ -270,7 +271,7 @@ describe('query client', () => {
   it('can query get project', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_PROJECT,
+      query: GetProject,
       variables: {id:pId},
     });
     assert(result, 'cannot request query GET_PROJECT');
@@ -280,7 +281,7 @@ describe('query client', () => {
   it('can query get all projects', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_PROJECTS,
+      query: GetProjects,
       variables: {},
     });
     assert(result, 'cannot request query GET_PROJECTS');
@@ -290,7 +291,7 @@ describe('query client', () => {
   it('can query get project deployment', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_PROJECT_DEPLOYMENTS,
+      query: GetProjectDeployments,
       variables: {projectId:pId},
     });
     assert(result, 'cannot request query GET_PROJECT_DEPLOYMENTS');
@@ -300,7 +301,7 @@ describe('query client', () => {
   it('can query get withdrawls', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_WITHDRAWLS,
+      query: GetWithdrawls,
       variables: {delegator:address2},
     });
     assert(result, 'cannot request query GET_WITHDRAWLS');
@@ -311,7 +312,7 @@ describe('query client', () => {
   it('can query get rewards', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_REWARDS,
+      query: GetRewards,
       variables: {address:address2},
     });
     assert(result, 'cannot request query GET_REWARDS');
@@ -323,7 +324,7 @@ describe('query client', () => {
   it('can query get indexer rewards', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
-      query: GET_INDEXER_REWARDS,
+      query: GetIndexerRewards,
       variables: {address:address2,era1:'10',era2:'100'},
     });
     assert(result, 'cannot request query GET_INDEXER_REWARDS');

@@ -4,15 +4,15 @@
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import fetch from 'cross-fetch';
 import { GqlEndpoint, NetworkConfig } from '../config';
-import { GET_DELEGATION } from '../graphql/delegations';
-import { GET_INDEXER } from '../graphql/indexers';
 import { wrapApolloResult } from '../utils/apollo';
 import {
+  GetDelegation,
+  GetIndexer,
   GetDelegationQuery,
   GetDelegationQueryVariables,
   GetIndexerQuery,
   GetIndexerQueryVariables,
-} from '../__types__';
+} from '@subql/network-query';
 
 type ApolloClients = { [key: string]: ApolloClient<unknown> };
 
@@ -43,7 +43,7 @@ export class GraphqlQueryClient {
   async getIndexer(address: string): Promise<any> {
     const result = await wrapApolloResult(
       this.explorerClient.query<GetIndexerQuery, GetIndexerQueryVariables>({
-        query: GET_INDEXER,
+        query: GetIndexer,
         variables: { address },
       })
     );
@@ -57,7 +57,7 @@ export class GraphqlQueryClient {
   async getDelegation(indexer: string, delegator: string): Promise<any> {
     const result = await wrapApolloResult(
       this.explorerClient.query<GetDelegationQuery, GetDelegationQueryVariables>({
-        query: GET_DELEGATION,
+        query: GetDelegation,
         variables: { id: `${indexer}:${delegator}` },
       })
     );

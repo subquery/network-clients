@@ -109,7 +109,7 @@ dist
 .DS_Store
 
 # Generated graphql types and hooks
-__types__
+__graphql__
 __hooks__
 
 # idea
