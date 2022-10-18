@@ -1,7 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GetAllDelegations, GraphqlQueryClient } from '@subql/network-clients';
+import { GraphqlQueryClient } from '@subql/network-clients';
 import { NETWORK_CONFIGS } from '@subql/network-clients';
 import assert from 'assert';
 import {
@@ -10,27 +10,28 @@ import {
   GetIndexers,
   GetDelegator,
   GetIndexerDelegators
-} from "@subql/network-clients";
+} from '@subql/network-query';
 import {
   GetExpiredServiceAgreements,
   GetOngoingServiceAgreements,
   GetSpecificServiceAgreements
-} from "@subql/network-clients";
+} from '@subql/network-query';
 import {
   GetAcceptedOffers,
   GetDeployment,
   GetDeploymentIndexers,
+  GetAllDelegations,
   GetDeploymentIndexersByIndexer
-} from "@subql/network-clients";
+} from '@subql/network-query';
 import {
   GetAllOpenOffers,
   GetOwnExpiredOffers,
   GetOwnOpenOffers, 
   GetSpecificOpenOffers
-} from "@subql/network-clients";
-import { GetDeploymentPlans, GetPlanTemplates, GetPlans } from "@subql/network-clients";
-import { GetProject, GetProjectDeployments, GetProjects } from "@subql/network-clients";
-import { GetIndexerRewards, GetRewards, GetWithdrawls } from "@subql/network-clients";
+} from '@subql/network-query';
+import { GetDeploymentPlans, GetPlanTemplates, GetPlans } from '@subql/network-query';
+import { GetProject, GetProjectDeployments, GetProjects } from '@subql/network-query';
+import { GetIndexerRewards, GetRewards, GetWithdrawls } from '@subql/network-query';
 
 function deepAssert(obj: any){
   Object.keys(obj).forEach(key => {
