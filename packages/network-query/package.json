@@ -1,13 +1,13 @@
 {
   "name": "@subql/network-query",
-  "version": "0.1.1-0",
+  "version": "0.1.1-1",
   "main": "dist/index.js",
   "description": "SubQuery package containing all gql queries dapps",
   "author": "SubQuery Pte Limited",
   "license": "Apache-2.0",
   "scripts": {
     "codegen-gql": "graphql-codegen --require dotenv/config --config codegen.ts",
-    "build": "yarn codegen-gql && tsc -b"    
+    "build": "yarn codegen-gql && tsc -b"
   },
   "dependencies": {
     "graphql": "^16.5.0"
