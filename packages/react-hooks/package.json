@@ -6,7 +6,7 @@
   "author": "SubQuery Pte Limited",
   "license": "Apache-2.0",
   "scripts": {
-    "codegen-gql": "graphql-codegen --require dotenv/config --config codegen.ts",
+    "codegen-gql": "sh ./scripts/codegen.sh",
     "build": "yarn codegen-gql && tsc -b"
   },
   "dependencies": {

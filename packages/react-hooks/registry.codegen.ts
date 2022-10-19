@@ -1,7 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { CodegenConfig } from '@graphql-codegen/cli'
+import { CodegenConfig } from '@graphql-codegen/cli';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -22,28 +22,22 @@ const config: CodegenConfig = {
       BigFloat: 'bigint' || 'string',
       BigInt: 'bigint',
       Cursor: 'string',
-    }
+    },
   },
   generates: {
     'src/': {
       preset: 'near-operation-file',
       presetConfig: {
-        folder: '../../../../../packages/react-hooks/src/__hooks__', // defines a folder, (Relative to the source files) where the generated files will be created
+        folder: '../../../../../packages/react-hooks/src/__hooks__/registry', // defines a folder, (Relative to the source files) where the generated files will be created
         extensions: '.generated.ts',
-        baseTypesPath: 'types'
+        baseTypesPath: 'types',
       },
       config: {
-        importOperationTypesFrom: 'Types.GraphqlTypes',
+        importOperationTypesFrom: 'Types.RegistryQueries',
       },
-      plugins: ['typescript-react-apollo']
-    }
+      plugins: ['typescript-react-apollo'],
+    },
   },
-  hooks: {
-    afterAllFileWrite: [
-      'prettier --write',
-      'yarn cti create ./src/__hooks__ -i base-types --withoutbackup'
-    ]
-  }
-}
+};
 
 export default config;
