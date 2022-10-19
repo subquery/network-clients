@@ -12,6 +12,8 @@ import {
   GetDelegationQueryVariables,
   GetIndexerQuery,
   GetIndexerQueryVariables,
+  GetTotalLock,
+  GetTotalLockQuery,
 } from '@subql/network-query';
 
 type ApolloClients = { [key: string]: ApolloClient<unknown> };
@@ -65,6 +67,19 @@ export class GraphqlQueryClient {
       throw new Error(`delegation not found`);
     } else {
       return result.delegation;
+    }
+  }
+
+  async getTotalLock(): Promise<any> {
+    const result = await wrapApolloResult(
+      this.explorerClient.query<GetTotalLockQuery>({
+        query: GetTotalLock,
+      })
+    );
+    if (!result || !result.totalLocks) {
+      throw new Error(`totalLocks not found`);
+    } else {
+      return result.totalLocks;
     }
   }
 }
