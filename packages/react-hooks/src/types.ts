@@ -1,7 +1,6 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import GraphqlTypes from '@subql/network-query';
 import { Registry, Exchange } from '@subql/network-query';
 
 /**
@@ -9,4 +8,4 @@ import { Registry, Exchange } from '@subql/network-query';
  */
 export type AsyncData<T> = Readonly<{ data?: T; loading: boolean; error?: Error }>;
 
-export { GraphqlTypes, Registry, Exchange };
+export { Registry, Exchange };

@@ -33,7 +33,7 @@ const config: CodegenConfig = {
         baseTypesPath: 'types',
       },
       config: {
-        importOperationTypesFrom: 'Types.RegistryQueries',
+        importOperationTypesFrom: 'Types.Registry',
       },
       plugins: ['typescript-react-apollo'],
     },
