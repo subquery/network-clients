@@ -10,6 +10,7 @@ import * as Graphql from '@subql/network-query';
 const {
   GetDelegation,
   GetIndexer,
+  GetTotalLock,
 } = Graphql.Registry;
 
 type ApolloClients = { [key: string]: ApolloClient<unknown> };
@@ -63,6 +64,19 @@ export class GraphqlQueryClient {
       throw new Error(`delegation not found`);
     } else {
       return result.delegation;
+    }
+  }
+
+  async getTotalLock(): Promise<any> {
+    const result = await wrapApolloResult(
+      this.explorerClient.query<Graphql.Registry.GetTotalLockQuery>({
+        query: GetTotalLock,
+      })
+    );
+    if (!result || !result.totalLocks) {
+      throw new Error(`totalLocks not found`);
+    } else {
+      return result.totalLocks;
     }
   }
 }
