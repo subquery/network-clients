@@ -21,5 +21,5 @@ describe('network client', () => {
   it('can get maxUnstakeAmount value', async () => {
     const amount = await client.maxUnstakeAmount(TEST_INDEXER);
     expect(amount).toBeTruthy();
-  });
+  }, 16000);
 });

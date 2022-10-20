@@ -7,14 +7,14 @@ import { GqlEndpoint, NetworkConfig } from '../config';
 import { wrapApolloResult } from '../utils/apollo';
 import {
   GetDelegation,
-  GetIndexer,
   GetDelegationQuery,
   GetDelegationQueryVariables,
+  GetIndexer,
   GetIndexerQuery,
   GetIndexerQueryVariables,
   GetTotalLock,
-  GetTotalLockQuery,
-} from '@subql/network-query';
+  GetTotalLockQuery
+}from '@subql/network-query';
 
 type ApolloClients = { [key: string]: ApolloClient<unknown> };
 
