@@ -5,13 +5,16 @@ import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import fetch from 'cross-fetch';
 import { GqlEndpoint, NetworkConfig } from '../config';
 import { wrapApolloResult } from '../utils/apollo';
-import * as Graphql from '@subql/network-query';
-
-const {
+import {
   GetDelegation,
+  GetDelegationQuery,
+  GetDelegationQueryVariables,
   GetIndexer,
+  GetIndexerQuery,
+  GetIndexerQueryVariables,
   GetTotalLock,
-} = Graphql.Registry;
+  GetTotalLockQuery
+}from '@subql/network-query';
 
 type ApolloClients = { [key: string]: ApolloClient<unknown> };
 
@@ -41,7 +44,7 @@ export class GraphqlQueryClient {
 
   async getIndexer(address: string): Promise<any> {
     const result = await wrapApolloResult(
-      this.explorerClient.query<Graphql.Registry.GetIndexerQuery, Graphql.Registry.Registry.GetIndexerQueryVariables>({
+      this.explorerClient.query<GetIndexerQuery, GetIndexerQueryVariables>({
         query: GetIndexer,
         variables: { address },
       })
@@ -55,7 +58,7 @@ export class GraphqlQueryClient {
 
   async getDelegation(indexer: string, delegator: string): Promise<any> {
     const result = await wrapApolloResult(
-      this.explorerClient.query<Graphql.Registry.GetDelegationQuery, Graphql.Registry.GetDelegationQueryVariables>({
+      this.explorerClient.query<GetDelegationQuery, GetDelegationQueryVariables>({
         query: GetDelegation,
         variables: { id: `${indexer}:${delegator}` },
       })
@@ -69,7 +72,7 @@ export class GraphqlQueryClient {
 
   async getTotalLock(): Promise<any> {
     const result = await wrapApolloResult(
-      this.explorerClient.query<Graphql.Registry.GetTotalLockQuery>({
+      this.explorerClient.query<GetTotalLockQuery>({
         query: GetTotalLock,
       })
     );

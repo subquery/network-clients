@@ -3,41 +3,35 @@
 
 import { GraphqlQueryClient } from '@subql/network-clients';
 import { NETWORK_CONFIGS } from '@subql/network-clients';
-import { Registry } from '@subql/network-query';
 import assert from 'assert';
-
-const {
+import {
   GetDelegation,
   GetIndexer,
   GetIndexers,
   GetDelegator,
   GetIndexerDelegators
-} = Registry;
-
-const {
+} from '@subql/network-query';
+import {
   GetExpiredServiceAgreements,
   GetOngoingServiceAgreements,
   GetSpecificServiceAgreements
-} = Registry;
-
-const {
+} from '@subql/network-query';
+import {
   GetAcceptedOffers,
   GetDeployment,
   GetDeploymentIndexers,
   GetAllDelegations,
   GetDeploymentIndexersByIndexer
-} = Registry;
-
-const {
+} from '@subql/network-query';
+import {
   GetAllOpenOffers,
   GetOwnExpiredOffers,
   GetOwnOpenOffers, 
   GetSpecificOpenOffers
-} = Registry;
-
-const { GetDeploymentPlans, GetPlanTemplates, GetPlans } = Registry;
-const { GetProject, GetProjectDeployments, GetProjects } = Registry;
-const { GetIndexerRewards, GetRewards, GetWithdrawls } = Registry;
+} from '@subql/network-query';
+import { GetDeploymentPlans, GetPlanTemplates, GetPlans } from '@subql/network-query';
+import { GetProject, GetProjectDeployments, GetProjects } from '@subql/network-query';
+import { GetIndexerRewards, GetRewards, GetWithdrawls } from '@subql/network-query';
 
 function deepAssert(obj: any){
   Object.keys(obj).forEach(key => {
