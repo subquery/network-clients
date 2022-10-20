@@ -30,10 +30,11 @@ const config: CodegenConfig = {
       presetConfig: {
         folder: '../../../../../packages/react-hooks/src/__hooks__/exchange', // defines a folder, (Relative to the source files) where the generated files will be created
         extensions: '.generated.ts',
-        baseTypesPath: 'types',
+        baseTypesPath: 'graphql',
+        importTypesNamespace: 'Graphql',
       },
       config: {
-        importOperationTypesFrom: 'Types.Exchange',
+        importOperationTypesFrom: 'Graphql',
       },
       plugins: ['typescript-react-apollo'],
     },
