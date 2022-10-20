@@ -7,8 +7,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const config: CodegenConfig = {
-  schema: process.env.KEPLER_EXCHANGE,
-  documents: './queries/exchange/*.gql',
+  schema: [`${process.env.KEPLER_EXCHANGE}`, `${process.env.KEPLER_SUBQL}`],
+  documents: ['./queries/exchange/*.gql', './queries/registry/*.gql'],
   config: {
     preResolveTypes: true,
     namingConvention: 'keep',
@@ -25,17 +25,8 @@ const config: CodegenConfig = {
     },
   },
   generates: {
-    'src/': {
-      preset: 'near-operation-file',
-      presetConfig: {
-        folder: '../../src/__graphql__/exchange',
-        extensions: '.generated.ts',
-        baseTypesPath: '__graphql__/base-types.ts',
-      },
-      config: {
-        importOperationTypesFrom: 'Types',
-      },
-      plugins: ['typescript-document-nodes'],
+    'src/__graphql__/base-types.ts': {
+      plugins: ['typescript', 'typescript-operations'],
     },
   },
 };

@@ -7,7 +7,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "codegen-gql": "sh ./scripts/codegen.sh",
-    "build": "yarn codegen-gql && tsc -b"
+    "build": "yarn codegen-gql && yarn tsc -b"
   },
   "dependencies": {
     "graphql": "^16.5.0"

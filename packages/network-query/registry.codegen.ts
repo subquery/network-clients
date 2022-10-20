@@ -25,15 +25,12 @@ const config: CodegenConfig = {
     },
   },
   generates: {
-    'src/__graphql__/registry/base-types.ts': {
-      plugins: ['typescript', 'typescript-operations'],
-    },
     'src/': {
       preset: 'near-operation-file',
       presetConfig: {
         folder: '../../src/__graphql__/registry',
         extensions: '.generated.ts',
-        baseTypesPath: '__graphql__/registry/base-types.ts',
+        baseTypesPath: '__graphql__/base-types.ts',
       },
       config: {
         importOperationTypesFrom: 'Types',
