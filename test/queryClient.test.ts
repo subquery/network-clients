@@ -10,32 +10,32 @@ import {
   GetIndexers,
   GetDelegator,
   GetIndexerDelegators
-} from '@subql/network-query';
+} from '../packages/network-query/src';
 import {
   GetExpiredServiceAgreements,
   GetOngoingServiceAgreements,
   GetSpecificServiceAgreements
-} from '@subql/network-query';
+} from '../packages/network-query/src';
 import {
   GetAcceptedOffers,
   GetDeployment,
   GetDeploymentIndexers,
   GetAllDelegations,
   GetDeploymentIndexersByIndexer
-} from '@subql/network-query';
+} from '../packages/network-query/src';
 import {
   GetAllOpenOffers,
   GetOwnExpiredOffers,
   GetOwnOpenOffers, 
   GetSpecificOpenOffers
-} from '@subql/network-query';
-import { GetDeploymentPlans, GetPlanTemplates, GetPlans } from '@subql/network-query';
-import { GetProject, GetProjectDeployments, GetProjects } from '@subql/network-query';
-import { GetIndexerRewards, GetRewards, GetWithdrawls } from '@subql/network-query';
+} from '../packages/network-query/src';
+import { GetDeploymentPlans, GetPlanTemplates, GetPlans } from '../packages/network-query/src';
+import { GetProject, GetProjectDeployments, GetProjects } from '../packages/network-query/src';
+import { GetIndexerRewards, GetRewards, GetWithdrawls } from '../packages/network-query/src';
 
 function deepAssert(obj: any){
   Object.keys(obj).forEach(key => {
-    assert(obj[key], `field ${key} is undefined`);
+    assert(obj[key] !== undefined, `field ${key} is undefined`);
     if (typeof obj[key] === 'object') deepAssert(obj[key]);
   })
 }
@@ -98,12 +98,13 @@ describe('query client', () => {
     deepAssert(result.data.delegator);
   }, 16000)
 
-  it('can query all delegations', async () => {
+  it.only('can query all delegations', async () => {
     const apolloClient = client.explorerClient;
     const result = await apolloClient.query({
       query: GetAllDelegations,
       variables: { },
     });
+    console.log('result:', result); 
     assert(result, 'cannot request query GET_ALL_DELEGATIONS');
     deepAssert(result.data.delegations);
   }, 16000)

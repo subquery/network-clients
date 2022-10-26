@@ -9,7 +9,11 @@ fragment DeploymentIndexerFields on DeploymentIndexer {
   timestamp
   status
   indexer {
-    metadata
+    metadata {
+      metadataCID
+      name
+      url
+    }
   }
 }
 
