@@ -25,9 +25,6 @@ query GetAllDelegations($offset: Int) {
       delegatorId
       indexerId
       amount
-      indexer {
-        metadata
-      }
     }
   }
 }
@@ -48,8 +45,12 @@ query GetDelegations($delegator: String!, $offset: Int) {
       indexerId
       amount
       indexer {
-        metadata
         active
+        metadata {
+          metadataCID
+          name
+          url
+        }
       }
     }
   }

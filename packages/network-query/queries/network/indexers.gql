@@ -3,10 +3,14 @@
 
 fragment IndexerFields on Indexer {
   id
-  metadata
   controller
   commission
   totalStake
+  metadata {
+    metadataCID
+    name
+    url
+  }
 }
 
 query GetIndexer($address: String!) {
@@ -20,6 +24,21 @@ query GetIndexers($offset: Int, $order: IndexersOrderBy = ID_ASC) {
     totalCount
     nodes {
       ...IndexerFields
+    }
+  }
+}
+
+query GetIndexersWithProjects($offset: Int, $order: IndexersOrderBy = ID_ASC) {
+  indexers(first: 100, offset: $offset, orderBy: [$order], filter: { active: { equalTo: true } }) {
+    totalCount
+    nodes {
+      ...IndexerFields
+      projects {
+        nodes {
+          deploymentId
+          status
+        }
+      }
     }
   }
 }

@@ -13,7 +13,7 @@ import { GraphqlQueryClient } from './queryClient';
 import { isCID, min } from '../utils';
 import { DEFAULT_IPFS_URL, NETWORK_CONFIGS, SQNetworks } from '../config';
 import assert from 'assert';
-import { Indexer, IndexerMetadata } from '../models/indexer';
+import { Indexer } from '../models/indexer';
 import { parseRawEraValue } from '../utils/parseEraValue';
 
 type Provider = AbstractProvider | Signer;
@@ -45,11 +45,11 @@ export class NetworkClient {
       controller,
       commission,
       totalStake,
-      metadata: cid,
+      metadata: indexerMetadata,
     } = await this._gqlClient.getIndexer(address);
     const { amount: ownStake } = await this._gqlClient.getDelegation(address, address);
 
-    const metadata = cid ? await this._ipfs.getJSON<IndexerMetadata>(cid) : undefined;
+    const metadata = { name: indexerMetadata.name, url: indexerMetadata.url };
 
     const sortedTotalStake = parseRawEraValue(totalStake, currentEra.toNumber());
     const sortedOwnStake = parseRawEraValue(ownStake, currentEra.toNumber());
@@ -78,19 +78,6 @@ export class NetworkClient {
       capacity,
     };
   }
-
-  // public async indexerMetadata(indexer: string): Promise<IndexerMetadata> {
-  //   if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
-  //
-  //   const metadataBytes32 = await this._sdk.indexerRegistry.metadataByIndexer(indexer);
-  //   if (!metadataBytes32 || metadataBytes32 === constants.HashZero) {
-  //     throw new Error('Empty indexer metadata');
-  //   }
-  //
-  //   const cid = bytes32ToCid(metadataBytes32);
-  //   const metadataStr = await this._ipfs.cat(cid);
-  //   return JSON.parse(metadataStr);
-  // }
 
   public async maxUnstakeAmount(address: string): Promise<BigNumber> {
     const currentEra = await this._sdk.eraManager.eraNumber();

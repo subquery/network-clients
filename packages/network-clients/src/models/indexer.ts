@@ -1,7 +1,6 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import * as yup from 'yup';
 import { CurrentEraValue } from './eraValue';
 
 export interface Indexer {
@@ -15,10 +14,8 @@ export interface Indexer {
   capacity: CurrentEraValue;
 }
 
-export const indexerMetadataSchema = yup.object({
-  name: yup.string(),
-  image: yup.string().optional(),
-  url: yup.string() /*.required()*/,
-});
-
-export type IndexerMetadata = yup.Asserts<typeof indexerMetadataSchema>;
+export type IndexerMetadata = {
+  name: string;
+  image?: string;
+  url: string;
+}

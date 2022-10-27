@@ -8,7 +8,7 @@ dotenv.config();
 
 const config: CodegenConfig = {
   schema: process.env.KEPLER_SUBQL,
-  documents: './queries/registry/*.gql',
+  documents: '../../node_modules/@subql/network-query/queries/network/*.gql',
   config: {
     preResolveTypes: true,
     namingConvention: 'keep',
@@ -28,14 +28,15 @@ const config: CodegenConfig = {
     'src/': {
       preset: 'near-operation-file',
       presetConfig: {
-        folder: '../../src/__graphql__/registry',
+        folder: '../../../../../packages/react-hooks/src/__hooks__/network', // defines a folder, (Relative to the source files) where the generated files will be created
         extensions: '.generated.ts',
-        baseTypesPath: '__graphql__/base-types.ts',
+        baseTypesPath: 'graphql',
+        importTypesNamespace: 'Graphql',
       },
       config: {
-        importOperationTypesFrom: 'Types',
+        importOperationTypesFrom: 'Graphql',
       },
-      plugins: ['typescript-document-nodes'],
+      plugins: ['typescript-react-apollo'],
     },
   },
 };
