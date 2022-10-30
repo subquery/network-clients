@@ -7,7 +7,7 @@ import deploymentDetails from '@subql/contract-sdk/publish/moonbase.json';
 export enum SQNetworks {
   TESTNET = 'testnet',
   KEPLER = 'kepler',
-  MAINNET = 'mainnet',
+  // MAINNET = 'mainnet',
 }
 
 export enum GqlEndpoint {
@@ -20,7 +20,7 @@ export interface NetworkConfig {
   sdkOptions: SdkOptions;
 }
 
-export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig | undefined> = {
+export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig> = {
   [SQNetworks.KEPLER]: {
     gql: {
       [GqlEndpoint.Explorer]:
@@ -29,7 +29,6 @@ export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig | undefined> = {
     defaultEndpoint: process.env.KEPLER_RPC ?? 'https://moonbeam-alpha.api.onfinality.io/public',
     sdkOptions: { deploymentDetails },
   },
-  [SQNetworks.MAINNET]: undefined,
   [SQNetworks.TESTNET]: {
     gql: {
       [GqlEndpoint.Explorer]:
