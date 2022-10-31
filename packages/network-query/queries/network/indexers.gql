@@ -19,8 +19,13 @@ query GetIndexer($address: String!) {
   }
 }
 
-query GetIndexers($offset: Int, $order: IndexersOrderBy = ID_ASC) {
-  indexers(first: 10, offset: $offset, orderBy: [$order], filter: { active: { equalTo: true } }) {
+query GetIndexers($first: Int, $offset: Int, $order: IndexersOrderBy = ID_ASC) {
+  indexers(
+    first: $first
+    offset: $offset
+    orderBy: [$order]
+    filter: { active: { equalTo: true } }
+  ) {
     totalCount
     nodes {
       ...IndexerFields

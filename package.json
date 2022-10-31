@@ -6,7 +6,7 @@
     "build": "yarn workspaces run build",
     "lint": "eslint . --ext .ts,.tsx",
     "postinstall": "husky install",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests --testTimeout=160000"
   },
   "author": "SubQuery Pte Limited",
   "license": "Apache-2.0",
