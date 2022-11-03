@@ -5,7 +5,7 @@ import { MessageTypes, TypedMessage } from '@metamask/eth-sig-util';
 
 export interface Message {
   [key: string]: string | number | undefined;
-  indexer?: string;
+  indexer: string;
   deploymentId: string;
   agreement?: string;
   consumer?: string;
