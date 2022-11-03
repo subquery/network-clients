@@ -49,3 +49,27 @@ describe('auth link', () => {
     }
   });
 });
+
+describe('auth link with auth center', () => {
+  let client: ApolloClient<unknown>;
+
+  beforeAll(async () => {
+    const authUrl = 'http://localhost:3001/token';
+    const indexer = '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04';
+    const options = { authUrl, deploymentId, indexer, chainId: 1287 };
+    const authLink = new AuthLink(options);
+    client = new ApolloClient({
+      cache: new InMemoryCache({ resultCaching: true }),
+      link: from([authLink, new HttpLink({ uri, fetch })]),
+    });
+  });
+
+  it('can query with auth link', async () => {
+    try {
+      const result = await client.query({ query: metadtaQuery });
+      expect(result.data._metadata).toBeTruthy();
+    } catch (e) {
+      console.log(`Failed to send query with auth link: ${e}`);
+    }
+  });
+});
