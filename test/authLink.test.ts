@@ -9,8 +9,9 @@ import { AuthLink } from '../packages/apollo-links/src';
 
 const indexerProxyEndpoint = 'http://ec2-3-27-14-20.ap-southeast-2.compute.amazonaws.com';
 const deploymentId = 'Qmdpka4MpaUtGP7B3AAoPji4H6X7a2ir53a1mxnUumqMm4';
+const uri = `${indexerProxyEndpoint}/query/${deploymentId}`;
 const options = {
-  authUrl: `${indexerProxyEndpoint}/to`,
+  authUrl: `${indexerProxyEndpoint}/token`,
   pk: '2de44e00deb5b936a838d61978170a4dab9f23056736fed3409301f58db07d8b',
   indexer: '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04',
   consumer: '0x6De0bf7cd34344Ff1356038fAE8ba6E05B50D4c1',
@@ -18,8 +19,6 @@ const options = {
   deploymentId,
   agreement: '17',
 };
-
-const uri = `${indexerProxyEndpoint}/query/${deploymentId}`;
 
 const metadtaQuery = gql`
   query Metadata {
@@ -38,23 +37,15 @@ describe('auth link', () => {
     client = new ApolloClient({
       cache: new InMemoryCache({ resultCaching: true }),
       link: from([authLink, new HttpLink({ uri, fetch })]),
-      defaultOptions: {
-        watchQuery: {
-          fetchPolicy: 'no-cache',
-        },
-        query: {
-          fetchPolicy: 'no-cache',
-        },
-      },
     });
   });
 
   it('can query with auth link', async () => {
     try {
       const result = await client.query({ query: metadtaQuery });
-      console.log('>>>result:', result);
+      expect(result.data._metadata).toBeTruthy();
     } catch (e) {
-      console.log('>>>query failed:', e);
+      console.log(`Failed to send query with auth link: ${e}`);
     }
   });
 });

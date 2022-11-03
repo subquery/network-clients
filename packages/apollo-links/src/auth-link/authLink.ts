@@ -4,18 +4,18 @@
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
 import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
 import jwt_decode from 'jwt-decode';
-import { info } from "console";
 import axios from 'axios';
 import buffer from 'buffer';
 
 import { AuthMessage, createAuthRequestBody, buildTypedMessage, Message } from './eip712';
+import { Subscription } from 'zen-observable-ts';
 
 const Buffer = buffer.Buffer;
 
 export interface AuthOptions extends Message {
   authUrl: string;
-  pk: string;
-  chainId?: number;
+  chainId: number;
+  pk?: string;
 }
 
 export class AuthLink extends ApolloLink {
@@ -29,13 +29,17 @@ export class AuthLink extends ApolloLink {
   }
 
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
-    operation.setContext(async ({ headers }: { headers: HeadersInit }) => {
-      const token = await this.requestToken();
-      info(this._token);
-      return { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...headers } };
-    });
+    if (!forward) return null;
 
-    return forward ? forward(operation) : null;
+    return new Observable<FetchResult>(observer => {
+      let sub: Subscription;
+      this.requestToken().then((token) => {
+        operation.setContext({ headers: { authorization: `Bearer ${token}` } }); 
+        sub = forward(operation).subscribe(observer);
+      });
+
+      return () => sub.unsubscribe();
+    });
   }
 
   private generateMessage() {
