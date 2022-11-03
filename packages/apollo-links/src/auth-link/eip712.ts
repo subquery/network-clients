@@ -57,7 +57,7 @@ export function createAuthRequestBody(message: AuthMessage, signature: string, c
   const baseBody = {
     indexer,
     timestamp,
-    signature,
+    signature: signature.replace(/^0x/, ''),
     deployment_id: deploymentId,
     chain_id: chainId,
   };

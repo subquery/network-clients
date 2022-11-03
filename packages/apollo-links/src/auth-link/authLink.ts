@@ -4,6 +4,7 @@
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
 import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
 import jwt_decode from 'jwt-decode';
+import { info } from "console";
 import axios from 'axios';
 import buffer from 'buffer';
 
@@ -30,7 +31,8 @@ export class AuthLink extends ApolloLink {
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
     operation.setContext(async ({ headers }: { headers: HeadersInit }) => {
       const token = await this.requestToken();
-      return { headers: { authorization: `Bearer ${token}`, ...headers } };
+      info(this._token);
+      return { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...headers } };
     });
 
     return forward ? forward(operation) : null;
@@ -68,12 +70,10 @@ export class AuthLink extends ApolloLink {
     const message = this.generateMessage();
     const signature = this.signMessage(message);
     const body = createAuthRequestBody(message, signature, this._options.chainId);
+    const headers = { 'Content-Type': 'application/json' };
 
-    const res = await axios.post(this._options.authUrl, body);
+    const res = await axios.post(this._options.authUrl, body, { headers });
     this._token = res.data.token;
-
-    // FIXME: remove this later
-    console.log('>>>auth token:', this._token);
 
     return this._token;
   }
