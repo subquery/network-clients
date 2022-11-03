@@ -2,19 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
-import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
-import jwt_decode from 'jwt-decode';
+import { Subscription } from 'zen-observable-ts';
 import axios from 'axios';
-import buffer from 'buffer';
 
-import { AuthMessage, createAuthRequestBody, buildTypedMessage, Message } from './eip712';
-
-const Buffer = buffer.Buffer;
+import { isTokenExpired, requestAuthToken } from './authHelper';
+import { Message } from './eip712';
 
 export interface AuthOptions extends Message {
   authUrl: string;
-  pk: string;
-  chainId?: number;
+  chainId: number;
+  pk?: string;
 }
 
 export class AuthLink extends ApolloLink {
@@ -28,12 +25,17 @@ export class AuthLink extends ApolloLink {
   }
 
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
-    operation.setContext(async ({ headers }: { headers: HeadersInit }) => {
-      const token = await this.requestToken();
-      return { headers: { authorization: `Bearer ${token}`, ...headers } };
-    });
+    if (!forward) return null;
 
-    return forward ? forward(operation) : null;
+    return new Observable<FetchResult>(observer => {
+      let sub: Subscription;
+      this.requestToken().then((token) => {
+        operation.setContext({ headers: { authorization: `Bearer ${token}` } }); 
+        sub = forward(operation).subscribe(observer);
+      });
+
+      return () => sub.unsubscribe();
+    });
   }
 
   private generateMessage() {
@@ -42,38 +44,20 @@ export class AuthLink extends ApolloLink {
     return { indexer, consumer, agreement, deploymentId, timestamp };
   }
 
-  private isTokenExpired(): boolean {
-    if (!this._token) return true;
-
-    const { exp } = jwt_decode(this._token) as { exp: number };
-    const currentDate = new Date().getTime();
-
-    return exp < currentDate;
-  }
-
-  private signMessage(msg: AuthMessage): string {
-    const { pk } = this._options;
-    if (!pk) return '';
-
-    return signTypedData({
-      privateKey: Buffer.from(pk, 'hex'),
-      data: buildTypedMessage(msg, this._options.chainId),
-      version: SignTypedDataVersion.V4,
-    });
-  }
-
   private async requestToken(): Promise<string> {
-    if (!this.isTokenExpired()) return this._token;
+    if (!isTokenExpired(this._token)) return this._token;
+
+    const headers = { 'Content-Type': 'application/json' };
+    const { indexer, deploymentId, pk, chainId, authUrl } = this._options;
+
+    if (!pk) {
+      const res = await axios.post(this._options.authUrl, { deploymentId, indexer }, { headers });
+      this._token = res.data.token;
+      return this._token;
+    } 
 
     const message = this.generateMessage();
-    const signature = this.signMessage(message);
-    const body = createAuthRequestBody(message, signature, this._options.chainId);
-
-    const res = await axios.post(this._options.authUrl, body);
-    this._token = res.data.token;
-
-    // FIXME: remove this later
-    console.log('>>>auth token:', this._token);
+    this._token = await requestAuthToken(authUrl, message, pk, chainId)
 
     return this._token;
   }
