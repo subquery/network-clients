@@ -32,7 +32,7 @@ const metadtaQuery = gql`
   }
 `;
 
-describe('auth link', () => {
+describe.skip('auth link', () => {
   let client: ApolloClient<unknown>;
 
   beforeAll(async () => {
@@ -59,7 +59,7 @@ describe('can query with auth http link', () => {
   beforeAll(async () => {
     const authUrl = 'http://localhost:3001';
     const httpOptions = { fetch };
-    const options = { authUrl, chainId: '', httpOptions }
+    const options = { authUrl, chainId: 'testnet', httpOptions }
     const link = await authHttpLink(options);
 
     client = new ApolloClient({
