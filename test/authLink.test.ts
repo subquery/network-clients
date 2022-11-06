@@ -20,7 +20,7 @@ const options = {
   consumer: '0x6De0bf7cd34344Ff1356038fAE8ba6E05B50D4c1',
   chainId: 1287,
   deploymentId,
-  agreement: '18',
+  agreement: '19',
 };
 
 const metadtaQuery = gql`
@@ -58,8 +58,9 @@ describe('can query with auth http link', () => {
 
   beforeAll(async () => {
     const authUrl = 'http://localhost:3001';
+    const chainId = '0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527';
     const httpOptions = { fetch };
-    const options = { authUrl, chainId: 'testnet', httpOptions }
+    const options = { authUrl, chainId, httpOptions }
     const link = await authHttpLink(options);
 
     client = new ApolloClient({

@@ -10,6 +10,20 @@ import { AuthMessage, buildTypedMessage, createAuthRequestBody } from './eip712'
 
 const Buffer = buffer.Buffer;
 
+export async function POST(url: string, body: Record<string, string | number | undefined>) {
+  const headers = { 'Content-Type': 'application/json' };
+  const res = await axios.post(url, body, { headers });
+
+  return res.data;
+}
+
+export async function GET(url: string) {
+  const headers = { 'Content-Type': 'application/json' };
+  const res = await axios.get(url, { headers });
+
+  return res.data;
+}
+
 export function isTokenExpired(token: string): boolean {
   if (!token) return true;
 
@@ -44,8 +58,6 @@ export async function requestAuthToken(
   });
 
   const body = createAuthRequestBody(msg, signature, chainId);
-
-  const headers = { 'Content-Type': 'application/json' };
-  const res = await axios.post(authUrl, body, { headers });
-  return res.data.token;
+  const res = await POST(authUrl, body);
+  return res.token;
 }
