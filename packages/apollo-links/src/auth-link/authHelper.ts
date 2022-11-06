@@ -33,11 +33,11 @@ export function isTokenExpired(token: string): boolean {
   return exp < currentDate;
 }
 
-export function signMessage(msg: AuthMessage, pk: string, chainId: number): string {
-  if (!pk) return '';
+export function signMessage(msg: AuthMessage, sk: string, chainId: number): string {
+  if (!sk) return '';
 
   return signTypedData({
-    privateKey: Buffer.from(pk, 'hex'),
+    privateKey: Buffer.from(sk, 'hex'),
     data: buildTypedMessage(msg, chainId),
     version: SignTypedDataVersion.V4,
   });
@@ -46,13 +46,13 @@ export function signMessage(msg: AuthMessage, pk: string, chainId: number): stri
 export async function requestAuthToken(
   authUrl: string, 
   msg: AuthMessage, 
-  pk: string, 
+  sk: string, 
   chainId: number
 ): Promise<string> {
-  if (!pk) return '';
+  if (!sk) return '';
 
   const signature = signTypedData({
-    privateKey: Buffer.from(pk, 'hex'),
+    privateKey: Buffer.from(sk, 'hex'),
     data: buildTypedMessage(msg, chainId),
     version: SignTypedDataVersion.V4,
   });

@@ -15,7 +15,7 @@ const deploymentId = 'Qmdpka4MpaUtGP7B3AAoPji4H6X7a2ir53a1mxnUumqMm4';
 const uri = `${indexerProxyEndpoint}/query/${deploymentId}`;
 const options = {
   authUrl: `${indexerProxyEndpoint}/token`,
-  pk: process.env.PK ?? '',
+  sk: process.env.SK ?? '',
   indexer: '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04',
   consumer: '0x6De0bf7cd34344Ff1356038fAE8ba6E05B50D4c1',
   chainId: 1287,

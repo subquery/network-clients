@@ -10,7 +10,7 @@ import { Message } from './eip712';
 export interface AuthOptions extends Message {
   authUrl: string;   // the url for geting token
   chainId: number;   // chainId for the chain where the contracts are deployed
-  pk?: string;       // `pk` of the consumer or corresponding controller account
+  sk?: string;       // `sk` of the consumer or corresponding controller account
 }
 
 export class AuthLink extends ApolloLink {
@@ -46,15 +46,15 @@ export class AuthLink extends ApolloLink {
   private async requestToken(): Promise<string> {
     if (!isTokenExpired(this._token)) return this._token;
 
-    const { indexer, deploymentId, pk, chainId, authUrl } = this._options;
+    const { indexer, deploymentId, sk, chainId, authUrl } = this._options;
 
-    if (!pk) {
+    if (!sk) {
       this._token = await POST(authUrl, { deploymentId, indexer });
       return this._token;
     } 
 
     const message = this.generateMessage();
-    this._token = await requestAuthToken(authUrl, message, pk, chainId)
+    this._token = await requestAuthToken(authUrl, message, sk, chainId)
 
     return this._token;
   }
