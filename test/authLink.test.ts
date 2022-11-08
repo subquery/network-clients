@@ -57,7 +57,7 @@ describe('can query with auth http link', () => {
   let client: ApolloClient<unknown>;
 
   beforeAll(async () => {
-    const authUrl = 'http://localhost:3001';
+    const authUrl = 'http://3.27.14.20:3030';
     const chainId = '0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527';
     const httpOptions = { fetch };
     const options = { authUrl, chainId, httpOptions }
