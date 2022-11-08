@@ -22,3 +22,21 @@ query GetPaygPlans($indexer: String!, $deploymentId: String!, $status: ChannelSt
     }
   }
 }
+
+query GetSteteChannels($status: ChannelStatus!) {
+  stateChannels(filter: { status: { equalTo: $status } }) {
+    nodes {
+      id
+      indexer
+      consumer
+      status
+      total
+      spent
+      isFinal
+      expiredAt
+      terminatedAt
+      deploymentId
+      terminateByIndexer
+    }
+  }
+}
