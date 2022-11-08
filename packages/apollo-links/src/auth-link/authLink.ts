@@ -9,7 +9,7 @@ import { Message } from './eip712';
 
 export interface AuthOptions extends Message {
   authUrl: string;   // the url for geting token
-  chainId: number;   // chainId for the chain where the contracts are deployed
+  chainId: number;   // chainId for the network
   sk?: string;       // `sk` of the consumer or corresponding controller account
 }
 
