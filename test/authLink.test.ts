@@ -29,7 +29,7 @@ const metadtaQuery = gql`
   }
 `;
 
-describe('auth link', () => {
+describe.skip('auth link', () => {
   let client: ApolloClient<unknown>;
 
   beforeAll(async () => {
@@ -50,7 +50,7 @@ describe('auth link', () => {
   });
 });
 
-describe('auth link with auth center', () => {
+describe.skip('auth link with auth center', () => {
   let client: ApolloClient<unknown>;
 
   beforeAll(async () => {
