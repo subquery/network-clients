@@ -3,15 +3,14 @@
 
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
 import { Subscription } from 'zen-observable-ts';
-import axios from 'axios';
 
-import { isTokenExpired, requestAuthToken } from './authHelper';
+import { isTokenExpired, POST, requestAuthToken } from './authHelper';
 import { Message } from './eip712';
 
 export interface AuthOptions extends Message {
-  authUrl: string;
-  chainId: number;
-  pk?: string;
+  authUrl: string;   // the url for geting token
+  chainId: number;   // chainId for the network
+  sk?: string;       // `sk` of the consumer or corresponding controller account
 }
 
 export class AuthLink extends ApolloLink {
@@ -47,17 +46,15 @@ export class AuthLink extends ApolloLink {
   private async requestToken(): Promise<string> {
     if (!isTokenExpired(this._token)) return this._token;
 
-    const headers = { 'Content-Type': 'application/json' };
-    const { indexer, deploymentId, pk, chainId, authUrl } = this._options;
+    const { indexer, deploymentId, sk, chainId, authUrl } = this._options;
 
-    if (!pk) {
-      const res = await axios.post(this._options.authUrl, { deploymentId, indexer }, { headers });
-      this._token = res.data.token;
+    if (!sk) {
+      this._token = await POST(authUrl, { deploymentId, indexer });
       return this._token;
     } 
 
     const message = this.generateMessage();
-    this._token = await requestAuthToken(authUrl, message, pk, chainId)
+    this._token = await requestAuthToken(authUrl, message, sk, chainId)
 
     return this._token;
   }
