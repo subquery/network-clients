@@ -1,6 +1,6 @@
 {
   "name": "@subql/network-clients",
-  "version": "0.2.1-16",
+  "version": "0.2.1-18",
   "description": "SubQuery client sdk for network",
   "main": "dist/index.js",
   "author": "SubQuery Pte Limited",
@@ -11,7 +11,7 @@
   "dependencies": {
     "@apollo/client": "^3.7.0",
     "@ethersproject/bignumber": "^5.7.0",
-    "@subql/network-query": "^0.1.1-0",
+    "@subql/network-query": "dev",
     "axios": "^0.27.2",
     "buffer": "^6.0.3",
     "cross-fetch": "^3.1.5",

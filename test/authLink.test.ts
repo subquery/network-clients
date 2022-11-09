@@ -53,7 +53,7 @@ describe.skip('auth link', () => {
   });
 });
 
-describe('can query with auth http link', () => {
+describe.skip('auth link with auth center', () => {
   let client: ApolloClient<unknown>;
 
   beforeAll(async () => {

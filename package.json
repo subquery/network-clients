@@ -40,8 +40,8 @@
     "ts-node": "^10.8.1"
   },
   "workspaces": [
-    "packages/apollo-links",
     "packages/network-query",
+    "packages/apollo-links",
     "packages/network-clients",
     "packages/react-hooks"
   ],

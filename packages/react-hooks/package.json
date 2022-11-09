@@ -1,6 +1,6 @@
 {
   "name": "@subql/react-hooks",
-  "version": "0.1.1-8",
+  "version": "0.1.1-9",
   "description": "SubQuery client sdk for react hooks",
   "main": "dist/index.js",
   "author": "SubQuery Pte Limited",
@@ -13,7 +13,7 @@
     "@graphql-tools/code-file-loader": "^7.3.6",
     "@graphql-tools/graphql-tag-pluck": "^7.3.6",
     "@graphql-tools/load": "^7.7.7",
-    "@subql/network-query": "^0.1.1-0",
+    "@subql/network-query": "dev",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2"
   },
