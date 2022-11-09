@@ -19,6 +19,7 @@
     "@graphql-codegen/typescript": "^2.7.3",
     "@graphql-codegen/typescript-document-nodes": "^2.3.3",
     "@graphql-codegen/typescript-operations": "^2.5.3",
+    "ctix": "^1.5.4",
     "prettier": "^2.7.1",
     "typescript": "^4.8.4"
   }
