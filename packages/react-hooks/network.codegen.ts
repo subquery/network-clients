@@ -8,7 +8,7 @@ dotenv.config();
 
 const config: CodegenConfig = {
   schema: process.env.KEPLER_SUBQL,
-  documents: '../../node_modules/@subql/network-query/queries/network/*.gql',
+  documents: '../network-query/queries/network/*.gql',
   config: {
     preResolveTypes: true,
     namingConvention: 'keep',
