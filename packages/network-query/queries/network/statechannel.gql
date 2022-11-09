@@ -16,6 +16,7 @@ query GetPaygPlans($indexer: String!, $deploymentId: String!, $status: ChannelSt
       status
       total
       spent
+      price
       isFinal
       expiredAt
       terminatedAt
@@ -23,7 +24,7 @@ query GetPaygPlans($indexer: String!, $deploymentId: String!, $status: ChannelSt
   }
 }
 
-query GetSteteChannels($status: ChannelStatus!) {
+query GetStateChannels($status: ChannelStatus!) {
   stateChannels(filter: { status: { equalTo: $status } }) {
     nodes {
       id
@@ -32,6 +33,7 @@ query GetSteteChannels($status: ChannelStatus!) {
       status
       total
       spent
+      price
       isFinal
       expiredAt
       terminatedAt
