@@ -314,7 +314,7 @@ describe('query client', () => {
     expect(result.data.indexerRewards.__typename).toEqual('IndexerRewardsConnection');
   });
 
-  it.only('can query statechannels', async () => {
+  it('can query statechannels', async () => {
     const result = await client.query({
       query: GetStateChannels,
       variables: { status: 'OPEN' }
