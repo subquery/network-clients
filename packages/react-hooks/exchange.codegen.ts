@@ -8,7 +8,7 @@ dotenv.config();
 
 const config: CodegenConfig = {
   schema: process.env.KEPLER_EXCHANGE,
-  documents: '../../node_modules/@subql/network-query/queries/exchange/*.gql',
+  documents: '../network-query/queries/exchange/*.gql',
   config: {
     preResolveTypes: true,
     namingConvention: 'keep',
@@ -28,7 +28,7 @@ const config: CodegenConfig = {
     'src/': {
       preset: 'near-operation-file',
       presetConfig: {
-        folder: '../../../../../packages/react-hooks/src/__hooks__/exchange', // defines a folder, (Relative to the source files) where the generated files will be created
+        folder: '../../../react-hooks/src/__hooks__/exchange', // defines a folder, (Relative to the source files) where the generated files will be created
         extensions: '.generated.ts',
         baseTypesPath: 'graphql',
         importTypesNamespace: 'Graphql',

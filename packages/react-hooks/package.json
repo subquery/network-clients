@@ -13,7 +13,7 @@
     "@graphql-tools/code-file-loader": "^7.3.6",
     "@graphql-tools/graphql-tag-pluck": "^7.3.6",
     "@graphql-tools/load": "^7.7.7",
-    "@subql/network-query": "dev",
+    "@subql/network-query": "workspace:*",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2"
   },
@@ -25,6 +25,8 @@
     "@graphql-codegen/typescript-operations": "^2.5.3",
     "@graphql-codegen/typescript-react-apollo": "^3.3.3",
     "create-ts-index": "^1.14.0",
+    "ctix": "^1.5.4",
+    "prettier": "^2.7.1",
     "typescript": "^4.6.4"
   },
   "peerDependencies": {
