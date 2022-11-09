@@ -1,6 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { ApolloClient } from '@apollo/client/core';
 import assert from 'assert';
 import { GraphqlQueryClient, NETWORK_CONFIGS } from '../packages/network-clients';
 import {
@@ -30,6 +31,7 @@ import {
   GetIndexerRewards,
   GetRewards,
   GetWithdrawls,
+  GetStateChannels,
 } from '../packages/network-query';
 
 function deepAssert(obj: any) {
@@ -40,7 +42,7 @@ function deepAssert(obj: any) {
 }
 
 describe('query client', () => {
-  let client: GraphqlQueryClient;
+  let client: ApolloClient<unknown>;
   const date: Date = new Date();
 
   const address1 = '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04';
@@ -54,12 +56,11 @@ describe('query client', () => {
   beforeAll(async () => {
     const config = NETWORK_CONFIGS.kepler;
     assert(config, 'network config not defined');
-    client = new GraphqlQueryClient(config);
+    client = new GraphqlQueryClient(config).explorerClient;
   });
 
   it('can query indexer detail', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetIndexer,
       variables: { address: address1 },
     });
@@ -67,8 +68,7 @@ describe('query client', () => {
   });
 
   it('can query indexer delegator', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetIndexerDelegators,
       variables: { id: address1 },
     });
@@ -78,8 +78,7 @@ describe('query client', () => {
   });
 
   it('can query Delegation detail', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetDelegation,
       variables: { id: `${address1}:${address1}` },
     });
@@ -88,8 +87,7 @@ describe('query client', () => {
   });
 
   it('can query delegator detail', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetDelegator,
       variables: { address: address1 },
     });
@@ -98,8 +96,8 @@ describe('query client', () => {
   });
 
   it.only('can query all delegations', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    
+    const result = await client.query({
       query: GetAllDelegations,
       variables: {},
     });
@@ -109,8 +107,7 @@ describe('query client', () => {
   });
 
   it('can query indexer agreements', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetOngoingServiceAgreements,
       variables: { address: address2, now: date },
     });
@@ -119,8 +116,8 @@ describe('query client', () => {
   });
 
   it('can query expired agreements', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    
+    const result = await client.query({
       query: GetExpiredServiceAgreements,
       variables: { address: address2, now: date },
     });
@@ -129,8 +126,7 @@ describe('query client', () => {
   });
 
   it('can query project agreements', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetSpecificServiceAgreements,
       variables: { deploymentId: 'Qmdpka4MpaUtGP7B3AAoPji4H6X7a2ir53a1mxnUumqMm4', now: date },
     });
@@ -140,8 +136,7 @@ describe('query client', () => {
   });
 
   it('can query deployment by projectCid', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetDeployment,
       variables: { deploymentId: projectId },
     });
@@ -150,8 +145,7 @@ describe('query client', () => {
   });
 
   it('can query deployment indexer', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetDeploymentIndexers,
       variables: { deploymentId: projectId },
     });
@@ -159,8 +153,7 @@ describe('query client', () => {
   });
 
   it('can query GET_DEPLOYMENT_INDEXERS_WITH_INDEXER', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetDeploymentIndexersByIndexer,
       variables: { indexerAddress: address3 },
     });
@@ -169,8 +162,7 @@ describe('query client', () => {
   });
 
   it('can query get accepted offer', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetAcceptedOffers,
       variables: { address: address3, offerId: '1' },
     });
@@ -179,8 +171,7 @@ describe('query client', () => {
   });
 
   it('can query get indexers', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetIndexers,
     });
     assert(result, 'cannot request query GET_INDEXERS');
@@ -188,8 +179,8 @@ describe('query client', () => {
   });
 
   it('can query get own offer', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    
+    const result = await client.query({
       query: GetOwnOpenOffers,
       variables: { consumer: consumer, now: date },
     });
@@ -197,9 +188,8 @@ describe('query client', () => {
     expect(result.data).toBeTruthy();
   });
 
-  it('can query get expired offer', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+  it('can query get expired offer', async () => {    
+    const result = await client.query({
       query: GetOwnExpiredOffers,
       variables: { consumer: consumer, now: date },
     });
@@ -208,8 +198,7 @@ describe('query client', () => {
   });
 
   it('can query get expired offer', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetOwnExpiredOffers,
       variables: { consumer: consumer, now: date },
     });
@@ -218,8 +207,7 @@ describe('query client', () => {
   });
 
   it('can query get all open offer', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetAllOpenOffers,
       variables: { now: date },
     });
@@ -228,8 +216,7 @@ describe('query client', () => {
   });
 
   it('can query get project open offer', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetSpecificOpenOffers,
       variables: { deploymentId: projectId2, now: date },
     });
@@ -238,8 +225,7 @@ describe('query client', () => {
   });
 
   it('can query get deployment plan', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetDeploymentPlans,
       variables: {
         deploymentId: 'QmQnhLMgV3SrXbunjgHjnfdw32BAHQS3nNhLWKpNjtFTSZ',
@@ -251,8 +237,7 @@ describe('query client', () => {
   });
 
   it('can query get plan templates', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetPlanTemplates,
       variables: {},
     });
@@ -261,8 +246,8 @@ describe('query client', () => {
   });
 
   it('can query get plans', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    
+    const result = await client.query({
       query: GetPlans,
       variables: { address: address2 },
     });
@@ -271,8 +256,7 @@ describe('query client', () => {
   });
 
   it('can query get project', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetProject,
       variables: { id: pId },
     });
@@ -281,8 +265,7 @@ describe('query client', () => {
   });
 
   it('can query get all projects', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetProjects,
       variables: {},
     });
@@ -291,8 +274,7 @@ describe('query client', () => {
   });
 
   it('can query get project deployment', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetProjectDeployments,
       variables: { projectId: pId },
     });
@@ -301,8 +283,7 @@ describe('query client', () => {
   });
 
   it('can query get withdrawls', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetWithdrawls,
       variables: { delegator: address2 },
     });
@@ -312,8 +293,7 @@ describe('query client', () => {
   });
 
   it('can query get rewards', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetRewards,
       variables: { address: address2 },
     });
@@ -324,8 +304,7 @@ describe('query client', () => {
   });
 
   it('can query get indexer rewards', async () => {
-    const apolloClient = client.explorerClient;
-    const result = await apolloClient.query({
+    const result = await client.query({
       query: GetIndexerRewards,
       variables: { address: address2, era1: '10', era2: '100' },
     });
@@ -334,4 +313,13 @@ describe('query client', () => {
     expect(result.data.indexerRewards.nodes).toBeTruthy();
     expect(result.data.indexerRewards.__typename).toEqual('IndexerRewardsConnection');
   });
+
+  it.only('can query statechannels', async () => {
+    const result = await client.query({
+      query: GetStateChannels,
+      variables: { status: 'OPEN' }
+    });
+
+    expect(result.data.stateChannels).toBeTruthy();
+  })
 });

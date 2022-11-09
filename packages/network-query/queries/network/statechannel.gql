@@ -1,6 +1,21 @@
 # Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 # SPDX-License-Identifier: Apache-2.0
 
+fragment StateChannelFields on StateChannel {
+  id
+  indexer
+  consumer
+  status
+  total
+  spent
+  price
+  isFinal
+  expiredAt
+  terminatedAt
+  deploymentId
+  terminateByIndexer
+}
+
 query GetPaygPlans($indexer: String!, $deploymentId: String!, $status: ChannelStatus!) {
   stateChannels(
     filter: {
@@ -10,16 +25,7 @@ query GetPaygPlans($indexer: String!, $deploymentId: String!, $status: ChannelSt
     }
   ) {
     nodes {
-      id
-      indexer
-      consumer
-      status
-      total
-      spent
-      price
-      isFinal
-      expiredAt
-      terminatedAt
+      ...StateChannelFields
     }
   }
 }
@@ -27,18 +33,7 @@ query GetPaygPlans($indexer: String!, $deploymentId: String!, $status: ChannelSt
 query GetStateChannels($status: ChannelStatus!) {
   stateChannels(filter: { status: { equalTo: $status } }) {
     nodes {
-      id
-      indexer
-      consumer
-      status
-      total
-      spent
-      price
-      isFinal
-      expiredAt
-      terminatedAt
-      deploymentId
-      terminateByIndexer
+      ...StateChannelFields
     }
   }
 }
