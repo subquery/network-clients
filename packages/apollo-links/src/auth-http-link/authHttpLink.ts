@@ -17,7 +17,7 @@ export async function authHttpLink(options: AuthHttpOptions): Promise<ApolloLink
   const metadataUrl = `${authUrl}/metadata/${chainId}`;
   const tokenUrl = `${authUrl}/token`;
 
-  const { indexer, uri, deploymentId } = await GET(metadataUrl);
+  const { indexer, uri, deploymentId } = await GET<{ indexer: string; uri: string; deploymentId: string }>(metadataUrl);
 
   const httpLink = new HttpLink({ ...httpOptions, uri });
   const authLink = new AuthLink({ authUrl: tokenUrl, deploymentId, indexer, chainId: 1287 });

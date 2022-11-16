@@ -29,6 +29,7 @@ export class AuthLink extends ApolloLink {
     return new Observable<FetchResult>(observer => {
       let sub: Subscription;
       this.requestToken().then((token) => {
+        console.log(token);
         operation.setContext({ headers: { authorization: `Bearer ${token}` } }); 
         sub = forward(operation).subscribe(observer);
       });
@@ -49,7 +50,8 @@ export class AuthLink extends ApolloLink {
     const { indexer, deploymentId, sk, chainId, authUrl } = this._options;
 
     if (!sk) {
-      this._token = await POST(authUrl, { deploymentId, indexer });
+      const res = await POST<{ token: string }>(authUrl, { deploymentId, indexer });
+      this._token = res.token;
       return this._token;
     } 
 

@@ -10,16 +10,16 @@ import { AuthMessage, buildTypedMessage, createAuthRequestBody } from './eip712'
 
 const Buffer = buffer.Buffer;
 
-export async function POST(url: string, body: Record<string, string | number | undefined>) {
+export async function POST<T>(url: string, body: Record<string, string | number | undefined>) {
   const headers = { 'Content-Type': 'application/json' };
-  const res = await axios.post(url, body, { headers });
+  const res = await axios.post<T>(url, body, { headers });
 
   return res.data;
 }
 
-export async function GET(url: string) {
+export async function GET<T>(url: string) {
   const headers = { 'Content-Type': 'application/json' };
-  const res = await axios.get(url, { headers });
+  const res = await axios.get<T>(url, { headers });
 
   return res.data;
 }
@@ -58,6 +58,6 @@ export async function requestAuthToken(
   });
 
   const body = createAuthRequestBody(msg, signature, chainId);
-  const res = await POST(authUrl, body);
+  const res = await POST<{ token: string }>(authUrl, body);
   return res.token;
 }
