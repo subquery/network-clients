@@ -17,7 +17,7 @@ runs:
   using: "composite"
   steps:
     - working-directory: ${{ inputs.package-path }}
-      run: echo "Changes exist in ${{ inputs.package-path }}" && yarn publish --access public --tag latest
+      run: echo "Changes exist in ${{ inputs.package-path }}" && yarn npm publish --access public --tag latest
       env:
         NPM_AUTH_TOKEN: ${{ inputs.npm-token }}
       shell: bash
