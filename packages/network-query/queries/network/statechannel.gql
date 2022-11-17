@@ -37,3 +37,11 @@ query GetStateChannels($status: ChannelStatus!) {
     }
   }
 }
+
+query GetClosedStateChannels($date: Datetime!) {
+  stateChannels(filter: { status: { equalTo: OPEN }, expiredAt: { lessThanOrEqualTo: $date } }) {
+    nodes {
+      ...StateChannelFields
+    }
+  }
+}
