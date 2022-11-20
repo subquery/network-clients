@@ -38,7 +38,7 @@ query GetStateChannels($status: ChannelStatus!) {
   }
 }
 
-# CONSUMER STATE CHANNELS
+# CONSUMER STATE CHANNEL QUERIES 
 
 query GetConsumerOngoingFlexPlans(
   $consumer: String!
@@ -83,7 +83,7 @@ query GetConsumerClosedFlexPlans(
   }
 }
 
-# INDEXER STATE CHANNELS
+# INDEXER STATE CHANNEL QUERIES
 
 query GetIndexerOngoingPlans(
   $indexer: String!
