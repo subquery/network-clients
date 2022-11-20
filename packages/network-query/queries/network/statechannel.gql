@@ -38,8 +38,8 @@ query GetStateChannels($status: ChannelStatus!) {
   }
 }
 
-query GetExpiredStateChannels($status: ChannelStatus!, $now: Datetime!) {
-  stateChannels(filter: { status: { equalTo: $status }, expiredAt: { lessThanOrEqualTo: $now } }) {
+query GetExpiredStateChannels($now: Datetime!) {
+  stateChannels(filter: { status: { equalTo: OPEN }, expiredAt: { lessThanOrEqualTo: $now } }) {
     nodes {
       ...StateChannelFields
     }
