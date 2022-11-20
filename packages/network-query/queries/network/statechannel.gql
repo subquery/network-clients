@@ -38,20 +38,14 @@ query GetStateChannels($status: ChannelStatus!) {
   }
 }
 
-# CONSUMER STATE CHANNEL QUERIES 
+# CONSUMER STATE CHANNEL QUERIES
 
-query GetConsumerOngoingFlexPlans(
-  $consumer: String!
-  $deploymentId: String!
-  $now: Datetime!
-  $offset: Int
-) {
+query GetConsumerOngoingFlexPlans($consumer: String!, $now: Datetime!, $offset: Int) {
   stateChannels(
     filter: {
       consumer: { equalTo: $consumer }
       status: { equalTo: OPEN }
       expiredAt: { greaterThan: $now }
-      deploymentId: { equalTo: $deploymentId }
     }
     offset: $offset
   ) {
@@ -62,16 +56,10 @@ query GetConsumerOngoingFlexPlans(
   }
 }
 
-query GetConsumerClosedFlexPlans(
-  $consumer: String!
-  $deploymentId: String!
-  $now: Datetime!
-  $offset: Int
-) {
+query GetConsumerClosedFlexPlans($consumer: String!, $now: Datetime!, $offset: Int) {
   stateChannels(
     filter: {
       consumer: { equalTo: $consumer }
-      deploymentId: { equalTo: $deploymentId }
       or: [{ status: { equalTo: FINALIZED } }, { expiredAt: { lessThan: $now } }]
     }
     offset: $offset
@@ -85,7 +73,7 @@ query GetConsumerClosedFlexPlans(
 
 # INDEXER STATE CHANNEL QUERIES
 
-query GetIndexerOngoingPlans(
+query GetIndexerOngoingFlexPlans(
   $indexer: String!
   $deploymentId: String!
   $now: Datetime!
