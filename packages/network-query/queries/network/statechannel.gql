@@ -38,8 +38,95 @@ query GetStateChannels($status: ChannelStatus!) {
   }
 }
 
-query GetClosedStateChannels($date: Datetime!) {
-  stateChannels(filter: { status: { equalTo: OPEN }, expiredAt: { lessThanOrEqualTo: $date } }) {
+query GetExpiredStateChannels($status: ChannelStatus!, $now: Datetime!) {
+  stateChannels(filter: { status: { equalTo: $status }, expiredAt: { lessThanOrEqualTo: $now } }) {
+    nodes {
+      ...StateChannelFields
+    }
+  }
+}
+
+# CONSUMER
+
+query GetConsumerOngoingFlexPlans($consumer: String!, $now: Datetime!, $offset: Int) {
+  stateChannels(
+    filter: {
+      consumer: { equalTo: $consumer }
+      expiredAt: { greaterThan: $now }
+      status: { equalTo: OPEN }
+    }
+    offset: $offset
+  ) {
+    totalCount
+    nodes {
+      ...StateChannelFields
+    }
+  }
+}
+
+query GetConsumerClosedFlexPlans($consumer: String!, $now: Datetime!, $offset: Int) {
+  stateChannels(
+    filter: {
+      or: [
+        {
+          consumer: { equalTo: $consumer }
+          expiredAt: { lessThan: $now }
+          status: { equalTo: OPEN }
+        }
+        { consumer: { equalTo: $consumer }, status: { notEqualTo: OPEN } }
+      ]
+    }
+    offset: $offset
+  ) {
+    totalCount
+    nodes {
+      ...StateChannelFields
+    }
+  }
+}
+
+# INDEXERS
+
+query GetIndexerOngoingPlans($indexer: String!, $deploymentId: String!, $now: Datetime!) {
+  stateChannels(
+    filter: {
+      indexer: { equalTo: $indexer }
+      status: { equalTo: OPEN }
+      expiredAt: { greaterThan: $now }
+      deploymentId: { equalTo: $deploymentId }
+    }
+  ) {
+    nodes {
+      ...StateChannelFields
+    }
+  }
+}
+
+query GetIndexerClosedFlexPlans($indexer: String!, $deploymentId: String!, $now: Datetime!) {
+  stateChannels(
+    filter: {
+      indexer: { equalTo: $indexer }
+      deploymentId: { equalTo: $deploymentId }
+      or: [
+        { status: { equalTo: FINALIZED } }
+        { and: [{ status: { notEqualTo: FINALIZED } }, { expiredAt: { lessThan: $now } }] }
+      ]
+    }
+  ) {
+    nodes {
+      ...StateChannelFields
+    }
+  }
+}
+
+query GetIndexerUnfinalisedPlans($indexer: String!, $now: Datetime!) {
+  stateChannels(
+    filter: {
+      indexer: { equalTo: $indexer }
+      status: { notEqualTo: FINALIZED }
+      expiredAt: { lessThan: $now }
+    }
+  ) {
     nodes {
       ...StateChannelFields
     }
