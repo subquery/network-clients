@@ -6,6 +6,7 @@ fragment IndexerFields on Indexer {
   controller
   commission
   totalStake
+  capacity
   metadata {
     metadataCID
     name
