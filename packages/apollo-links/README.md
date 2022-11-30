@@ -8,6 +8,17 @@
 
 ## Usage 
 
+``` TS
+import { authHttpLink } from '@subql/apollo-links';
+import { ApolloClient } from '@apollo/client';
+const link = await authHttpLink({...});
+
+new ApolloClient({
+    link,
+    ...
+});
+```
+
 ## ChangeLogs
 
 [CHANGELOG.md](./CHANGELOG.md)
