@@ -8,15 +8,8 @@
 
 ## Usage 
 
-``` TS
-import { authHttpLink } from '@subql/apollo-links';
-import { ApolloClient } from '@apollo/client';
-const link = await authHttpLink({...});
+For example of usage see our [test cases](../../test/authLink.test.ts)
 
-new ApolloClient({
-    link,
-    ...
-});
 ```
 
 ## ChangeLogs
