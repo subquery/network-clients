@@ -23,7 +23,7 @@ const options = {
   agreement: '19',
 };
 
-const metadtaQuery = gql`
+const metadataQuery = gql`
   query Metadata {
     _metadata {
       indexerHealthy
@@ -45,7 +45,7 @@ describe.skip('auth link', () => {
 
   it('can query with auth link', async () => {
     try {
-      const result = await client.query({ query: metadtaQuery });
+      const result = await client.query({ query: metadataQuery });
       expect(result.data._metadata).toBeTruthy();
     } catch (e) {
       console.log(`Failed to send query with auth link: ${e}`);
@@ -71,7 +71,7 @@ describe.skip('auth link with auth center', () => {
 
   it('can query with auth link', async () => {
     try {
-      const result = await client.query({ query: metadtaQuery });
+      const result = await client.query({ query: metadataQuery });
       expect(result.data._metadata).toBeTruthy();
     } catch (e) {
       console.log(`Failed to send query with auth link: ${e}`);
