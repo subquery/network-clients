@@ -8,7 +8,7 @@ The high level client for SubQuery Network
 
 Network Clients provide contract sdk, contract client and ipfs client methods to interact with Subquery Network.
 
-This Client is for when we need to access multiple clients for a method e.g. contract client and query client.
+This high level client is for when we need to access multiple clients for a method.
 
 ``` TS
 import {NetworkClient, getIndexer} from '@subql/network-clients';
