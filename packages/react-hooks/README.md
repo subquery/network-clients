@@ -8,7 +8,7 @@ This package will generate React useQuery hooks by using the queries and types f
 
 ## Usage
 
-- To see view hooks run `yarn codegen-gql` or `yarn build` from root of monorepo. 
+- To see view hooks run `yarn codegen-gql` or `yarn build` from root of monorepo.
 
 - If you need a useQuery hook that isn't avaliable in `src/__hooks__` follow instructions in @subql/network-query README.md to add queries which this package can use to generate hooks.
 
@@ -16,7 +16,7 @@ This package will generate React useQuery hooks by using the queries and types f
 
 - Note: full examples on how to use all hooks are included in the generated files under `src/__hooks__` directory.
 
-``` TS
+```TS
     import { useGetDeploymentIndexersQuery } from '@subql/react-hooks';
     const { data, loading, error } = useGetDeploymentIndexersQuery({
         variables: {
@@ -25,7 +25,6 @@ This package will generate React useQuery hooks by using the queries and types f
         },
     });
 ```
-
 
 ## ChangeLogs
 
