@@ -3005,14 +3005,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/contract-sdk@npm:^0.10.2-34":
-  version: 0.10.2-38
-  resolution: "@subql/contract-sdk@npm:0.10.2-38"
+"@subql/contract-sdk@npm:^0.10.4-2":
+  version: 0.10.4-2
+  resolution: "@subql/contract-sdk@npm:0.10.4-2"
   dependencies:
     "@openzeppelin/contracts-upgradeable": ^4.5.2
     "@polkadot/ui-keyring": ^2.9.4
     solidity-docgen: ^0.6.0-beta.25
-  checksum: 995462ad91ad526357aa14f297ddfacfd3dc34efab4c33e7828e8e53699ccad1d2ac6c3f6f300dfb1089bd825fa35578d1cd29f8ad85b64874c391e051cd0e7f
+  checksum: a84e26290584ba967a4bb56ea62165cf0ba12d043d408634dce58aaa8ffe5fa5a43241ab4b7e8fc55c8c4d965d59a36493a142e989af7e3f51053f3f77d27b64
   languageName: node
   linkType: hard
 
@@ -3023,7 +3023,7 @@ __metadata:
     "@actions/core": ^1.9.1
     "@apollo/client": ^3.7.0
     "@metamask/eth-sig-util": ^4.0.1
-    "@subql/contract-sdk": ^0.10.2-34
+    "@subql/contract-sdk": ^0.10.4-2
     "@types/jest": ^28.1.6
     "@types/react": ^18.0.12
     "@typescript-eslint/eslint-plugin": ^5.27.0
@@ -3066,7 +3066,7 @@ __metadata:
     graphql: ^16.5.0
     typescript: ^4.6.4
   peerDependencies:
-    "@subql/contract-sdk": ^0.10.2-34
+    "@subql/contract-sdk": ^0.10.4-2
     ipfs-http-client: ^53.0.1
   languageName: unknown
   linkType: soft
