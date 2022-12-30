@@ -13,8 +13,11 @@ import {
   GetIndexerQuery,
   GetIndexerQueryVariables,
   GetTotalLock,
-  GetTotalLockQuery
-}from '@subql/network-query';
+  GetTotalLockQuery,
+  GetDelegator,
+  GetDelegatorQuery,
+  GetDelegatorQueryVariables,
+} from '@subql/network-query';
 
 type ApolloClients = { [key: string]: ApolloClient<unknown> };
 
@@ -42,32 +45,38 @@ export class GraphqlQueryClient {
 
   // QUERY REGISTRY QUERY FUNCTIONS
 
-  async getIndexer(address: string): Promise<any> {
+  async getIndexer(address: string): Promise<GetIndexerQuery['indexer']> {
     const result = await wrapApolloResult(
       this.explorerClient.query<GetIndexerQuery, GetIndexerQueryVariables>({
         query: GetIndexer,
         variables: { address },
       })
     );
-    if (!result || !result.indexer) {
-      throw new Error(`indexer not found`);
-    } else {
-      return result.indexer;
-    }
+
+    return result?.indexer;
   }
 
-  async getDelegation(indexer: string, delegator: string): Promise<any> {
+  async getDelegation(
+    indexer: string,
+    delegator: string
+  ): Promise<GetDelegationQuery['delegation']> {
     const result = await wrapApolloResult(
       this.explorerClient.query<GetDelegationQuery, GetDelegationQueryVariables>({
         query: GetDelegation,
         variables: { id: `${indexer}:${delegator}` },
       })
     );
-    if (!result || !result.delegation) {
-      throw new Error(`delegation not found`);
-    } else {
-      return result.delegation;
-    }
+    return result?.delegation;
+  }
+
+  async getDelegator(delegator: string): Promise<GetDelegatorQuery['delegator']> {
+    const result = await wrapApolloResult(
+      this.explorerClient.query<GetDelegatorQuery, GetDelegatorQueryVariables>({
+        query: GetDelegator,
+        variables: { address: delegator },
+      })
+    );
+    return result?.delegator;
   }
 
   async getTotalLock(): Promise<any> {
@@ -76,10 +85,6 @@ export class GraphqlQueryClient {
         query: GetTotalLock,
       })
     );
-    if (!result || !result.totalLocks) {
-      throw new Error(`totalLocks not found`);
-    } else {
-      return result.totalLocks;
-    }
+    return result?.totalLocks;
   }
 }

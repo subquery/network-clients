@@ -38,25 +38,25 @@ export class NetworkClient {
     return new NetworkClient(sdk, gqlClient, ipfsUrl);
   }
 
-  public async getIndexer(address: string): Promise<Indexer> {
+  public async getIndexer(address: string): Promise<Indexer | undefined> {
     const currentEra = await this._sdk.eraManager.eraNumber();
     const leverageLimit = await this._sdk.staking.indexerLeverageLimit();
-    const {
-      controller,
-      commission,
-      totalStake,
-      metadata: indexerMetadata,
-    } = await this._gqlClient.getIndexer(address);
-    const { amount: ownStake } = await this._gqlClient.getDelegation(address, address);
+    const indexer = await this._gqlClient.getIndexer(address);
+    const delegation = await this._gqlClient.getDelegation(address, address);
 
-    const metadata = { name: indexerMetadata.name, url: indexerMetadata.url };
+    if (!indexer || !delegation) return;
+
+    const { controller, commission, totalStake, metadata: indexerMetadata } = indexer;
+    const { amount: ownStake } = delegation;
+
+    const metadata = { name: indexerMetadata?.name ?? '', url: indexerMetadata?.url ?? '' };
 
     const sortedTotalStake = parseRawEraValue(totalStake, currentEra.toNumber());
     const sortedOwnStake = parseRawEraValue(ownStake, currentEra.toNumber());
 
     const delegated = {
-      current: sortedTotalStake.current.sub(sortedTotalStake.current),
-      after: sortedTotalStake.after.sub(sortedTotalStake.after),
+      current: sortedTotalStake.current.sub(sortedOwnStake.current),
+      after: sortedTotalStake.after.sub(sortedOwnStake.after),
     };
 
     const capacity = {
@@ -80,27 +80,42 @@ export class NetworkClient {
   }
 
   public async maxUnstakeAmount(address: string): Promise<BigNumber> {
-    const currentEra = await this._sdk.eraManager.eraNumber();
     const leverageLimit = await this._sdk.staking.indexerLeverageLimit();
     const minStakingAmount = await this._sdk.indexerRegistry.minimumStakingAmount();
+    const indexer = await this.getIndexer(address);
 
-    const { totalStake } = await this._gqlClient.getIndexer(address);
-    const { amount: ownStake } = await this._gqlClient.getDelegation(address, address);
+    if (!indexer) return BigNumber.from(0);
 
-    const sortedTotalStake = parseRawEraValue(totalStake, currentEra.toNumber());
-    const sortedOwnStake = parseRawEraValue(ownStake, currentEra.toNumber());
+    const { totalStake, ownStake } = await indexer;
 
-    const totalStakingAmountAfter = BigNumber.from(sortedTotalStake?.after ?? 0);
-    const ownStakeAfter = BigNumber.from(sortedOwnStake?.after ?? 0);
+    const totalStakingAmountAfter = BigNumber.from(totalStake?.after ?? 0);
+    const ownStakeAfter = BigNumber.from(ownStake?.after ?? 0);
 
     if (leverageLimit.eq(1)) return ownStakeAfter.sub(minStakingAmount);
 
     const maxUnstakeAmount = min(
       ownStakeAfter.sub(minStakingAmount),
-      (ownStakeAfter.mul(leverageLimit).sub(totalStakingAmountAfter)).div(leverageLimit.sub(1))
+      ownStakeAfter.mul(leverageLimit).sub(totalStakingAmountAfter).div(leverageLimit.sub(1))
     );
 
     return maxUnstakeAmount.isNegative() ? BigNumber.from(0) : maxUnstakeAmount;
+  }
+
+  public async getDelegating(address: string): Promise<BigNumber> {
+    const currentEra = await this._sdk.eraManager.eraNumber();
+    const ownDelegation = await this._gqlClient.getDelegation(address, address);
+    const delegator = await this._gqlClient.getDelegator(address);
+
+    if (!ownDelegation || !delegator) return BigNumber.from(0);
+
+    const { amount: ownStake } = ownDelegation;
+    const { totalDelegations } = delegator;
+
+    const sortedOwnStake = parseRawEraValue(ownStake, currentEra.toNumber());
+    const sortedTotalDelegations = parseRawEraValue(totalDelegations, currentEra.toNumber());
+    const sortedDelegating = sortedTotalDelegations.current.sub(sortedOwnStake.current);
+
+    return sortedDelegating;
   }
 
   public async projectMetadata(cid: string) {

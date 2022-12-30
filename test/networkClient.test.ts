@@ -14,7 +14,12 @@ describe('network client', () => {
 
   it('can get indexer detail', async () => {
     const indexer = await client.getIndexer(TEST_INDEXER);
-    expect(indexer.metadata).toBeTruthy();
+    expect(indexer?.metadata).toBeTruthy();
+  });
+
+  it('can get delegating value', async () => {
+    const delegating = await client.getDelegating(TEST_INDEXER);
+    expect(delegating).toBeTruthy();
   });
 
   it('can get maxUnstakeAmount value', async () => {
