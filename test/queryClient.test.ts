@@ -17,6 +17,7 @@ import {
   GetDeployment,
   GetDeploymentIndexers,
   GetAllDelegations,
+  GetFilteredDelegations,
   GetDeploymentIndexersByIndexer,
   GetAllOpenOffers,
   GetOwnExpiredOffers,
@@ -36,7 +37,7 @@ import {
   GetConsumerClosedFlexPlans,
   GetIndexerOngoingFlexPlans,
   GetIndexerUnfinalisedPlans,
-  GetIndexerClosedFlexPlans
+  GetIndexerClosedFlexPlans,
 } from '../packages/network-query';
 
 function deepAssert(obj: any) {
@@ -93,6 +94,15 @@ describe('query client', () => {
     deepAssert(result.data.delegation);
   });
 
+  it('can query filtered Delegation detail', async () => {
+    const result = await client.query({
+      query: GetFilteredDelegations,
+      variables: { delegator: address1, filterIndexer: address1 },
+    });
+    assert(result, 'cannot request query GET_FILTERED_DELEGATION');
+    deepAssert(result.data.delegation);
+  });
+
   it('can query delegator detail', async () => {
     const result = await client.query({
       query: GetDelegator,
@@ -103,7 +113,6 @@ describe('query client', () => {
   });
 
   it.only('can query all delegations', async () => {
-    
     const result = await client.query({
       query: GetAllDelegations,
       variables: {},
@@ -123,7 +132,6 @@ describe('query client', () => {
   });
 
   it('can query expired agreements', async () => {
-    
     const result = await client.query({
       query: GetExpiredServiceAgreements,
       variables: { address: address2, now: date },
@@ -186,7 +194,6 @@ describe('query client', () => {
   });
 
   it('can query get own offer', async () => {
-    
     const result = await client.query({
       query: GetOwnOpenOffers,
       variables: { consumer: consumer, now: date },
@@ -195,7 +202,7 @@ describe('query client', () => {
     expect(result.data).toBeTruthy();
   });
 
-  it('can query get expired offer', async () => {    
+  it('can query get expired offer', async () => {
     const result = await client.query({
       query: GetOwnExpiredOffers,
       variables: { consumer: consumer, now: date },
@@ -253,7 +260,6 @@ describe('query client', () => {
   });
 
   it('can query get plans', async () => {
-    
     const result = await client.query({
       query: GetPlans,
       variables: { address: address2 },
@@ -326,71 +332,71 @@ describe('query client', () => {
   it('can query statechannels', async () => {
     const result = await client.query({
       query: GetStateChannels,
-      variables: { status: 'OPEN' }
+      variables: { status: 'OPEN' },
     });
 
     expect(result.data.stateChannels).toBeTruthy();
-  })
+  });
 
   it('can query consumer ongoing flex plans', async () => {
     const result = await client.query({
       query: GetConsumerOngoingFlexPlans,
-      variables: { 
+      variables: {
         consumer: consumer,
-        now: new Date()
-      }
+        now: new Date(),
+      },
     });
 
     expect(result.data.stateChannels).toBeTruthy();
-  })
+  });
 
   it('can query consumer closed flex plans', async () => {
     const result = await client.query({
       query: GetConsumerClosedFlexPlans,
-      variables: { 
+      variables: {
         consumer: consumer,
-        now: new Date()
-      }
+        now: new Date(),
+      },
     });
 
     expect(result.data.stateChannels).toBeTruthy();
-  })
+  });
 
   it('can query indexer ongoing flex plans', async () => {
     const result = await client.query({
       query: GetIndexerOngoingFlexPlans,
-      variables: { 
+      variables: {
         indexer: address1,
         deploymentId: polkadotDictDeploymentId,
-        now: new Date()
-      }
+        now: new Date(),
+      },
     });
 
     expect(result.data.stateChannels).toBeTruthy();
-  })
+  });
 
   it('can query indexer ongoing flex plans', async () => {
     const result = await client.query({
       query: GetIndexerClosedFlexPlans,
-      variables: { 
+      variables: {
         indexer: address1,
         deploymentId: polkadotDictDeploymentId,
-        now: new Date()
-      }
+        now: new Date(),
+      },
     });
 
     expect(result.data.stateChannels).toBeTruthy();
-  })
+  });
 
   it('can query indexer unfinalised plans', async () => {
     const result = await client.query({
       query: GetIndexerUnfinalisedPlans,
-      variables: { 
+      variables: {
         indexer: address1,
-        now: new Date()
-      }
+        now: new Date(),
+      },
     });
 
     expect(result.data.stateChannels).toBeTruthy();
-  })
+  });
 });
