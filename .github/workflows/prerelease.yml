@@ -1,4 +1,4 @@
-name: "Prerelease"
+name: 'Prerelease'
 on:
   push:
     branches:
@@ -18,7 +18,6 @@ jobs:
           poll-interval-seconds: 10
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
   Bump-Prerelease-Publish:
     name: Bump-Prerelease-Publish
@@ -76,7 +75,7 @@ jobs:
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump react-hooks & deploy
-        if: steps.changed-react-hooks.outputs.changed == 'true'
+        if: ${{ steps.changed-react-hooks.outputs.changed == 'true' || steps.changed-network-query.outputs.changed == 'true' }}
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/react-hooks
