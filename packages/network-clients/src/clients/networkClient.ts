@@ -67,11 +67,20 @@ export class NetworkClient {
         sortedOwnStake.after.mul(leverageLimit).sub(sortedTotalStake.after) || BigNumber.from(0),
     };
 
+    // Jun 2022 commission-divUnit = perMil / 100 -> 10,000
+    const COMMISSION_DIV_UNIT = 10000;
+    const PERCENTAGE_UNIT = 100;
+    const rawCommission = parseRawEraValue(commission, currentEra.toNumber());
+    const sortedCommission = {
+      current: rawCommission.current.toNumber() / (COMMISSION_DIV_UNIT * PERCENTAGE_UNIT),
+      after: rawCommission.after.toNumber() / (COMMISSION_DIV_UNIT * PERCENTAGE_UNIT),
+    };
+
     return {
       metadata,
       address,
       controller,
-      commission: parseRawEraValue(commission, currentEra.toNumber()),
+      commission: sortedCommission,
       totalStake: sortedTotalStake,
       ownStake: sortedOwnStake,
       delegated,
