@@ -7,7 +7,7 @@ export interface Indexer {
   metadata?: IndexerMetadata;
   address: string;
   controller: string | null;
-  commission: CurrentEraValue;
+  commission: CurrentEraValue<number>;
   totalStake: CurrentEraValue;
   ownStake: CurrentEraValue;
   delegated: CurrentEraValue;
@@ -18,4 +18,4 @@ export type IndexerMetadata = {
   name: string;
   image?: string;
   url: string;
-}
+};
