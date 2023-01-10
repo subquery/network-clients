@@ -8,7 +8,7 @@ This package will generate React useQuery hooks by using the queries and types f
 
 ## Usage
 
-- To see view hooks run `yarn codegen-gql` or `yarn build` from root of monorepo.
+- To see generated hooks run `yarn codegen-gql` or `yarn build` from root of monorepo.
 
 - If you need a useQuery hook that isn't avaliable in `src/__hooks__` follow instructions in @subql/network-query README.md to add queries which this package can use to generate hooks.
 
