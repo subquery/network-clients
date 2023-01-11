@@ -15,7 +15,7 @@
     "@graphql-tools/load": "^7.7.7",
     "@subql/network-query": "workspace:*",
     "class-transformer": "^0.5.1",
-    "class-validator": "^0.13.2"
+    "class-validator": "^0.14.0"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^2.13.1",
