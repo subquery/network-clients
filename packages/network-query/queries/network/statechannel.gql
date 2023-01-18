@@ -12,7 +12,12 @@ fragment StateChannelFields on StateChannel {
   isFinal
   expiredAt
   terminatedAt
-  deploymentId
+  deployment {
+    id
+    project {
+      metadata
+    }
+  }
   terminateByIndexer
 }
 
