@@ -26,12 +26,17 @@ fragment OfferFields on Offer {
   withdrawn # withdraw by cancel event
 }
 
-query GetOwnOpenOffers($consumer: String!, $now: Datetime!, $offset: Int) {
+query GetOwnOpenOffers(
+  $consumer: String!
+  $now: Datetime!
+  $offset: Int
+  $reachLimit: Boolean = false
+) {
   offers(
     filter: {
       consumer: { equalTo: $consumer }
       expireDate: { greaterThan: $now }
-      reachLimit: { equalTo: false }
+      reachLimit: { equalTo: $reachLimit }
     }
     first: 10
     offset: $offset
@@ -43,12 +48,17 @@ query GetOwnOpenOffers($consumer: String!, $now: Datetime!, $offset: Int) {
   }
 }
 
-query GetOwnFinishedOffers($consumer: String!, $now: Datetime!, $offset: Int) {
+query GetOwnFinishedOffers(
+  $consumer: String!
+  $now: Datetime!
+  $offset: Int
+  $reachLimit: Boolean = true
+) {
   offers(
     filter: {
       consumer: { equalTo: $consumer }
       expireDate: { greaterThan: $now }
-      reachLimit: { equalTo: true }
+      reachLimit: { equalTo: $reachLimit }
     }
     first: 10
     offset: $offset
@@ -60,12 +70,17 @@ query GetOwnFinishedOffers($consumer: String!, $now: Datetime!, $offset: Int) {
   }
 }
 
-query GetOwnExpiredOffers($consumer: String!, $now: Datetime!, $offset: Int) {
+query GetOwnExpiredOffers(
+  $consumer: String!
+  $now: Datetime!
+  $offset: Int
+  $reachLimit: Boolean = false
+) {
   offers(
     filter: {
       consumer: { equalTo: $consumer }
       expireDate: { lessThan: $now }
-      reachLimit: { equalTo: false }
+      reachLimit: { equalTo: $reachLimit }
     }
     first: 10
     offset: $offset
@@ -77,9 +92,9 @@ query GetOwnExpiredOffers($consumer: String!, $now: Datetime!, $offset: Int) {
   }
 }
 
-query GetAllOpenOffers($now: Datetime!, $offset: Int) {
+query GetAllOpenOffers($now: Datetime!, $offset: Int, $reachLimit: Boolean = false) {
   offers(
-    filter: { expireDate: { greaterThan: $now }, reachLimit: { equalTo: false } }
+    filter: { expireDate: { greaterThan: $now }, reachLimit: { equalTo: $reachLimit } }
     first: 10
     offset: $offset
   ) {
@@ -90,11 +105,16 @@ query GetAllOpenOffers($now: Datetime!, $offset: Int) {
   }
 }
 
-query GetSpecificOpenOffers($deploymentId: String!, $now: Datetime!, $offset: Int) {
+query GetSpecificOpenOffers(
+  $deploymentId: String!
+  $now: Datetime!
+  $offset: Int
+  $reachLimit: Boolean = false
+) {
   offers(
     filter: {
       expireDate: { greaterThan: $now }
-      reachLimit: { equalTo: false }
+      reachLimit: { equalTo: $reachLimit }
       deploymentId: { equalTo: $deploymentId }
     }
     first: 10
@@ -104,5 +124,11 @@ query GetSpecificOpenOffers($deploymentId: String!, $now: Datetime!, $offset: In
     nodes {
       ...OfferFields
     }
+  }
+}
+
+query GetOfferCount($consumer: String!, $reachLimit: Boolean = false) {
+  offers(filter: { consumer: { equalTo: $consumer }, reachLimit: { equalTo: $reachLimit } }) {
+    totalCount
   }
 }
