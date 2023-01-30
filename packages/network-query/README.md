@@ -29,7 +29,6 @@ To add graphql queries:
 - Run `yarn codegen-gql` to ensure the query is correct. This will output code into `src/__graphql__`
 
 - Create pull request
-- Related changes should also in react-hook
 
 # ChangeLogs
 
