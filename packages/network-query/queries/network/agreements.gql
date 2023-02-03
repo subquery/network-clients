@@ -20,6 +20,12 @@ fragment ServiceAgreementFields on ServiceAgreement {
   }
 }
 
+query GetServiceAgreementsCount($address: String!) {
+  serviceAgreements {
+    totalCount
+  }
+}
+
 query GetOngoingServiceAgreements($address: String!, $now: Datetime!) {
   serviceAgreements(
     filter: {
