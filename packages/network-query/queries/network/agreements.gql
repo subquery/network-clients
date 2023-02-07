@@ -20,8 +20,14 @@ fragment ServiceAgreementFields on ServiceAgreement {
   }
 }
 
-query GetServiceAgreementsCount($address: String!) {
-  serviceAgreements {
+query GetIndexerServiceAgreementsCount($address: String!) {
+  serviceAgreements(filter: { indexerAddress: { equalTo: $address } }) {
+    totalCount
+  }
+}
+
+query GetConsumerServiceAgreementsCount($address: String!) {
+  serviceAgreements(filter: { consumerAddress: { equalTo: $address } }) {
     totalCount
   }
 }
