@@ -50,7 +50,7 @@ query GetOngoingServiceAgreements($address: String!, $now: Datetime!) {
 
 query GetIndexerOngoingServiceAgreements($address: String!, $now: Datetime!) {
   serviceAgreements(
-    filter: { consumerAddress: { equalTo: $address }, endTime: { greaterThanOrEqualTo: $now } }
+    filter: { indexerAddress: { equalTo: $address }, endTime: { greaterThanOrEqualTo: $now } }
     orderBy: END_TIME_ASC
   ) {
     nodes {
@@ -61,7 +61,7 @@ query GetIndexerOngoingServiceAgreements($address: String!, $now: Datetime!) {
 
 query GetConsumerOngoingServiceAgreements($address: String!, $now: Datetime!) {
   serviceAgreements(
-    filter: { indexerAddress: { equalTo: $address }, endTime: { greaterThanOrEqualTo: $now } }
+    filter: { consumerAddress: { equalTo: $address }, endTime: { greaterThanOrEqualTo: $now } }
     orderBy: END_TIME_ASC
   ) {
     nodes {
