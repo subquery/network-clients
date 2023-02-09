@@ -4,6 +4,7 @@
 query GetIndexerDelegators($id: String!, $offset: Int) {
   indexer(id: $id) {
     delegations(offset: $offset, filter: { delegatorId: { notEqualTo: $id } }) {
+      totalCount
       nodes {
         delegatorId
         amount
@@ -20,6 +21,7 @@ query GetDelegation($id: String!) {
 
 query GetAllDelegations($offset: Int) {
   delegations(offset: $offset) {
+    totalCount
     nodes {
       id
       delegatorId
