@@ -6,6 +6,7 @@ query GetWithdrawls($delegator: String!, $offset: Int) {
     filter: { delegator: { equalTo: $delegator }, status: { equalTo: ONGOING } }
     offset: $offset
   ) {
+    totalCount
     nodes {
       id
       index
@@ -20,6 +21,7 @@ query GetWithdrawls($delegator: String!, $offset: Int) {
 
 query GetRewards($address: String!) {
   rewards(orderBy: CLAIMED_TIME_DESC, filter: { delegatorAddress: { equalTo: $address } }) {
+    totalCount
     nodes {
       id
       delegatorAddress
@@ -49,6 +51,7 @@ query GetIndexerRewards($address: String!, $era1: String!, $era2: String!) {
       or: { eraIdx: { equalTo: $era2 } }
     }
   ) {
+    totalCount
     nodes {
       id
       indexerId
