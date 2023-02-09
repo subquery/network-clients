@@ -28,6 +28,7 @@ query GetDeploymentPlans($address: String!, $deploymentId: String!) {
       ]
     }
   ) {
+    totalCount
     nodes {
       ...PlanFields
       planTemplate {
@@ -39,6 +40,7 @@ query GetDeploymentPlans($address: String!, $deploymentId: String!) {
 
 query GetPlanTemplates($offset: Int) {
   planTemplates(first: 10, offset: $offset, filter: { active: { equalTo: true } }) {
+    totalCount
     nodes {
       ...PlanTemplateFields
     }
@@ -53,6 +55,7 @@ query GetPlans($address: String!) {
       active: { equalTo: true }
     }
   ) {
+    totalCount
     nodes {
       ...PlanFields
       planTemplate {
@@ -64,6 +67,7 @@ query GetPlans($address: String!) {
 
 query GetSpecificPlans($address: String) {
   deploymentIndexers(filter: { indexerId: { equalTo: $address } }) {
+    totalCount
     nodes {
       deployment {
         id

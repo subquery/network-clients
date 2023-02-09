@@ -45,6 +45,7 @@ query GetDeploymentIndexer($indexerAddress: String!, $deploymentId: String!) {
   deploymentIndexers(
     filter: { indexerId: { equalTo: $indexerAddress }, deploymentId: { equalTo: $deploymentId } }
   ) {
+    totalCount
     nodes {
       ...DeploymentIndexerFields
     }
@@ -53,6 +54,7 @@ query GetDeploymentIndexer($indexerAddress: String!, $deploymentId: String!) {
 
 query GetDeploymentIndexersByIndexer($indexerAddress: String!) {
   deploymentIndexers(filter: { indexerId: { equalTo: $indexerAddress } }) {
+    totalCount
     nodes {
       ...DeploymentIndexerFields
       deployment {
@@ -68,6 +70,7 @@ query GetDeploymentIndexersByIndexer($indexerAddress: String!) {
 
 query GetAcceptedOffers($address: String!, $offerId: String!) {
   acceptedOffers(filter: { indexerId: { equalTo: $address }, offerId: { equalTo: $offerId } }) {
+    totalCount
     nodes {
       id
     }

@@ -42,6 +42,7 @@ query GetOngoingServiceAgreements($address: String!, $now: Datetime!) {
     }
     orderBy: END_TIME_ASC
   ) {
+    totalCount
     nodes {
       ...ServiceAgreementFields
     }
@@ -53,6 +54,7 @@ query GetIndexerOngoingServiceAgreements($address: String!, $now: Datetime!) {
     filter: { indexerAddress: { equalTo: $address }, endTime: { greaterThanOrEqualTo: $now } }
     orderBy: END_TIME_ASC
   ) {
+    totalCount
     nodes {
       ...ServiceAgreementFields
     }
@@ -64,6 +66,7 @@ query GetConsumerOngoingServiceAgreements($address: String!, $now: Datetime!) {
     filter: { consumerAddress: { equalTo: $address }, endTime: { greaterThanOrEqualTo: $now } }
     orderBy: END_TIME_ASC
   ) {
+    totalCount
     nodes {
       ...ServiceAgreementFields
     }
@@ -80,6 +83,7 @@ query GetExpiredServiceAgreements($address: String!, $now: Datetime!) {
     }
     orderBy: END_TIME_ASC
   ) {
+    totalCount
     nodes {
       ...ServiceAgreementFields
     }
@@ -91,6 +95,7 @@ query GetIndexerExpiredServiceAgreements($address: String!, $now: Datetime!) {
     filter: { indexerAddress: { equalTo: $address }, endTime: { lessThan: $now } }
     orderBy: END_TIME_ASC
   ) {
+    totalCount
     nodes {
       ...ServiceAgreementFields
     }
@@ -102,6 +107,7 @@ query GetConsumerExpiredServiceAgreements($address: String!, $now: Datetime!) {
     filter: { consumerAddress: { equalTo: $address }, endTime: { lessThan: $now } }
     orderBy: END_TIME_ASC
   ) {
+    totalCount
     nodes {
       ...ServiceAgreementFields
     }
@@ -115,6 +121,7 @@ query GetSpecificServiceAgreements($deploymentId: String!, $now: Datetime!) {
     filter: { deploymentId: { equalTo: $deploymentId }, endTime: { lessThan: $now } }
     orderBy: END_TIME_ASC
   ) {
+    totalCount
     nodes {
       ...ServiceAgreementFields
     }

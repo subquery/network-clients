@@ -19,6 +19,7 @@ query GetProject($id: String!) {
 
 query GetProjects($offset: Int) {
   projects(first: 10, offset: $offset) {
+    totalCount
     nodes {
       ...ProjectFields
     }
@@ -28,6 +29,7 @@ query GetProjects($offset: Int) {
 query GetProjectDeployments($projectId: String!) {
   project(id: $projectId) {
     deployments {
+      totalCount
       nodes {
         id
         version

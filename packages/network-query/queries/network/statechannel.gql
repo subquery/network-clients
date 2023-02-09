@@ -29,6 +29,7 @@ query GetPaygPlans($indexer: String!, $deploymentId: String!, $status: ChannelSt
       deploymentId: { equalTo: $deploymentId }
     }
   ) {
+    totalCount
     nodes {
       ...StateChannelFields
     }
@@ -37,6 +38,7 @@ query GetPaygPlans($indexer: String!, $deploymentId: String!, $status: ChannelSt
 
 query GetStateChannels($status: ChannelStatus!) {
   stateChannels(filter: { status: { equalTo: $status } }) {
+    totalCount
     nodes {
       ...StateChannelFields
     }
@@ -93,6 +95,7 @@ query GetIndexerOngoingFlexPlans(
     }
     offset: $offset
   ) {
+    totalCount
     nodes {
       ...StateChannelFields
     }
@@ -113,6 +116,7 @@ query GetIndexerClosedFlexPlans(
     }
     offset: $offset
   ) {
+    totalCount
     nodes {
       ...StateChannelFields
     }
@@ -127,6 +131,7 @@ query GetIndexerUnfinalisedPlans($indexer: String!, $now: Datetime!) {
       expiredAt: { lessThan: $now }
     }
   ) {
+    totalCount
     nodes {
       ...StateChannelFields
     }
