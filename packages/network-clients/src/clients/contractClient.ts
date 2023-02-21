@@ -43,7 +43,7 @@ export class ContractClient {
     if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
 
     const threshold = await this._sdk.serviceAgreementRegistry.threshold();
-    const totalStakingAmount = await this._sdk.staking.getTotalStakingAmount(indexer);
+    const totalStakingAmount = await this._sdk.stakingManager.getTotalStakingAmount(indexer);
 
     if (!threshold || threshold.eq(0)) return BigNumber.from(0);
 
