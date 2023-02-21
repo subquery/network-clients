@@ -34,7 +34,7 @@ export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig> = {
       [GqlEndpoint.Explorer]:
         process.env.DEFAULT_IPFS_URL ?? 'https://api.subquery.network/sq/subquery/subquery-network-subql-project',
     },
-    defaultEndpoint: process.env.TESTNET_RPC ?? 'https://acala-mandala-adapter.api.onfinality.io/public',
+    defaultEndpoint: process.env.TESTNET_RPC ?? 'https://moonbeam-alpha.api.onfinality.io/public',
     sdkOptions: { deploymentDetails },
   },
 };
