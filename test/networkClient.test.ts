@@ -6,10 +6,10 @@ import { SQNetworks } from '../packages/network-clients';
 
 const TEST_INDEXER = '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04';
 
-describe('network client', () => {
+describe.only('network client', () => {
   let client: NetworkClient;
   beforeAll(async () => {
-    client = await NetworkClient.create(SQNetworks.KEPLER);
+    client = await NetworkClient.create(SQNetworks.TESTNET);
   });
 
   it('can get indexer detail', async () => {
