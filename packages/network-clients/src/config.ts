@@ -26,6 +26,7 @@ export interface NetworkConfig {
 export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig> = {
   [SQNetworks.KEPLER]: {
     gql: {
+      // TODO: change to kepler-prod endpoint
       [GqlEndpoint.Explorer]:
         process.env.KEPLER_SUBQL ?? 'https://api.subquery.network/sq/subquery/kepler-testnet-subql-project',
     },
@@ -35,7 +36,7 @@ export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig> = {
   [SQNetworks.TESTNET]: {
     gql: {
       [GqlEndpoint.Explorer]:
-        process.env.DEFAULT_IPFS_URL ?? 'https://api.subquery.network/sq/subquery/subquery-network-subql-project',
+        process.env.DEFAULT_IPFS_URL ?? 'https://api.subquery.network/sq/subquery/kepler-testnet-subql-project',
     },
     defaultEndpoint: process.env.TESTNET_RPC ?? 'https://moonbeam-alpha.api.onfinality.io/public',
     sdkOptions: { deploymentDetails: testnetDeploymentDetails },
@@ -43,6 +44,7 @@ export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig> = {
   [SQNetworks.MAINNET]: {
     gql: {
       [GqlEndpoint.Explorer]:
+       // TODO: change to mainnet-prod endpoint
       process.env.DEFAULT_IPFS_URL ?? 'https://api.subquery.network/sq/subquery/subquery-network-subql-project',
     },
     defaultEndpoint: process.env.MAINNET_RPC ?? 'https://moonbeam-alpha.api.onfinality.io/public', // TODO when launch
