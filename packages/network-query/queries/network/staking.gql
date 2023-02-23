@@ -1,9 +1,9 @@
 # Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 # SPDX-License-Identifier: Apache-2.0
 
-query GetWithdrawls($delegator: String!, $offset: Int) {
+query GetWithdrawls($delegator: String!, $status: WithdrawalStatus!, $offset: Int) {
   withdrawls(
-    filter: { delegator: { equalTo: $delegator }, status: { equalTo: ONGOING } }
+    filter: { delegator: { equalTo: $delegator }, status: { equalTo: $status } }
     offset: $offset
   ) {
     totalCount
