@@ -47,4 +47,4 @@ export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig> = {
   },
 };
 
-export const DEFAULT_IPFS_URL = process.env.DEFAULT_IPFS_URL;
+export const DEFAULT_IPFS_URL = process.env.DEFAULT_IPFS_URL ?? '';
