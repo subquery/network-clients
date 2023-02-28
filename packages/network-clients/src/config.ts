@@ -18,38 +18,33 @@ export enum GqlEndpoint {
 }
 
 export interface NetworkConfig {
-  gql: Record<GqlEndpoint, string>;
-  defaultEndpoint: string;
+  gql: Record<GqlEndpoint, string | undefined>;
+  defaultEndpoint: string | undefined;
   sdkOptions: SdkOptions;
 }
 
 export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig> = {
-  [SQNetworks.KEPLER]: {
+  [SQNetworks.MAINNET]: {
+    defaultEndpoint: process.env.MAINNET_RPC,
+    sdkOptions: { deploymentDetails: mainnetDeploymentDetails },
     gql: {
-      // TODO: change to kepler-prod endpoint
-      [GqlEndpoint.Explorer]:
-        process.env.KEPLER_SUBQL ?? 'https://api.subquery.network/sq/subquery/kepler-testnet-subql-project',
+      [GqlEndpoint.Explorer]: process.env.MAINNET_SUBQL,
     },
-    defaultEndpoint: process.env.KEPLER_RPC ?? 'https://moonbeam-alpha.api.onfinality.io/public', // TODO when launch
+  },
+  [SQNetworks.KEPLER]: {
+    defaultEndpoint: process.env.KEPLER_RPC,
     sdkOptions: { deploymentDetails: keplerDeploymentDetails },
+    gql: {
+      [GqlEndpoint.Explorer]: process.env.KEPLER_SUBQL,
+    },
   },
   [SQNetworks.TESTNET]: {
-    gql: {
-      [GqlEndpoint.Explorer]:
-        process.env.DEFAULT_IPFS_URL ?? 'https://api.subquery.network/sq/subquery/kepler-testnet-subql-project',
-    },
-    defaultEndpoint: process.env.TESTNET_RPC ?? 'https://moonbeam-alpha.api.onfinality.io/public',
+    defaultEndpoint: process.env.TESTNET_RPC,
     sdkOptions: { deploymentDetails: testnetDeploymentDetails },
-  },
-  [SQNetworks.MAINNET]: {
     gql: {
-      [GqlEndpoint.Explorer]:
-       // TODO: change to mainnet-prod endpoint
-      process.env.DEFAULT_IPFS_URL ?? 'https://api.subquery.network/sq/subquery/subquery-network-subql-project',
+      [GqlEndpoint.Explorer]: process.env.TESTNET_SUBQL
     },
-    defaultEndpoint: process.env.MAINNET_RPC ?? 'https://moonbeam-alpha.api.onfinality.io/public', // TODO when launch
-    sdkOptions: { deploymentDetails: mainnetDeploymentDetails },
   },
 };
 
-export const DEFAULT_IPFS_URL = process.env.DEFAULT_IPFS_URL ?? 'https://interipfs.thechaindata.com/ipfs/api/v0';
+export const DEFAULT_IPFS_URL = process.env.DEFAULT_IPFS_URL;
