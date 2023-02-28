@@ -28,26 +28,26 @@ export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig> = {
     gql: {
       // TODO: change to kepler-prod endpoint
       [GqlEndpoint.Explorer]:
-        process.env.KEPLER_SUBQL ?? 'https://api.subquery.network/sq/subquery/kepler-testnet-subql-project',
+        process.env.KEPLER_SUBQL ?? 'https://api.subquery.network/sq/subquery/kepler-subquery-project-mumbai',
     },
-    defaultEndpoint: process.env.KEPLER_RPC ?? 'https://moonbeam-alpha.api.onfinality.io/public', // TODO when launch
+    defaultEndpoint: process.env.KEPLER_RPC ?? 'https://polygon-rpc.com/', // TODO when launch
     sdkOptions: { deploymentDetails: keplerDeploymentDetails },
   },
   [SQNetworks.TESTNET]: {
     gql: {
       [GqlEndpoint.Explorer]:
-        process.env.DEFAULT_IPFS_URL ?? 'https://api.subquery.network/sq/subquery/kepler-testnet-subql-project',
+        process.env.TESTNET_SUBQL ?? 'https://api.subquery.network/sq/subquery/kepler-subquery-project-mumbai',
     },
-    defaultEndpoint: process.env.TESTNET_RPC ?? 'https://moonbeam-alpha.api.onfinality.io/public',
+    defaultEndpoint: process.env.TESTNET_RPC ?? 'https://polygon-mumbai.infura.io/v3/4458cf4d1689497b9a38b1d6bbf05e78',
     sdkOptions: { deploymentDetails: testnetDeploymentDetails },
   },
   [SQNetworks.MAINNET]: {
     gql: {
       [GqlEndpoint.Explorer]:
        // TODO: change to mainnet-prod endpoint
-      process.env.DEFAULT_IPFS_URL ?? 'https://api.subquery.network/sq/subquery/subquery-network-subql-project',
+      process.env.MAINNET_SUBQL ?? 'https://api.subquery.network/sq/subquery/kepler-subquery-project-mumbai',
     },
-    defaultEndpoint: process.env.MAINNET_RPC ?? 'https://moonbeam-alpha.api.onfinality.io/public', // TODO when launch
+    defaultEndpoint: process.env.MAINNET_RPC ?? 'https://polygon-rpc.com/', // TODO when launch
     sdkOptions: { deploymentDetails: mainnetDeploymentDetails },
   },
 };
