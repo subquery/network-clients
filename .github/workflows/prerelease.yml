@@ -6,6 +6,12 @@ on:
     paths-ignore:
       - '.github/workflows/**'
   workflow_dispatch:
+    inputs:
+      force-release:
+        type: boolean
+        description: 'Force to publish the packages'
+        default: false
+        required: true
 
 jobs:
   pre-ci:
@@ -61,28 +67,28 @@ jobs:
         run: yarn build
 
       - name: Bump network-query & deploy
-        if: steps.changed-network-query.outputs.changed == 'true'
+        if: steps.changed-network-query.outputs.changed == 'true' || github.event.inputs.force-release
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/network-query
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump network-clients & deploy
-        if: steps.changed-network-clients.outputs.changed == 'true'
+        if: steps.changed-network-clients.outputs.changed == 'true' || github.event.inputs.force-release
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/network-clients
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump react-hooks & deploy
-        if: ${{ steps.changed-react-hooks.outputs.changed == 'true' || steps.changed-network-query.outputs.changed == 'true' }}
+        if: ${{ steps.changed-react-hooks.outputs.changed == 'true' || steps.changed-network-query.outputs.changed == 'true' }} || github.event.inputs.force-release
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/react-hooks
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump apollo-links & deploy
-        if: steps.changed-apollo-links.outputs.changed == 'true'
+        if: steps.changed-apollo-links.outputs.changed == 'true' || github.event.inputs.force-release
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/apollo-links
