@@ -1,6 +1,8 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { IPFS_URL, KEPLER_RPC, KEPLER_SUBQL, MAINNET_RPC, MAINNET_SUBQL, TESTNET_RPC, TESTNET_SUBQL } from './constants';
+
 import { SdkOptions } from '@subql/contract-sdk/types';
 
 import mainnetDeploymentDetails from '@subql/contract-sdk/publish/mainnet.json';
@@ -25,26 +27,26 @@ export interface NetworkConfig {
 
 export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig> = {
   [SQNetworks.MAINNET]: {
-    defaultEndpoint: process.env.MAINNET_RPC,
+    defaultEndpoint: MAINNET_RPC,
     sdkOptions: { deploymentDetails: mainnetDeploymentDetails },
     gql: {
-      [GqlEndpoint.Explorer]: process.env.MAINNET_SUBQL,
+      [GqlEndpoint.Explorer]: MAINNET_SUBQL,
     },
   },
   [SQNetworks.KEPLER]: {
-    defaultEndpoint: process.env.KEPLER_RPC,
+    defaultEndpoint: KEPLER_RPC,
     sdkOptions: { deploymentDetails: keplerDeploymentDetails },
     gql: {
-      [GqlEndpoint.Explorer]: process.env.KEPLER_SUBQL,
+      [GqlEndpoint.Explorer]: KEPLER_SUBQL,
     },
   },
   [SQNetworks.TESTNET]: {
-    defaultEndpoint: process.env.TESTNET_RPC,
+    defaultEndpoint: TESTNET_RPC,
     sdkOptions: { deploymentDetails: testnetDeploymentDetails },
     gql: {
-      [GqlEndpoint.Explorer]: process.env.TESTNET_SUBQL
+      [GqlEndpoint.Explorer]: TESTNET_SUBQL
     },
   },
 };
 
-export const DEFAULT_IPFS_URL = process.env.DEFAULT_IPFS_URL ?? '';
+export const DEFAULT_IPFS_URL = IPFS_URL;
