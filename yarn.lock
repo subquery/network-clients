@@ -2760,12 +2760,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/contract-sdk@npm:0.12.1-5":
-  version: 0.12.1-5
-  resolution: "@subql/contract-sdk@npm:0.12.1-5"
+"@subql/contract-sdk@npm:^0.12.3-0":
+  version: 0.12.3-0
+  resolution: "@subql/contract-sdk@npm:0.12.3-0"
   dependencies:
     "@openzeppelin/contracts-upgradeable": ^4.5.2
-  checksum: 9334ce5697fd0982e808bfde6fec776eb99ddcab467e7cffeddcd84960f39a41148aa6aa41c93badf1b1953b9b7e218a28dd2371e11c98be8e23e1688b00dc58
+  checksum: fe04d5c36fe6558dc5a664687361c410c4a9d70785e93813d7f7abe44aff7297b64fc6228879afdc29201bb997949b956941310dea7bf1a9dc5992934722d83b
   languageName: node
   linkType: hard
 
@@ -2776,7 +2776,7 @@ __metadata:
     "@actions/core": ^1.9.1
     "@apollo/client": ^3.7.0
     "@metamask/eth-sig-util": ^4.0.1
-    "@subql/contract-sdk": 0.12.1-5
+    "@subql/contract-sdk": ^0.12.3-0
     "@types/jest": ^28.1.6
     "@types/react": ^18.0.12
     "@typescript-eslint/eslint-plugin": ^5.27.0
@@ -2819,7 +2819,7 @@ __metadata:
     graphql: ^16.5.0
     typescript: ^4.6.4
   peerDependencies:
-    "@subql/contract-sdk": 0.12.1-5
+    "@subql/contract-sdk": ^0.12.3-0
     ipfs-http-client: ^53.0.1
   languageName: unknown
   linkType: soft
