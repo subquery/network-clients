@@ -1,13 +1,19 @@
 # Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 # SPDX-License-Identifier: Apache-2.0
 
+fragment DelegationFields on Delegation {
+  id
+  delegatorId
+  indexerId
+  amount
+}
+
 query GetIndexerDelegators($id: String!, $offset: Int) {
   indexer(id: $id) {
     delegations(offset: $offset, filter: { delegatorId: { notEqualTo: $id } }) {
       totalCount
       nodes {
-        delegatorId
-        amount
+        ...DelegationFields
       }
     }
   }
@@ -23,10 +29,7 @@ query GetAllDelegations($offset: Int) {
   delegations(offset: $offset) {
     totalCount
     nodes {
-      id
-      delegatorId
-      indexerId
-      amount
+      ...DelegationFields
     }
   }
 }
@@ -42,16 +45,11 @@ query GetDelegations($delegator: String!, $offset: Int) {
   delegations(filter: { delegatorId: { equalTo: $delegator } }, offset: $offset) {
     totalCount
     nodes {
-      id
-      delegatorId
-      indexerId
-      amount
+      ...DelegationFields
       indexer {
         active
         metadata {
-          metadataCID
-          name
-          url
+          ...MetadataFields
         }
       }
     }
@@ -65,15 +63,10 @@ query GetFilteredDelegations($delegator: String!, $filterIndexer: String!, $offs
   ) {
     totalCount
     nodes {
-      id
-      delegatorId
-      indexerId
-      amount
+      ...DelegationFields
       indexer {
         metadata {
-          metadataCID
-          name
-          url
+          ...MetadataFields
         }
         active
       }

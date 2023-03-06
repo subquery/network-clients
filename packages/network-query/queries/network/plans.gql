@@ -72,8 +72,7 @@ query GetSpecificPlans($address: String) {
       deployment {
         id
         project {
-          id
-          metadata
+          ...ProjectFields
         }
         plans(filter: { creator: { equalTo: $address }, and: { active: { equalTo: true } } }) {
           nodes {

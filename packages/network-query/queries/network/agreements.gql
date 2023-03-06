@@ -14,8 +14,7 @@ fragment ServiceAgreementFields on ServiceAgreement {
     id
     version
     project {
-      id
-      metadata
+      ...ProjectFields
     }
   }
 }
