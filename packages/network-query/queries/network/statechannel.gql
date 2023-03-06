@@ -15,7 +15,8 @@ fragment StateChannelFields on StateChannel {
   deployment {
     id
     project {
-      ...ProjectFields
+      id
+      metadata
     }
   }
   terminateByIndexer

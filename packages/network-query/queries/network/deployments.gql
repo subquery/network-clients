@@ -26,7 +26,8 @@ query GetDeployment($deploymentId: String!) {
     id
     version
     project {
-      ...ProjectFields
+      id
+      metadata
     }
   }
 }
@@ -63,7 +64,8 @@ query GetDeploymentIndexersByIndexer($indexerAddress: String!) {
       deployment {
         id
         project {
-          ...ProjectFields
+          id
+          metadata
         }
       }
     }

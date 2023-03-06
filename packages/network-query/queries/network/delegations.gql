@@ -49,7 +49,9 @@ query GetDelegations($delegator: String!, $offset: Int) {
       indexer {
         active
         metadata {
-          ...MetadataFields
+          metadataCID
+          name
+          url
         }
       }
     }
@@ -66,7 +68,9 @@ query GetFilteredDelegations($delegator: String!, $filterIndexer: String!, $offs
       ...DelegationFields
       indexer {
         metadata {
-          ...MetadataFields
+          metadataCID
+          name
+          url
         }
         active
       }
