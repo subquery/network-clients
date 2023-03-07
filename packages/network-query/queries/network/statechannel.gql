@@ -15,6 +15,7 @@ fragment StateChannelFields on StateChannel {
   deployment {
     id
     project {
+      id
       metadata
     }
   }

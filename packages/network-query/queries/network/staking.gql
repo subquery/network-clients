@@ -1,6 +1,38 @@
 # Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 # SPDX-License-Identifier: Apache-2.0
 
+fragment WithdrawalFields on Withdrawl {
+  id
+  index
+  delegator
+  indexer
+  startTime
+  amount
+  status
+}
+
+fragment RewardFields on Reward {
+  id
+  delegatorAddress
+  indexerAddress
+  amount
+  claimedTime
+}
+
+fragment UnclaimedRewardFields on UnclaimedReward {
+  id
+  delegatorAddress
+  indexerAddress
+  amount
+}
+
+fragment IndexerRewardFields on IndexerReward {
+  id
+  indexerId
+  eraIdx
+  amount
+}
+
 query GetWithdrawls($delegator: String!, $status: WithdrawalStatus!, $offset: Int) {
   withdrawls(
     filter: { delegator: { equalTo: $delegator }, status: { equalTo: $status } }
@@ -8,13 +40,7 @@ query GetWithdrawls($delegator: String!, $status: WithdrawalStatus!, $offset: In
   ) {
     totalCount
     nodes {
-      id
-      index
-      delegator
-      indexer
-      startTime
-      amount
-      status
+      ...WithdrawalFields
     }
   }
 }
@@ -23,11 +49,7 @@ query GetRewards($address: String!) {
   rewards(orderBy: CLAIMED_TIME_DESC, filter: { delegatorAddress: { equalTo: $address } }) {
     totalCount
     nodes {
-      id
-      delegatorAddress
-      indexerAddress
-      amount
-      claimedTime
+      ...RewardFields
     }
   }
   unclaimedRewards(
@@ -35,10 +57,7 @@ query GetRewards($address: String!) {
   ) {
     totalCount
     nodes {
-      id
-      delegatorAddress
-      indexerAddress
-      amount
+      ...UnclaimedRewardFields
     }
   }
 }
@@ -53,10 +72,7 @@ query GetIndexerRewards($address: String!, $era1: String!, $era2: String!) {
   ) {
     totalCount
     nodes {
-      id
-      indexerId
-      eraIdx
-      amount
+      ...IndexerRewardFields
     }
   }
 }
