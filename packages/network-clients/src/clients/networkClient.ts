@@ -110,7 +110,7 @@ export class NetworkClient {
     return maxUnstakeAmount.isNegative() ? BigNumber.from(0) : maxUnstakeAmount;
   }
 
-  public async getDelegating(address: string): Promise<any> {
+  public async getDelegating(address: string): Promise<BigNumber> {
     const currentEra = await this._sdk.eraManager.eraNumber();
     const ownDelegation = await this._gqlClient.getDelegation(address, address);
     const delegator = await this._gqlClient.getDelegator(address);
