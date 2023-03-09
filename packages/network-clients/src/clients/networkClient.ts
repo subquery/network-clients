@@ -110,21 +110,20 @@ export class NetworkClient {
     return maxUnstakeAmount.isNegative() ? BigNumber.from(0) : maxUnstakeAmount;
   }
 
-  public async getDelegating(address: string): Promise<BigNumber> {
+  public async getDelegating(address: string): Promise<any> {
     const currentEra = await this._sdk.eraManager.eraNumber();
     const ownDelegation = await this._gqlClient.getDelegation(address, address);
     const delegator = await this._gqlClient.getDelegator(address);
 
-    if (!ownDelegation || !delegator) return BigNumber.from(0);
+    if (!delegator) return BigNumber.from(0);
 
-    const { amount: ownStake } = ownDelegation;
+    const eraNumber = currentEra.toNumber();
+    const ownStake = ownDelegation?.amount;
     const { totalDelegations } = delegator;
 
-    const sortedOwnStake = parseRawEraValue(ownStake, currentEra.toNumber());
-    const sortedTotalDelegations = parseRawEraValue(totalDelegations, currentEra.toNumber());
-    const sortedDelegating = sortedTotalDelegations.current.sub(sortedOwnStake.current);
-
-    return sortedDelegating;
+    const sortedOwnStake = ownStake ? parseRawEraValue(ownStake, eraNumber).after : BigNumber.from(0);
+    const sortedTotalDelegations = parseRawEraValue(totalDelegations, eraNumber).after;
+    return sortedTotalDelegations.sub(sortedOwnStake);
   }
 
   public async projectMetadata(cid: string) {
