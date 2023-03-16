@@ -77,3 +77,23 @@ query GetFilteredDelegations($delegator: String!, $filterIndexer: String!, $offs
     }
   }
 }
+
+query GetFilteredDelegationByIndexer($delegator: String!, $indexer: String!, $offset: Int) {
+  delegations(
+    filter: { delegatorId: { equalTo: $delegator }, indexerId: { equalTo: $indexer } }
+    offset: $offset
+  ) {
+    totalCount
+    nodes {
+      ...DelegationFields
+      indexer {
+        metadata {
+          metadataCID
+          name
+          url
+        }
+        active
+      }
+    }
+  }
+}
