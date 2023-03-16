@@ -78,9 +78,9 @@ query GetFilteredDelegations($delegator: String!, $filterIndexer: String!, $offs
   }
 }
 
-query GetFilteredDelegationByIndexer($delegator: String!, $filterIndexer: String!, $offset: Int) {
+query GetFilteredDelegationByIndexer($delegator: String!, $indexer: String!, $offset: Int) {
   delegations(
-    filter: { delegatorId: { equalTo: $delegator }, indexerId: { equalTo: $filterIndexer } }
+    filter: { delegatorId: { equalTo: $delegator }, indexerId: { equalTo: $indexer } }
     offset: $offset
   ) {
     totalCount
