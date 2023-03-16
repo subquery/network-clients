@@ -79,4 +79,15 @@ export class ContractClient {
 
     return penaltyFee;
   }
+
+  public async canStartNewUnbonding(account: string): Promise<boolean> {
+    const staking = this._sdk.staking;
+    const [maxUnbondingRequest, unbondingLength, withdrawLength] = await Promise.all([
+      staking.maxUnbondingRequest(),
+      staking.unbondingLength(account),
+      staking.withdrawnLength(account),
+    ]);
+
+    return unbondingLength.sub(withdrawLength).lt(maxUnbondingRequest.sub(1));
+  }
 }
