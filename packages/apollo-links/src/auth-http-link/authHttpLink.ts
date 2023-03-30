@@ -11,16 +11,24 @@ interface AuthHttpOptions {
   httpOptions: HttpOptions; // http options for init `HttpLink`
 }
 
+interface MetadataResponse {
+  indexer?: string;
+  uri: string;
+  deploymentId: string;
+  networkChainId: number;
+}
+
 export async function authHttpLink(options: AuthHttpOptions): Promise<ApolloLink> {
-  const { authUrl, chainId, httpOptions } = options;
+  const { chainId, httpOptions } = options;
 
+  const authUrl = options.authUrl?.trim().replace(/\/+$/, '');
   const metadataUrl = `${authUrl}/metadata/${chainId}`;
-  const tokenUrl = `${authUrl}/token`;
 
-  const { indexer, uri, deploymentId } = await GET<{ indexer: string; uri: string; deploymentId: string }>(metadataUrl);
+  const { indexer, uri, deploymentId, networkChainId } = await GET<MetadataResponse>(metadataUrl);
+  if (!indexer) throw new Error(`No indexer found for chainId ${chainId} in the network!`);
 
   const httpLink = new HttpLink({ ...httpOptions, uri });
-  const authLink = new AuthLink({ authUrl: tokenUrl, deploymentId, indexer, chainId: 1287 });
+  const authLink = new AuthLink({ authUrl, deploymentId, indexer, chainId: networkChainId });
 
   return from([authLink, httpLink]);
 }
