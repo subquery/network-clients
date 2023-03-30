@@ -21,7 +21,7 @@ interface MetadataResponse {
 export async function authHttpLink(options: AuthHttpOptions): Promise<ApolloLink> {
   const { chainId, httpOptions } = options;
 
-  const authUrl = options.authUrl.replace(/\/+$/, '');
+  const authUrl = options.authUrl?.trim().replace(/\/+$/, '');
   const metadataUrl = `${authUrl}/metadata/${chainId}`;
 
   const { indexer, uri, deploymentId, networkChainId } = await GET<MetadataResponse>(metadataUrl);
