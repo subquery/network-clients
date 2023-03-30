@@ -49,7 +49,8 @@ export class AuthLink extends ApolloLink {
     const { indexer, deploymentId, sk, chainId, authUrl } = this._options;
 
     if (!sk) {
-      const res = await POST<{ token: string }>(authUrl, { deploymentId, indexer });
+      const host = authUrl.replace(/\/+$/, '');
+      const res = await POST<{ token: string }>(`${host}/token`, { deploymentId, indexer });
       this._token = res.token;
       return this._token;
     } 
