@@ -10,6 +10,22 @@ fragment PlanTemplateFields on PlanTemplate {
   active
 }
 
+fragment PlansNodeFields on Plan {
+  id
+  active
+  creator
+  deploymentId
+  price
+  planTemplate {
+    id
+    period
+    dailyReqCap
+    rateLimit
+    metadata
+    active
+  }
+}
+
 fragment PlanFields on Plan {
   id
   active
