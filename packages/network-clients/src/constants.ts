@@ -9,8 +9,8 @@ export const KEPLER_RPC = 'https://polygon-rpc.com/';
 
 export const MAINNET_RPC = 'https://polygon-rpc.com/';
 
-export const TESTNET_SUBQL = 'https://api.subquery.network/sq/subquery/kepler-subquery-project-mumbai';
+export const TESTNET_SUBQL = 'https://api.subquery.network/sq/subquery/kepler-testnet';
 
-export const KEPLER_SUBQL = 'https://api.subquery.network/sq/subquery/kepler-subquery-project-mumbai';
+export const KEPLER_SUBQL = 'https://api.subquery.network/sq/subquery/kepler-network';
 
-export const MAINNET_SUBQL = 'https://api.subquery.network/sq/subquery/kepler-subquery-project-mumbai';
+export const MAINNET_SUBQL = 'https://api.subquery.network/sq/subquery/subquery-network';
