@@ -1,0 +1,64 @@
+# Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
+# SPDX-License-Identifier: Apache-2.0
+
+fragment StateChannelFields on StateChannel {
+  id
+  indexer
+  consumer
+  status
+  total
+  price
+  spent
+  startTime
+  expiredAt
+  terminatedAt
+  deployment {
+    id
+    project {
+      metadata
+    }
+  }
+}
+
+fragment GetOngoingFlexFields on StateChannel {
+  stateChannelId {
+    totalCount
+    nodes {
+      ...StateChannelFields
+    }
+  }
+}
+
+query GetOngoingFlexPlan($consumer: String!, $now: Datetime!, $offset: Int) {
+  stateChannels(
+    filter: {
+      consumer: { equalTo: $consumer }
+      expiredAt: { greaterThan: $now }
+      status: { equalTo: OPEN }
+    }
+    offset: $offset
+  ) {
+    totalCount
+    nodes {
+      ...StateChannelFields
+    }
+  }
+}
+
+query GetClosedFlexPlans($consumer: String!, $now: Datetime!, $offset: Int) {
+  stateChannels(
+    filter: {
+      consumer: { equalTo: $consumer }
+      or: [
+        { expiredAt: { lessThan: $now }, status: { equalTo: OPEN } }
+        { status: { notEqualTo: OPEN } }
+      ]
+    }
+    offset: $offset
+  ) {
+    totalCount
+    nodes {
+      ...StateChannelFields
+    }
+  }
+}

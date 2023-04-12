@@ -21,6 +21,27 @@ fragment DeploymentIndexerFields on DeploymentIndexer {
   }
 }
 
+fragment DeploymentIndexerNodeFields on DeploymentIndexer {
+  id
+  indexerId
+  deploymentId
+  blockHeight
+  timestamp
+  status
+  indexer {
+    metadata {
+      ...MetadataFields
+    }
+  }
+  deployment {
+    id
+    project {
+      id
+      metadata
+    }
+  }
+}
+
 query GetDeployment($deploymentId: String!) {
   deployment(id: $deploymentId) {
     id
