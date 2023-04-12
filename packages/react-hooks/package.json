@@ -24,6 +24,7 @@
     "@graphql-codegen/typescript": "^2.7.3",
     "@graphql-codegen/typescript-operations": "^2.5.3",
     "@graphql-codegen/typescript-react-apollo": "^3.3.3",
+    "@subql/network-config": "workspace:*",
     "create-ts-index": "^1.14.0",
     "ctix": "^1.5.4",
     "prettier": "^2.7.1",

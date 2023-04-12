@@ -3,8 +3,6 @@
 
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import fetch from 'cross-fetch';
-import { GqlEndpoint, NetworkConfig } from '../config';
-import { wrapApolloResult } from '../utils/apollo';
 import {
   GetDelegation,
   GetDelegationQuery,
@@ -18,20 +16,23 @@ import {
   GetDelegatorQuery,
   GetDelegatorQueryVariables,
 } from '@subql/network-query';
+import { GQLEndpoint, NetworkConfig } from '@subql/network-config';
+
+import { wrapApolloResult } from '../utils/apollo';
 
 type ApolloClients = { [key: string]: ApolloClient<unknown> };
 
 export class GraphqlQueryClient {
   private apolloClients: ApolloClients = {};
 
-  get explorerClient() {
-    return this.apolloClients[GqlEndpoint.Explorer];
+  get networkClient() {
+    return this.apolloClients[GQLEndpoint.Network];
   }
 
   constructor(private config: NetworkConfig) {
-    this.apolloClients[GqlEndpoint.Explorer] = new ApolloClient({
+    this.apolloClients[GQLEndpoint.Network] = new ApolloClient({
       cache: new InMemoryCache({ resultCaching: true }),
-      link: new HttpLink({ uri: config.gql.explorer, fetch: fetch }),
+      link: new HttpLink({ uri: config.gql.network, fetch: fetch }),
       defaultOptions: {
         watchQuery: {
           fetchPolicy: 'no-cache',
@@ -47,7 +48,7 @@ export class GraphqlQueryClient {
 
   async getIndexer(address: string): Promise<GetIndexerQuery['indexer']> {
     const result = await wrapApolloResult(
-      this.explorerClient.query<GetIndexerQuery, GetIndexerQueryVariables>({
+      this.networkClient.query<GetIndexerQuery, GetIndexerQueryVariables>({
         query: GetIndexer,
         variables: { address },
       })
@@ -61,7 +62,7 @@ export class GraphqlQueryClient {
     delegator: string
   ): Promise<GetDelegationQuery['delegation']> {
     const result = await wrapApolloResult(
-      this.explorerClient.query<GetDelegationQuery, GetDelegationQueryVariables>({
+      this.networkClient.query<GetDelegationQuery, GetDelegationQueryVariables>({
         query: GetDelegation,
         variables: { id: `${indexer}:${delegator}` },
       })
@@ -71,7 +72,7 @@ export class GraphqlQueryClient {
 
   async getDelegator(delegator: string): Promise<GetDelegatorQuery['delegator']> {
     const result = await wrapApolloResult(
-      this.explorerClient.query<GetDelegatorQuery, GetDelegatorQueryVariables>({
+      this.networkClient.query<GetDelegatorQuery, GetDelegatorQueryVariables>({
         query: GetDelegator,
         variables: { address: delegator },
       })
@@ -81,7 +82,7 @@ export class GraphqlQueryClient {
 
   async getTotalLock(): Promise<any> {
     const result = await wrapApolloResult(
-      this.explorerClient.query<GetTotalLockQuery>({
+      this.networkClient.query<GetTotalLockQuery>({
         query: GetTotalLock,
       })
     );

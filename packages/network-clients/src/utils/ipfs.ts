@@ -6,11 +6,6 @@ import buffer from 'buffer';
 
 const Buffer = buffer.Buffer;
 
-export const IPFS_URLS = {
-  project: 'https://ipfs.subquery.network/ipfs/api/v0',
-  metadata: 'https://interipfs.thechaindata.com/ipfs/api/v0',
-};
-
 export const CIDv0 = new RegExp(/Qm[1-9A-HJ-NP-Za-km-z]{44}/i);
 export const CIDv1 = new RegExp(
   /Qm[1-9A-HJ-NP-Za-km-z]{44,}|b[A-Za-z2-7]{58,}|B[A-Z2-7]{58,}|z[1-9A-HJ-NP-Za-km-z]{48,}|F[0-9A-F]{50,}/i

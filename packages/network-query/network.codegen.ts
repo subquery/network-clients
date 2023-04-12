@@ -2,12 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CodegenConfig } from '@graphql-codegen/cli';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import { NETWORK_CONFIGS } from '@subql/network-config';
 
 const config: CodegenConfig = {
-  schema: process.env.KEPLER_SUBQL,
+  schema: NETWORK_CONFIGS.testnet.gql.network,
   documents: './queries/network/*.gql',
   config: {
     preResolveTypes: true,
