@@ -24,7 +24,7 @@
     "typescript": "^4.6.4"
   },
   "peerDependencies": {
-    "@subql/contract-sdk": "^0.12.5-0",
+    "@subql/contract-sdk": "^0.13.0",
     "ipfs-http-client": "^53.0.1"
   },
   "stableVersion": "0.3.2"
