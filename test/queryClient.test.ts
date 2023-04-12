@@ -64,7 +64,7 @@ describe('query client', () => {
   beforeAll(async () => {
     const config = NETWORK_CONFIGS.kepler;
     assert(config, 'network config not defined');
-    client = new GraphqlQueryClient(config).explorerClient;
+    client = new GraphqlQueryClient(config).networkClient;
   });
 
   it('can query indexer detail', async () => {

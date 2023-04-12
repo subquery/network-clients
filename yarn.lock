@@ -2769,7 +2769,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/network-client@workspace:.":
+"@subql/network-client@workspace:*, @subql/network-client@workspace:.":
   version: 0.0.0-use.local
   resolution: "@subql/network-client@workspace:."
   dependencies:
@@ -2854,6 +2854,7 @@ __metadata:
     "@graphql-tools/code-file-loader": ^7.3.6
     "@graphql-tools/graphql-tag-pluck": ^7.3.6
     "@graphql-tools/load": ^7.7.7
+    "@subql/network-client": "workspace:*"
     "@subql/network-query": "workspace:*"
     class-transformer: ^0.5.1
     class-validator: ^0.14.0

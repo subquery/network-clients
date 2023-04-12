@@ -51,7 +51,7 @@ import {GraphqlQueryClient, getIndexer} from '@subql/network-client';
 
 import {GetIndexer} from '@subql/network-query';
 
-const client = new GraphqlQueryClient(config).explorerClient;
+const client = new GraphqlQueryClient(config).networkClient;
 const result = await client.query({
       query: GetIndexer,
       variables: { address: address1 },

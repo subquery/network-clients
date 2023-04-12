@@ -1,16 +1,48 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+export enum SQNetworks {
+  TESTNET = 'testnet',
+  KEPLER = 'kepler',
+  MAINNET = 'mainnet',
+}
+
+export enum GQLEndpoint {
+  Network = 'network',
+  Exchange = 'exchange',
+  Airdrop = 'airdrop',
+}
+
 export const IPFS_URL = 'https://interipfs.thechaindata.com/ipfs/api/v0';
 
-export const TESTNET_RPC = 'https://polygon-mumbai.infura.io/v3/4458cf4d1689497b9a38b1d6bbf05e78';
+export const RPC_ENDPOINTS = {
+  mainnet: 'https://polygon-rpc.com/',
+  kepler: 'https://polygon-rpc.com/',
+  testnet: 'https://polygon-mumbai.infura.io/v3/4458cf4d1689497b9a38b1d6bbf05e78',
+};
 
-export const KEPLER_RPC = 'https://polygon-rpc.com/';
+export const NETWORK_SUBQL_ENDPOINTS = {
+  mainnet: 'https://api.subquery.network/sq/subquery/kepler-network',
+  kepler: 'https://api.subquery.network/sq/subquery/kepler-network',
+  testnet: 'https://api.subquery.network/sq/subquery/kepler-testnet',
+};
 
-export const MAINNET_RPC = 'https://polygon-rpc.com/';
+export const AIRDROP_SUBQL_ENDPOINTS = {
+  mainnet: 'https://api.subquery.network/sq/subquery/kepler-network-airdrop',
+  kepler: 'https://api.subquery.network/sq/subquery/kepler-network-airdrop',
+  testnet: 'https://api.subquery.network/sq/subquery/kepler-testnet-airdrop',
+};
 
-export const TESTNET_SUBQL = 'https://api.subquery.network/sq/subquery/kepler-testnet';
+export const EXCHANGE_SUBQL_ENDPOINTS = {
+  mainnet: 'https://api.subquery.network/sq/subquery/kepler-network-exchange',
+  kepler: 'https://api.subquery.network/sq/subquery/kepler-network-exchange',
+  testnet: 'https://api.subquery.network/sq/subquery/kepler-testnet-exchange',
+};
 
-export const KEPLER_SUBQL = 'https://api.subquery.network/sq/subquery/kepler-network';
-
-export const MAINNET_SUBQL = 'https://api.subquery.network/sq/subquery/subquery-network';
+export function gqlEndpoints(network: SQNetworks) {
+  return {
+    [GQLEndpoint.Network]: NETWORK_SUBQL_ENDPOINTS[network],
+    [GQLEndpoint.Airdrop]: AIRDROP_SUBQL_ENDPOINTS[network],
+    [GQLEndpoint.Exchange]: EXCHANGE_SUBQL_ENDPOINTS[network],
+  }
+}
