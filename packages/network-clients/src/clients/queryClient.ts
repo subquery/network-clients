@@ -16,10 +16,9 @@ import {
   GetDelegatorQuery,
   GetDelegatorQueryVariables,
 } from '@subql/network-query';
+import { GQLEndpoint, NetworkConfig } from '@subql/network-config';
 
-import { NetworkConfig } from '@subql/network-config';
 import { wrapApolloResult } from '../utils/apollo';
-import { GQLEndpoint } from '@subql/network-config';
 
 type ApolloClients = { [key: string]: ApolloClient<unknown> };
 

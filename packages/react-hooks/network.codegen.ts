@@ -3,12 +3,10 @@
 
 import { CodegenConfig } from '@graphql-codegen/cli';
 import { NETWORK_CONFIGS } from '@subql/network-config';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 const config: CodegenConfig = {
-  schema: NETWORK_CONFIGS.kepler.gql.network,
+  // FIXME: use `NETWORK_CONFIGS.kepler.gql.network`
+  schema: NETWORK_CONFIGS.testnet.gql.network,
   documents: '../network-query/queries/network/*.gql',
   config: {
     preResolveTypes: true,
