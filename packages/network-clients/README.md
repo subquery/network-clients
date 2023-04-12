@@ -24,7 +24,7 @@ Client where you can access several methods that use
 the contract sdk values as inputs.
 
 ``` TS
-import {cancelOfferUnspentBalance} from '@subql/network-client';
+import {cancelOfferUnspentBalance} from '@subql/network-clients';
 const offerId = 4
 const balance = await cancelOfferUnspentBalance(offerId);
 ```
@@ -35,7 +35,7 @@ Client where you can call basic ipfs method without having to
 implement the logic yourself.
 
 ```TS 
-import {cat} from '@subql/network-client';
+import {cat} from '@subql/network-clients';
 
 const output = await cat('<insert ipfs address here>');
 console.log(output);
@@ -47,7 +47,7 @@ Client providing commonly used graphql requests that we use
 to get data from the network subquery project.
 
 ```TS
-import {GraphqlQueryClient, getIndexer} from '@subql/network-client';
+import {GraphqlQueryClient, getIndexer} from '@subql/network-clients';
 
 import {GetIndexer} from '@subql/network-query';
 
