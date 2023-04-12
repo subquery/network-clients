@@ -11,10 +11,11 @@ import { IPFSClient } from './ipfsClient';
 import { GraphqlQueryClient } from './queryClient';
 
 import { isCID, min } from '../utils';
-import { DEFAULT_IPFS_URL, NETWORK_CONFIGS, SQNetworks } from '../config';
+import { DEFAULT_IPFS_URL, NETWORK_CONFIGS } from '../config';
 import assert from 'assert';
 import { Indexer } from '../models/indexer';
 import { parseRawEraValue } from '../utils/parseEraValue';
+import { SQNetworks } from '../constants';
 
 type Provider = AbstractProvider | Signer;
 
