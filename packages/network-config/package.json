@@ -1,0 +1,15 @@
+{
+  "name": "@subql/network-config",
+  "version": "0.3.3-1",
+  "main": "dist/index.js",
+  "description": "SubQuery package containing network configuration",
+  "author": "SubQuery Pte Limited",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "yarn tsc -b"
+  },
+  "devDependencies": {
+    "typescript": "^4.8.4"
+  },
+  "stableVersion": "0.3.3-0"
+}

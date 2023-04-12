@@ -5,4 +5,4 @@ export * from '@subql/contract-sdk';
 export * from './clients';
 export * from './models';
 export * from './utils';
-export * from './config';
+export * from '../../network-config/config';

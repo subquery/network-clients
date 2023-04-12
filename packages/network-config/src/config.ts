@@ -1,7 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GQLEndpoint, IPFS_URL, RPC_ENDPOINTS, SQNetworks, gqlEndpoints } from './constants';
+import { GQLEndpoint, IPFS_URLS, RPC_ENDPOINTS, SQNetworks, gqlEndpoints } from './constants';
 
 import { SdkOptions } from '@subql/contract-sdk/types';
 
@@ -34,4 +34,4 @@ export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig> = {
   },
 };
 
-export const DEFAULT_IPFS_URL = IPFS_URL;
+export const DEFAULT_IPFS_URL = IPFS_URLS.metadata;

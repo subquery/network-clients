@@ -13,6 +13,11 @@ export enum GQLEndpoint {
   Airdrop = 'airdrop',
 }
 
+export const IPFS_URLS = {
+  project: 'https://ipfs.subquery.network/ipfs/api/v0',
+  metadata: 'https://interipfs.thechaindata.com/ipfs/api/v0',
+};
+
 export const IPFS_URL = 'https://interipfs.thechaindata.com/ipfs/api/v0';
 
 export const RPC_ENDPOINTS = {

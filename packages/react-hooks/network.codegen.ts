@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CodegenConfig } from '@graphql-codegen/cli';
-import { NETWORK_CONFIGS } from '@subql/network-clients';
+import { NETWORK_CONFIGS } from '@subql/network-config';
 import dotenv from 'dotenv';
 
 dotenv.config();
