@@ -2769,9 +2769,48 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/network-client@workspace:*, @subql/network-client@workspace:.":
+"@subql/network-clients@workspace:*, @subql/network-clients@workspace:packages/network-clients":
   version: 0.0.0-use.local
-  resolution: "@subql/network-client@workspace:."
+  resolution: "@subql/network-clients@workspace:packages/network-clients"
+  dependencies:
+    "@apollo/client": ^3.7.0
+    "@ethersproject/bignumber": ^5.7.0
+    "@subql/network-query": "workspace:*"
+    apollo: ^2.34.0
+    axios: ^0.27.2
+    buffer: ^6.0.3
+    create-ts-index: ^1.14.0
+    cross-fetch: ^3.1.5
+    ethers: ^5.6.8
+    graphql: ^16.5.0
+    typescript: ^4.6.4
+  peerDependencies:
+    "@subql/contract-sdk": ^0.13.0
+    ipfs-http-client: ^53.0.1
+  languageName: unknown
+  linkType: soft
+
+"@subql/network-query@workspace:*, @subql/network-query@workspace:packages/network-query":
+  version: 0.0.0-use.local
+  resolution: "@subql/network-query@workspace:packages/network-query"
+  dependencies:
+    "@graphql-codegen/cli": ^2.13.1
+    "@graphql-codegen/introspection": ^2.2.1
+    "@graphql-codegen/near-operation-file-preset": ^2.4.1
+    "@graphql-codegen/typescript": ^2.7.3
+    "@graphql-codegen/typescript-document-nodes": ^2.3.3
+    "@graphql-codegen/typescript-operations": ^2.5.3
+    "@subql/network-clients": "workspace:*"
+    ctix: ^1.5.4
+    graphql: ^16.5.0
+    prettier: ^2.7.1
+    typescript: ^4.8.4
+  languageName: unknown
+  linkType: soft
+
+"@subql/network-tools@workspace:*, @subql/network-tools@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@subql/network-tools@workspace:."
   dependencies:
     "@actions/core": ^1.9.1
     "@apollo/client": ^3.7.0
@@ -2803,45 +2842,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/network-clients@workspace:packages/network-clients":
-  version: 0.0.0-use.local
-  resolution: "@subql/network-clients@workspace:packages/network-clients"
-  dependencies:
-    "@apollo/client": ^3.7.0
-    "@ethersproject/bignumber": ^5.7.0
-    "@subql/network-query": "workspace:*"
-    apollo: ^2.34.0
-    axios: ^0.27.2
-    buffer: ^6.0.3
-    create-ts-index: ^1.14.0
-    cross-fetch: ^3.1.5
-    ethers: ^5.6.8
-    graphql: ^16.5.0
-    typescript: ^4.6.4
-  peerDependencies:
-    "@subql/contract-sdk": ^0.13.0
-    ipfs-http-client: ^53.0.1
-  languageName: unknown
-  linkType: soft
-
-"@subql/network-query@workspace:*, @subql/network-query@workspace:packages/network-query":
-  version: 0.0.0-use.local
-  resolution: "@subql/network-query@workspace:packages/network-query"
-  dependencies:
-    "@graphql-codegen/cli": ^2.13.1
-    "@graphql-codegen/introspection": ^2.2.1
-    "@graphql-codegen/near-operation-file-preset": ^2.4.1
-    "@graphql-codegen/typescript": ^2.7.3
-    "@graphql-codegen/typescript-document-nodes": ^2.3.3
-    "@graphql-codegen/typescript-operations": ^2.5.3
-    "@subql/network-client": "workspace:*"
-    ctix: ^1.5.4
-    graphql: ^16.5.0
-    prettier: ^2.7.1
-    typescript: ^4.8.4
-  languageName: unknown
-  linkType: soft
-
 "@subql/react-hooks@workspace:packages/react-hooks":
   version: 0.0.0-use.local
   resolution: "@subql/react-hooks@workspace:packages/react-hooks"
@@ -2855,8 +2855,8 @@ __metadata:
     "@graphql-tools/code-file-loader": ^7.3.6
     "@graphql-tools/graphql-tag-pluck": ^7.3.6
     "@graphql-tools/load": ^7.7.7
-    "@subql/network-client": "workspace:*"
     "@subql/network-query": "workspace:*"
+    "@subql/network-tools": "workspace:*"
     class-transformer: ^0.5.1
     class-validator: ^0.14.0
     create-ts-index: ^1.14.0
