@@ -6,7 +6,7 @@ graphql-codegen --config types.codegen.ts
 # exchange
 graphql-codegen --config exchange.codegen.ts
 
-network
+# network
 graphql-codegen --config network.codegen.ts
 
 yarn prettier --write . 
