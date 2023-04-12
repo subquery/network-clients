@@ -2796,6 +2796,9 @@ __metadata:
   resolution: "@subql/network-config@workspace:packages/network-config"
   dependencies:
     typescript: ^4.8.4
+  peerDependencies:
+    "@subql/contract-sdk": ^0.13.0
+    ipfs-http-client: ^53.0.1
   languageName: unknown
   linkType: soft
 

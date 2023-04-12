@@ -11,5 +11,9 @@
   "devDependencies": {
     "typescript": "^4.8.4"
   },
+  "peerDependencies": {
+    "@subql/contract-sdk": "^0.13.0",
+    "ipfs-http-client": "^53.0.1"
+  },
   "stableVersion": "0.3.3-0"
 }
