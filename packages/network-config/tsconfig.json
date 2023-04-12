@@ -7,5 +7,5 @@
     "rootDir": "./src",
     "outDir": "./dist"
   },
-  "include": ["src/**/*", "test/**/*", "../network-config/constants.ts", "../network-config/config.ts"]
+  "include": ["src/**/*", "test/**/*"]
 }

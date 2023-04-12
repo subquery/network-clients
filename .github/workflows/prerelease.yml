@@ -42,6 +42,11 @@ jobs:
           node-version: 16
 
       - uses: marceloprado/has-changed-path@v1
+        id: changed-network-config
+        with:
+          paths: packages/network-config
+
+      - uses: marceloprado/has-changed-path@v1
         id: changed-network-clients
         with:
           paths: packages/network-clients
@@ -65,6 +70,13 @@ jobs:
 
       - name: build
         run: yarn build
+
+      - name: Bump network-config & deploy
+        if: steps.changed-network-config.outputs.changed == 'true' || github.event.inputs.force-release
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/network-config
+          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump network-query & deploy
         if: steps.changed-network-query.outputs.changed == 'true' || github.event.inputs.force-release

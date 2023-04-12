@@ -35,7 +35,12 @@ jobs:
         with:
           node-version: 16
 
-    #Identify changes
+      #Identify changes
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-network-config
+        with:
+          paths: packages/network-config
+
       - uses: marceloprado/has-changed-path@v1
         id: changed-network-clients
         with:
@@ -62,6 +67,14 @@ jobs:
         run: yarn build
 
       #Publish to npm and github releases
+      - name: Publish network-config
+        if: steps.changed-network-config.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/network-config
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish network-query
         if: steps.changed-network-query.outputs.changed == 'true'
         uses: ./.github/actions/create-release

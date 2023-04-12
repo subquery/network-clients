@@ -1,5 +1,5 @@
 undecided:
-  - "@subql/network-client"
+  - "@subql/network-tools"
   - "@subql/network-clients"
+  - "@subql/network-config"
   - "@subql/network-query"
-  - "@subql/react-hooks"
