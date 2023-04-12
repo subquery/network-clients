@@ -2834,6 +2834,7 @@ __metadata:
     "@graphql-codegen/typescript": ^2.7.3
     "@graphql-codegen/typescript-document-nodes": ^2.3.3
     "@graphql-codegen/typescript-operations": ^2.5.3
+    "@subql/network-client": "workspace:*"
     ctix: ^1.5.4
     graphql: ^16.5.0
     prettier: ^2.7.1
