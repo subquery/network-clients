@@ -22,7 +22,17 @@ fragment DeploymentIndexerFields on DeploymentIndexer {
 }
 
 fragment DeploymentIndexerNodeFields on DeploymentIndexer {
-  ...DeploymentIndexerFields
+  id
+  indexerId
+  deploymentId
+  blockHeight
+  timestamp
+  status
+  indexer {
+    metadata {
+      ...MetadataFields
+    }
+  }
   deployment {
     id
     project {
