@@ -22,15 +22,6 @@ fragment StateChannelFields on StateChannel {
   terminateByIndexer
 }
 
-fragment StateChannelsFields on StateChannel {
-  stateChannels {
-    totalCount
-    nodes {
-      ...StateChannelFields
-    }
-  }
-}
-
 query GetPaygPlans($indexer: String!, $deploymentId: String!, $status: ChannelStatus!) {
   stateChannels(
     filter: {
