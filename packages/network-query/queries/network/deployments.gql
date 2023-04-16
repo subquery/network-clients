@@ -21,6 +21,17 @@ fragment DeploymentIndexerFields on DeploymentIndexer {
   }
 }
 
+fragment DeploymentIndexerNodeFields on DeploymentIndexer {
+  ...DeploymentIndexerFields
+  deployment {
+    id
+    project {
+      id
+      metadata
+    }
+  }
+}
+
 query GetDeployment($deploymentId: String!) {
   deployment(id: $deploymentId) {
     id
@@ -68,6 +79,14 @@ query GetDeploymentIndexersByIndexer($indexerAddress: String!) {
           metadata
         }
       }
+    }
+  }
+}
+
+query GetDeploymentIndexersDeploymentByIndexer($indexerAddress: String!) {
+  deploymentIndexers(filter: { indexerId: { equalTo: $indexerAddress } }) {
+    nodes {
+      ...DeploymentIndexerNodeFields
     }
   }
 }
