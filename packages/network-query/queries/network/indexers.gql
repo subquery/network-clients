@@ -29,6 +29,10 @@ query GetIndexers($first: Int, $offset: Int, $order: IndexersOrderBy = ID_ASC) {
     filter: { active: { equalTo: true } }
   ) {
     totalCount
+    pageInfo {
+      startCursor
+      endCursor
+    }
     nodes {
       ...IndexerFields
     }
