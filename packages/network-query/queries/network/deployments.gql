@@ -70,6 +70,10 @@ query GetDeploymentIndexer($indexerAddress: String!, $deploymentId: String!) {
 query GetDeploymentIndexersByIndexer($indexerAddress: String!) {
   deploymentIndexers(filter: { indexerId: { equalTo: $indexerAddress } }) {
     totalCount
+    pageInfo {
+      startCursor
+      endCursor
+    }
     nodes {
       ...DeploymentIndexerFields
       deployment {
