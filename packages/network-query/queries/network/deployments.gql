@@ -73,6 +73,7 @@ query GetDeploymentIndexersByIndexer($indexerAddress: String!) {
     pageInfo {
       startCursor
       endCursor
+      hasNextPage
     }
     nodes {
       ...DeploymentIndexerFields
