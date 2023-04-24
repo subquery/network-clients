@@ -32,6 +32,7 @@ query GetIndexers($first: Int, $offset: Int, $order: IndexersOrderBy = ID_ASC) {
     pageInfo {
       startCursor
       endCursor
+      hasNextPage
     }
     nodes {
       ...IndexerFields
