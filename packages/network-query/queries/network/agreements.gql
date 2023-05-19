@@ -122,7 +122,7 @@ query GetProjectOngoingServiceAgreements($deploymentId: String!, $now: Datetime!
     orderBy: END_TIME_ASC
   ) {
     totalCount
-    node {
+    nodes {
       ...ServiceAgreementFields
     }
   }
