@@ -12,7 +12,7 @@ import {
   GetIndexerDelegators,
   GetExpiredServiceAgreements,
   GetOngoingServiceAgreements,
-  GetSpecificServiceAgreements,
+  GetProjectOngoingServiceAgreements,
   GetAcceptedOffers,
   GetDeployment,
   GetDeploymentIndexers,
@@ -140,9 +140,9 @@ describe('query client', () => {
     deepAssert(result.data.serviceAgreements);
   });
 
-  it('can query project agreements', async () => {
+  it('can query project ongoing agreements', async () => {
     const result = await client.query({
-      query: GetSpecificServiceAgreements,
+      query: GetProjectOngoingServiceAgreements,
       variables: { deploymentId: 'Qmdpka4MpaUtGP7B3AAoPji4H6X7a2ir53a1mxnUumqMm4', now: date },
     });
     assert(result, 'cannot request query GET_SPECIFIC_SERVICE_AGREEMENTS');
