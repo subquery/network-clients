@@ -31,7 +31,7 @@ export class AuthLink extends ApolloLink {
       this.requestToken().then((token) => {
         operation.setContext({ headers: { authorization: `Bearer ${token}` } }); 
         sub = forward(operation).subscribe(observer);
-      });
+      }).catch((error) => observer.error(error));
 
       return () => sub.unsubscribe();
     });

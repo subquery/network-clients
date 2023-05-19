@@ -53,12 +53,13 @@ describe.skip('auth link', () => {
   });
 });
 
-describe.skip('auth link with auth center', () => {
+describe.only('auth link with auth center', () => {
   let client: ApolloClient<unknown>;
+  const n = 3;
 
-  beforeAll(async () => {
-    const authUrl = 'http://3.27.14.20:3030';
-    const chainId = '0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527';
+  beforeEach(async () => {
+    const authUrl = '';
+    const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
     const httpOptions = { fetch };
     const options = { authUrl, chainId, httpOptions }
     const link = await authHttpLink(options);
@@ -69,12 +70,18 @@ describe.skip('auth link with auth center', () => {
     });
   });
 
-  it('can query with auth link', async () => {
-    try {
-      const result = await client.query({ query: metadataQuery });
-      expect(result.data._metadata).toBeTruthy();
-    } catch (e) {
-      console.log(`Failed to send query with auth link: ${e}`);
-    }
-  });
+  const queryTest = (index: number) => {
+    it(`can query with auth link ${index}`, async () => {
+      try {
+        const result = await client.query({ query: metadataQuery });
+        expect(result.data._metadata).toBeTruthy();
+      } catch (e) {
+        console.log(`Failed to send query with auth link: ${e}`);
+      }
+    });
+  }
+
+  for (let i = 0; i < n; i++) {
+    queryTest(i);
+  }
 });
