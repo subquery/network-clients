@@ -37,6 +37,15 @@ export class AuthLink extends ApolloLink {
     });
   }
 
+  get indexer(): string {
+    const { indexer } = this._options;
+    if (!indexer) {
+      // TODO: get indexer from cache
+    }
+    
+    return indexer;
+  }
+
   private generateMessage() {
     const { indexer, consumer, agreement, deploymentId } = this._options;
     const timestamp = new Date().getTime();
@@ -46,7 +55,8 @@ export class AuthLink extends ApolloLink {
   private async requestToken(): Promise<string> {
     if (!isTokenExpired(this._token)) return this._token;
 
-    const { indexer, deploymentId, sk, chainId, authUrl } = this._options;
+    const { deploymentId, sk, chainId, authUrl } = this._options;
+    const indexer = this.indexer;
 
     if (!sk) {
       const host = authUrl?.trim().replace(/\/+$/, '');
