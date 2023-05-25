@@ -4,10 +4,10 @@
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
 import { Subscription } from 'zen-observable-ts';
 
-import { isTokenExpired, requestAuthToken } from './authHelper';
+import { requestAuthToken } from './authHelper';
 import { POST, getInitialIndexer } from '../query';
 import { Message } from './eip712';
-import { CURRENT_AGREEMENT, agreementCache } from '../cache';
+import { getNextAgreement, getNextToken, updateCurrentToken } from '../cache';
 
 export interface AuthOptions extends Message {
   authUrl: string;         // the url for geting token
@@ -18,7 +18,6 @@ export interface AuthOptions extends Message {
 
 export class AuthLink extends ApolloLink {
   private _options: AuthOptions;
-  private _token: string;
 
   constructor(options: AuthOptions) {
     super();
@@ -44,7 +43,7 @@ export class AuthLink extends ApolloLink {
     const { indexer } = this._options;
     if (indexer) return indexer;
 
-    return agreementCache.get(CURRENT_AGREEMENT)?.indexer;
+    return getNextAgreement()?.indexer ?? '';
   }
 
   private generateMessage() {
@@ -54,22 +53,26 @@ export class AuthLink extends ApolloLink {
   }
 
   private async requestToken(): Promise<string> {
-    if (!isTokenExpired(this._token)) return this._token;
+    let token = getNextToken();
+    if (token) return token;
+    
     const { projectChainId, sk, chainId, authUrl } = this._options;
 
     if (!sk) {
       const indexer = this.indexer ?? await getInitialIndexer(authUrl, projectChainId ?? '');
       const host = authUrl?.trim().replace(/\/+$/, '');
       const res = await POST<{ token: string }>(`${host}/token`, { projectChainId, indexer });
-      this._token = res.token;
-      return this._token;
+      const token = res.token;
+      updateCurrentToken(token);
+      return token;
     }
 
     if (!chainId) throw new Error('chainId is required');
 
     const message = this.generateMessage();
-    this._token = await requestAuthToken(authUrl, message, sk, chainId)
+    token = await requestAuthToken(authUrl, message, sk, chainId)
+    updateCurrentToken(token);
 
-    return this._token;
+    return token;
   }
 }

@@ -25,25 +25,38 @@ export const tokenCache = new Cache<string>();
 export const AGREEMENT_LIST = 'AGREEMENT_LIST';
 export const agreementListCache = new Cache<Agreement[]>();
 
-export const PREVIOUS_AGREEMENT = 'PREVIOUS_AGREEMENT';
+export const CURRENT_AGREEMENT = 'CURRENT_AGREEMENT';
 export const agreementCache = new Cache<number>();
 
 export function getNextAgreement(): Agreement | undefined {
-  const prevAgreementIndex = agreementCache.get(PREVIOUS_AGREEMENT);
+  const currAgreementIndex = agreementCache.get(CURRENT_AGREEMENT);
   const agreements = agreementListCache.get(AGREEMENT_LIST);
   if (!agreements) return undefined;
 
   let agreement = agreements[0];
-  if (prevAgreementIndex === undefined) {
-    agreementCache.set(PREVIOUS_AGREEMENT, 0);
+  if (currAgreementIndex === undefined) {
+    agreementCache.set(CURRENT_AGREEMENT, 0);
   }
 
-  if (prevAgreementIndex <= agreements.length - 2) {
-    agreementCache.set(PREVIOUS_AGREEMENT, prevAgreementIndex + 1);
-    agreement = agreements[prevAgreementIndex + 1];
+  if (currAgreementIndex <= agreements.length - 2) {
+    agreementCache.set(CURRENT_AGREEMENT, currAgreementIndex + 1);
+    agreement = agreements[currAgreementIndex + 1];
   } else {
-    agreementCache.set(PREVIOUS_AGREEMENT, 0);
+    agreementCache.set(CURRENT_AGREEMENT, 0);
   }
 
   return agreement;
+}
+
+export function getNextToken(): string | undefined {
+  const nextId = getNextAgreement()?.id;
+  return tokenCache.get(nextId ?? '');
+}
+
+export function updateCurrentToken(token: string) {
+  const agreements = agreementListCache.get(AGREEMENT_LIST);
+  const index = agreementCache.get(CURRENT_AGREEMENT);
+  const id = agreements[index].id;
+
+  tokenCache.set(id, token);
 }
