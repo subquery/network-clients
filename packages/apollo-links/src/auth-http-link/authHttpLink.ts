@@ -3,34 +3,22 @@
 
 import { from, ApolloLink, HttpOptions } from '@apollo/client/core';
 
-import { AuthLink, GET } from '../auth-link';
+import { AuthLink } from '../auth-link';
 import { DynamicHttpLink } from '../http-link/dynamicHttpLink';
-import { Agreement } from '../types';
 
 interface AuthHttpOptions {
   authUrl: string;          // auth service url
-  chainId: string;          // genesis hash of the chain
+  projectChainId: string;   // genesis hash of the chain
   httpOptions: HttpOptions; // http options for init `HttpLink`
   backupDictionary: string; // backup dictionary for `AuthLink`
+  deploymentId: string;     // deployment id of the project
 }
 
-interface AgreementsResponse {
-  agreements: Agreement[];
-  deploymentId: string;
-  networkChainId: number;
-}
-
-export async function authHttpLink(options: AuthHttpOptions): Promise<ApolloLink> {
-  const { chainId, httpOptions, backupDictionary } = options;
-
-  const authUrl = options.authUrl?.trim().replace(/\/+$/, '');
-
-  // TODO: 1. get all the available indexers, indexer { address, deploymentId, networkChainId, uri }
-  const agreementsURL = `${authUrl}/agreements/${chainId}`;
-  const { agreements, deploymentId, networkChainId } = await GET<AgreementsResponse>(agreementsURL);
+export function authHttpLink(options: AuthHttpOptions): ApolloLink {
+  const { projectChainId, httpOptions, backupDictionary, deploymentId } = options;
 
   const httpLink = new DynamicHttpLink({ httpOptions, backupDictionary });
-  const authLink = new AuthLink({ authUrl, deploymentId, indexer: '', chainId: networkChainId });
+  const authLink = new AuthLink({ authUrl: options.authUrl, deploymentId, indexer: '', projectChainId });
 
   return from([authLink, httpLink]);
 }

@@ -4,25 +4,11 @@
 import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
 import jwt_decode from 'jwt-decode';
 import buffer from 'buffer';
-import axios from 'axios';
 
 import { AuthMessage, buildTypedMessage, createAuthRequestBody } from './eip712';
+import { POST } from '../query';
 
 const Buffer = buffer.Buffer;
-
-export async function POST<T>(url: string, body: Record<string, string | number | undefined>) {
-  const headers = { 'Content-Type': 'application/json' };
-  const res = await axios.post<T>(url, body, { headers });
-
-  return res.data;
-}
-
-export async function GET<T>(url: string) {
-  const headers = { 'Content-Type': 'application/json' };
-  const res = await axios.get<T>(url, { headers });
-
-  return res.data;
-}
 
 export function isTokenExpired(token: string): boolean {
   if (!token) return true;

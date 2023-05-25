@@ -52,7 +52,7 @@ export function buildTypedMessage(
   };
 }
 
-export function createAuthRequestBody(message: AuthMessage, signature: string, chainId = 1287) {
+export function createAuthRequestBody(message: AuthMessage, signature: string, chainId = 137) {
   const { consumer, indexer, agreement, deploymentId, timestamp } = message;
   const baseBody = {
     indexer,

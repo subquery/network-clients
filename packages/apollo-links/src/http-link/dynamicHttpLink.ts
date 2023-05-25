@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApolloLink, FetchResult, HttpLink, HttpOptions, NextLink, Observable, Operation } from '@apollo/client/core';
-import { Subscription } from 'zen-observable-ts';
+import { agreementCache } from '../cache';
 
 export interface Options {
   httpOptions: HttpOptions; // http options for init `HttpLink`
@@ -21,14 +21,11 @@ export class DynamicHttpLink extends ApolloLink {
     if (!forward) return null;
 
     return new Observable<FetchResult>(observer => {
-      let sub: Subscription;
-
       const dynamicUrl = this.getUrl();
-  
       const httpLink = this.createHttpLink(dynamicUrl);
       operation.setContext({ link: httpLink });
 
-      sub = forward(operation).subscribe(observer);
+      const sub = forward(operation).subscribe(observer);
       return () => sub.unsubscribe();
     });
   }
@@ -41,6 +38,6 @@ export class DynamicHttpLink extends ApolloLink {
   }
 
   private getUrl(): string {
-    return '';
+    return agreementCache.get('CURRENT_AGREEMENT')?.uri || this._options.backupDictionary;
   }
 }
