@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApolloLink, FetchResult, HttpLink, HttpOptions, NextLink, Observable, Operation } from '@apollo/client/core';
-import { agreementCache } from '../cache';
 
 export interface Options {
   httpOptions: HttpOptions; // http options for init `HttpLink`
@@ -17,12 +16,16 @@ export class DynamicHttpLink extends ApolloLink {
     this._options = options;
   }
 
+  get backupDictionary(): string {
+    return this._options.backupDictionary;
+  }
+
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
     if (!forward) return null;
 
     return new Observable<FetchResult>(observer => {
-      const dynamicUrl = this.getUrl();
-      const httpLink = this.createHttpLink(dynamicUrl);
+      const { uri } = operation.getContext();
+      const httpLink = this.createHttpLink(uri);
       operation.setContext({ link: httpLink });
 
       const sub = forward(operation).subscribe(observer);
@@ -30,14 +33,10 @@ export class DynamicHttpLink extends ApolloLink {
     });
   }
 
-  private createHttpLink(uri: string): HttpLink {
+  private createHttpLink(uri = this.backupDictionary): HttpLink {
     return new HttpLink({
       ...this._options.httpOptions,
       uri,
     });
-  }
-
-  private getUrl(): string {
-    return agreementCache.get('CURRENT_AGREEMENT')?.uri || this._options.backupDictionary;
   }
 }
