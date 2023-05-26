@@ -28,7 +28,15 @@ export class DynamicHttpLink extends ApolloLink {
       const httpLink = this.createHttpLink(uri);
       operation.setContext({ link: httpLink });
 
-      const sub = forward(operation).subscribe(observer);
+      const sub = forward(operation).subscribe({
+        next: observer.next.bind(observer),
+        complete: observer.complete.bind(observer),
+        error: error => {
+          // TODO: Handle the error here, e.g. retry with another link
+          console.log('Request failed:', error);
+          observer.error(error);
+        },
+      });
       return () => sub.unsubscribe();
     });
   }
