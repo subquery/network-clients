@@ -5,6 +5,7 @@ import { from, ApolloLink, HttpOptions } from '@apollo/client/core';
 
 import { AuthLink } from '../auth-link';
 import { DynamicHttpLink } from '../http-link/dynamicHttpLink';
+import agreementMananger from '../agreementMananger';
 
 interface AuthHttpOptions {
   authUrl: string;          // auth service url
@@ -15,10 +16,13 @@ interface AuthHttpOptions {
 }
 
 export function authHttpLink(options: AuthHttpOptions): ApolloLink {
-  const { projectChainId, httpOptions, backupDictionary, deploymentId } = options;
+  const { projectChainId, httpOptions, backupDictionary, deploymentId, authUrl } = options;
+
+  agreementMananger.init(authUrl, projectChainId);
+  agreementMananger.start();
 
   const httpLink = new DynamicHttpLink({ httpOptions, backupDictionary });
-  const authLink = new AuthLink({ authUrl: options.authUrl, deploymentId, indexer: '', projectChainId });
+  const authLink = new AuthLink({ authUrl, deploymentId, indexer: '', projectChainId });
 
   return from([authLink, httpLink]);
 }

@@ -4,7 +4,6 @@
 import axios from 'axios';
 
 import { Agreement } from "./types";
-import { AGREEMENT_LIST, agreementCache, agreementListCache, getNextAgreement } from './cache';
 
 export async function POST<T>(url: string, body: Record<string, string | number | undefined>) {
   const headers = { 'Content-Type': 'application/json' };
@@ -22,31 +21,13 @@ export async function GET<T>(url: string) {
 
 interface AgreementsResponse {
   agreements: Agreement[];
-  deploymentId: string;
-  networkChainId: number;
 }
 
-export async function fetchAgreements(authUrl: string, projectChainId: string): Promise<AgreementsResponse> {
+export async function fetchAgreements(authUrl: string, projectChainId: string): Promise<Agreement[]> {
   const url = authUrl?.trim().replace(/\/+$/, '');
   const agreementsURL = `${url}/agreements/${projectChainId}`;
   const result = await GET<AgreementsResponse>(agreementsURL);
 
-  // update agreeements cache
   const { agreements } = result;
-
-  const sortedAgreements = agreements.sort((a, b) => Number(a.id) - Number(b.id));
-  agreementListCache.set(AGREEMENT_LIST, sortedAgreements);
-
-  return result;
-}
-
-export async function getInitialIndexer(authUrl: string, projectChainId: string): Promise<string> {
-  try {
-    await fetchAgreements(authUrl, projectChainId);
-    const agreement = getNextAgreement();
-    
-    return agreement?.indexer ?? '';
-  } catch {
-    return '';
-  }
+  return agreements;
 }

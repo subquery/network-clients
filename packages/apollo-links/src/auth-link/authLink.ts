@@ -4,10 +4,10 @@
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
 import { Subscription } from 'zen-observable-ts';
 
-import { requestAuthToken } from './authHelper';
-import { POST, getInitialIndexer } from '../query';
+import { isTokenExpired, requestAuthToken } from './authHelper';
+import { POST } from '../query';
 import { Message } from './eip712';
-import cache from '../cache';
+import cache from '../agreementMananger';
 
 export interface AuthOptions extends Message {
   authUrl: string;         // the url for geting token
@@ -49,11 +49,11 @@ export class AuthLink extends ApolloLink {
   }
 
   private async getUriAndToken(): Promise<{ uri: string; token: string } | undefined> {
-    const nextAgreement = cache.getNextAgreement();
+    const nextAgreement = await cache.getNextAgreement();
     if (!nextAgreement) return undefined;
 
     const { token, id, uri, indexer } = nextAgreement;
-    if (token) return { token, uri };
+    if (!isTokenExpired(token)) return { token, uri };
     
     const { projectChainId, sk, chainId, agreement, deploymentId, authUrl } = this._options;
 
@@ -61,7 +61,7 @@ export class AuthLink extends ApolloLink {
       const host = authUrl?.trim().replace(/\/+$/, '');
       const res = await POST<{ token: string }>(`${host}/token`, { projectChainId, indexer });
       const token = res.token;
-      cache.updateToken(id, token);
+      cache.updateTokenById(id, token);
       return { token, uri };
     }
 
@@ -70,7 +70,7 @@ export class AuthLink extends ApolloLink {
     const message = this.generateMessage();
     const queryUrl = `${authUrl}/query/${deploymentId}`;
     const authToken = await requestAuthToken(authUrl, message, sk, chainId)
-    cache.updateToken(agreement, token);
+    cache.updateTokenById(agreement, token);
 
     return { token: authToken, uri: queryUrl };
   }

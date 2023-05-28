@@ -28,6 +28,8 @@ export class DynamicHttpLink extends ApolloLink {
       const httpLink = this.createHttpLink(uri);
       operation.setContext({ link: httpLink });
 
+      console.log('Request url:', uri);
+
       const sub = forward(operation).subscribe({
         next: observer.next.bind(observer),
         complete: observer.complete.bind(observer),
