@@ -7,7 +7,7 @@ import { Subscription } from 'zen-observable-ts';
 import { requestAuthToken } from './authHelper';
 import { POST, getInitialIndexer } from '../query';
 import { Message } from './eip712';
-import { getNextAgreement, getNextToken, updateCurrentToken } from '../cache';
+import cache from '../cache';
 
 export interface AuthOptions extends Message {
   authUrl: string;         // the url for geting token
@@ -22,7 +22,6 @@ export class AuthLink extends ApolloLink {
   constructor(options: AuthOptions) {
     super();
     this._options = options;
-    this._token = '';
   }
 
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
@@ -43,7 +42,7 @@ export class AuthLink extends ApolloLink {
     const { indexer } = this._options;
     if (indexer) return indexer;
 
-    return getNextAgreement()?.indexer ?? '';
+    return cache.getNextAgreement()?.indexer ?? '';
   }
 
   private generateMessage() {
@@ -53,7 +52,7 @@ export class AuthLink extends ApolloLink {
   }
 
   private async requestToken(): Promise<string> {
-    let token = getNextToken();
+    let token = cache.getNextAgreement()?.token;
     if (token) return token;
     
     const { projectChainId, sk, chainId, authUrl } = this._options;
@@ -63,7 +62,7 @@ export class AuthLink extends ApolloLink {
       const host = authUrl?.trim().replace(/\/+$/, '');
       const res = await POST<{ token: string }>(`${host}/token`, { projectChainId, indexer });
       const token = res.token;
-      updateCurrentToken(token);
+      cache.updateToken(token);
       return token;
     }
 
@@ -71,7 +70,7 @@ export class AuthLink extends ApolloLink {
 
     const message = this.generateMessage();
     token = await requestAuthToken(authUrl, message, sk, chainId)
-    updateCurrentToken(token);
+    cache.updateToken(token);
 
     return token;
   }

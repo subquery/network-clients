@@ -19,44 +19,55 @@ class Cache<T> {
   }
 }
 
-// TODO: refactor with one class
-export const tokenCache = new Cache<string>();
+class LinkCache {
+  private static _instance: LinkCache;
 
-export const AGREEMENT_LIST = 'AGREEMENT_LIST';
-export const agreementListCache = new Cache<Agreement[]>();
+  private agreementCache: Cache<number>;
+  private agreementListCache: Cache<Agreement[]>;
 
-export const CURRENT_AGREEMENT = 'CURRENT_AGREEMENT';
-export const agreementCache = new Cache<number>();
-
-export function getNextAgreement(): Agreement | undefined {
-  const currAgreementIndex = agreementCache.get(CURRENT_AGREEMENT);
-  const agreements = agreementListCache.get(AGREEMENT_LIST);
-  if (!agreements) return undefined;
-
-  let agreement = agreements[0];
-  if (currAgreementIndex === undefined) {
-    agreementCache.set(CURRENT_AGREEMENT, 0);
+  private constructor() {
+    this.agreementCache = new Cache<number>();
+    this.agreementListCache = new Cache<Agreement[]>();
   }
 
-  if (currAgreementIndex <= agreements.length - 2) {
-    agreementCache.set(CURRENT_AGREEMENT, currAgreementIndex + 1);
-    agreement = agreements[currAgreementIndex + 1];
-  } else {
-    agreementCache.set(CURRENT_AGREEMENT, 0);
+  public static getInstance(): LinkCache {
+    if (!LinkCache._instance) {
+      LinkCache._instance = new LinkCache();
+    }
+
+    return LinkCache._instance;
   }
 
-  return agreement;
+  public getNextAgreement(): Agreement | undefined {
+    const currAgreementIndex = this.agreementCache.get('CURRENT_AGREEMENT');
+    const agreements = this.agreementListCache.get('AGREEMENT_LIST');
+    if (!agreements) return undefined;
+
+    let agreement = agreements[0];
+    if (currAgreementIndex === undefined) {
+      this.agreementCache.set('CURRENT_AGREEMENT', 0);
+    }
+
+    if (currAgreementIndex <= agreements.length - 2) {
+      this.agreementCache.set('CURRENT_AGREEMENT', currAgreementIndex + 1);
+      agreement = agreements[currAgreementIndex + 1];
+    } else {
+      this.agreementCache.set('CURRENT_AGREEMENT', 0);
+    }
+
+    return agreement;
+  }
+
+  public updateToken(agreementId: string, token: string) {
+    const agreements = this.agreementListCache.get('AGREEMENT_LIST');
+    const index = this.agreementCache.get('CURRENT_AGREEMENT');
+    const id = agreements[index].id;
+
+    // this.tokenCache.set(id, token);
+  }
 }
 
-export function getNextToken(): string | undefined {
-  const nextId = getNextAgreement()?.id;
-  return tokenCache.get(nextId ?? '');
-}
+// Usage
+const cache = LinkCache.getInstance();
 
-export function updateCurrentToken(token: string) {
-  const agreements = agreementListCache.get(AGREEMENT_LIST);
-  const index = agreementCache.get(CURRENT_AGREEMENT);
-  const id = agreements[index].id;
-
-  tokenCache.set(id, token);
-}
+export default cache;
