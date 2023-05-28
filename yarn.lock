@@ -2749,6 +2749,7 @@ __metadata:
   dependencies:
     "@metamask/eth-sig-util": 4.0.1
     apollo: ^2.34.0
+    apollo-link-error: ^1.1.13
     axios: ^0.27.2
     buffer: ^6.0.3
     ethers: ^5.6.8
@@ -3755,7 +3756,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apollo-link-error@npm:^1.1.1":
+"apollo-link-error@npm:^1.1.1, apollo-link-error@npm:^1.1.13":
   version: 1.1.13
   resolution: "apollo-link-error@npm:1.1.13"
   dependencies:
