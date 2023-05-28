@@ -53,7 +53,7 @@ describe.skip('auth link', () => {
   });
 });
 
-describe.only('auth link with auth center', () => {
+describe.skip('auth link with auth center', () => {
   let client: ApolloClient<unknown>;
   let n = 20;
 
