@@ -13,10 +13,14 @@ const Buffer = buffer.Buffer;
 export function isTokenExpired(token: string): boolean {
   if (!token) return true;
 
-  const { exp } = jwt_decode(token) as { exp: number };
-  const currentDate = new Date().getTime();
-
-  return exp < currentDate;
+  try {
+    const { exp } = jwt_decode(token) as { exp: number };
+    const currentDate = new Date().getTime();
+    return exp < currentDate;
+  } catch {
+    console.log('Invalid token specified');
+    return true;
+  }
 }
 
 export function signMessage(msg: AuthMessage, sk: string, chainId: number): string {
