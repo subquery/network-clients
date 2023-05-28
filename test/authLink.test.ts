@@ -75,7 +75,7 @@ describe.only('auth link with auth center', () => {
     for (let i = 0; i < n; i++) {
       try {
         const result = await client.query({ query: metadataQuery });
-        expect(result.data._metadata).toBeTruthy();
+        expect(result?.data._metadata).toBeTruthy();
       } catch (e) {
         console.log(`Failed to send query with auth link: ${e}`);
       }

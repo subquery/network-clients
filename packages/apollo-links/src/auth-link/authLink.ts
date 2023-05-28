@@ -32,7 +32,6 @@ export class AuthLink extends ApolloLink {
       this.getUrlAndToken().then((data) => {
         if (data) {
           const { token, url } = data;
-          console.log('data:', data);
           const headers = { authorization: `Bearer ${token}` };
           operation.setContext({ url, headers }); 
         }
