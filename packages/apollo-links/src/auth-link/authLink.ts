@@ -29,20 +29,17 @@ export class AuthLink extends ApolloLink {
 
     return new Observable<FetchResult>(observer => {
       let sub: Subscription;
-      this.requestToken().then((token) => {
-        operation.setContext({ headers: { authorization: `Bearer ${token}` } }); 
+      this.getUriAndToken().then((data) => {
+        if (data) {
+          const { token, uri } = data;
+          const headers = { authorization: `Bearer ${token}` };
+          operation.setContext({ uri, headers }); 
+        }
         sub = forward(operation).subscribe(observer);
       }).catch((error) => observer.error(error));
 
       return () => sub.unsubscribe();
     });
-  }
-
-  get indexer(): string {
-    const { indexer } = this._options;
-    if (indexer) return indexer;
-
-    return cache.getNextAgreement()?.indexer ?? '';
   }
 
   private generateMessage() {
@@ -51,27 +48,30 @@ export class AuthLink extends ApolloLink {
     return { indexer, consumer, agreement, deploymentId, timestamp };
   }
 
-  private async requestToken(): Promise<string> {
-    let token = cache.getNextAgreement()?.token;
-    if (token) return token;
+  private async getUriAndToken(): Promise<{ uri: string; token: string } | undefined> {
+    const nextAgreement = cache.getNextAgreement();
+    if (!nextAgreement) return undefined;
+
+    const { token, id, uri, indexer } = nextAgreement;
+    if (token) return { token, uri };
     
-    const { projectChainId, sk, chainId, authUrl } = this._options;
+    const { projectChainId, sk, chainId, agreement, deploymentId, authUrl } = this._options;
 
     if (!sk) {
-      const indexer = this.indexer ?? await getInitialIndexer(authUrl, projectChainId ?? '');
       const host = authUrl?.trim().replace(/\/+$/, '');
       const res = await POST<{ token: string }>(`${host}/token`, { projectChainId, indexer });
       const token = res.token;
-      cache.updateToken(token);
-      return token;
+      cache.updateToken(id, token);
+      return { token, uri };
     }
 
-    if (!chainId) throw new Error('chainId is required');
+    if (!chainId || !agreement) throw new Error('chainId and agreement are required');
 
     const message = this.generateMessage();
-    token = await requestAuthToken(authUrl, message, sk, chainId)
-    cache.updateToken(token);
+    const queryUrl = `${authUrl}/query/${deploymentId}`;
+    const authToken = await requestAuthToken(authUrl, message, sk, chainId)
+    cache.updateToken(agreement, token);
 
-    return token;
+    return { token: authToken, uri: queryUrl };
   }
 }
