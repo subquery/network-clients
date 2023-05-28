@@ -11,7 +11,7 @@ interface AuthHttpOptions {
   authUrl: string;          // auth service url
   projectChainId: string;   // genesis hash of the chain
   httpOptions: HttpOptions; // http options for init `HttpLink`
-  backupDictionary: string; // backup dictionary for `AuthLink`
+  backupDictionary?: string; // backup dictionary for `AuthLink`
   deploymentId: string;     // deployment id of the project
 }
 

@@ -5,7 +5,7 @@ import { ApolloLink, FetchResult, HttpLink, HttpOptions, NextLink, Observable, O
 
 export interface Options {
   httpOptions: HttpOptions; // http options for init `HttpLink`
-  backupDictionary: string; // backup dictionary for `HttpLink`
+  backupDictionary?: string; // backup dictionary for `HttpLink`
 }
 
 export class DynamicHttpLink extends ApolloLink {
@@ -17,18 +17,18 @@ export class DynamicHttpLink extends ApolloLink {
   }
 
   get backupDictionary(): string {
-    return this._options.backupDictionary;
+    return this._options.backupDictionary ?? '';
   }
 
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
     if (!forward) return null;
 
     return new Observable<FetchResult>(observer => {
-      const { uri } = operation.getContext();
-      const httpLink = this.createHttpLink(uri);
+      const { url } = operation.getContext();
+      const httpLink = this.createHttpLink(url);
       operation.setContext({ link: httpLink });
 
-      console.log('Request url:', uri);
+      console.log('Request url:', url);
 
       const sub = forward(operation).subscribe({
         next: observer.next.bind(observer),
@@ -43,10 +43,10 @@ export class DynamicHttpLink extends ApolloLink {
     });
   }
 
-  private createHttpLink(uri = this.backupDictionary): HttpLink {
+  private createHttpLink(url = this.backupDictionary): HttpLink {
     return new HttpLink({
       ...this._options.httpOptions,
-      uri,
+      uri: url,
     });
   }
 }

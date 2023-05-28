@@ -4,6 +4,6 @@
 export type Agreement = {
   id: string;
   indexer: string;
-  uri: string;
+  url: string;
   token: string;
 }

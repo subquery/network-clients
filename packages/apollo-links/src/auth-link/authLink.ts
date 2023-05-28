@@ -29,11 +29,12 @@ export class AuthLink extends ApolloLink {
 
     return new Observable<FetchResult>(observer => {
       let sub: Subscription;
-      this.getUriAndToken().then((data) => {
+      this.getUrlAndToken().then((data) => {
         if (data) {
-          const { token, uri } = data;
+          const { token, url } = data;
+          console.log('data:', data);
           const headers = { authorization: `Bearer ${token}` };
-          operation.setContext({ uri, headers }); 
+          operation.setContext({ url, headers }); 
         }
         sub = forward(operation).subscribe(observer);
       }).catch((error) => observer.error(error));
@@ -48,21 +49,21 @@ export class AuthLink extends ApolloLink {
     return { indexer, consumer, agreement, deploymentId, timestamp };
   }
 
-  private async getUriAndToken(): Promise<{ uri: string; token: string } | undefined> {
+  private async getUrlAndToken(): Promise<{ url: string; token: string } | undefined> {
     const nextAgreement = await cache.getNextAgreement();
     if (!nextAgreement) return undefined;
 
-    const { token, id, uri, indexer } = nextAgreement;
-    if (!isTokenExpired(token)) return { token, uri };
+    const { token, id, url, indexer } = nextAgreement;
+    if (!isTokenExpired(token)) return { token, url };
     
     const { projectChainId, sk, chainId, agreement, deploymentId, authUrl } = this._options;
 
     if (!sk) {
       const host = authUrl?.trim().replace(/\/+$/, '');
-      const res = await POST<{ token: string }>(`${host}/token`, { projectChainId, indexer });
+      const res = await POST<{ token: string }>(`${host}/token`, { projectChainId, indexer, agreementId: id });
       const token = res.token;
       cache.updateTokenById(id, token);
-      return { token, uri };
+      return { token, url };
     }
 
     if (!chainId || !agreement) throw new Error('chainId and agreement are required');
@@ -72,6 +73,6 @@ export class AuthLink extends ApolloLink {
     const authToken = await requestAuthToken(authUrl, message, sk, chainId)
     cache.updateTokenById(agreement, token);
 
-    return { token: authToken, uri: queryUrl };
+    return { token: authToken, url: queryUrl };
   }
 }
