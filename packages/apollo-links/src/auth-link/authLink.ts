@@ -38,7 +38,7 @@ export class AuthLink extends ApolloLink {
         sub = forward(operation).subscribe(observer);
       }).catch((error) => observer.error(error));
 
-      return () => sub.unsubscribe();
+      return () => sub?.unsubscribe();
     });
   }
 

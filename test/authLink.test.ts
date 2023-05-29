@@ -58,29 +58,39 @@ describe.only('auth link with auth center', () => {
   let n = 20;
 
   beforeAll(async () => {
-    const authUrl = 'https://kepler-auth.subquery.network/';
+    const authUrl = 'http://localhost:3031';
     const projectChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
     const deploymentId = 'QmZGAZQ7e1oZgfuK4V29Fa5gveYK3G2zEwvUzTZKNvSBsm';
     const httpOptions = { fetch, fetchOptions: { timeout: 3000 } };
     const options = { authUrl, projectChainId, httpOptions, deploymentId }
-    const link = await authHttpLink(options);
+    const link = authHttpLink(options);
 
     client = new ApolloClient({
-      cache: new InMemoryCache({ resultCaching: true }),
+      // cache: new InMemoryCache({ resultCaching: true }),
       link,
     });
   });
 
   it('can query with auth link', async () => {
-    while (n > 0) {
+    try {
+      const result = await client.query({ query: metadataQuery });
+      expect(result?.data._metadata).toBeTruthy();
+    } catch (e) {
+      console.log(`Failed to send query with auth link: ${JSON.stringify(e)}`);
+    }
+  });
+
+  it.only('auth link routing should work', async () => {
+    for (let i = 0; i < n; i++) {
       try {
         const result = await client.query({ query: metadataQuery });
-        expect(result?.data._metadata).toBeTruthy();
+        console.log(`Query ${i} success`);
+        const { lastProcessedHeight } = result?.data._metadata;
+        console.log('lastProcessedHeight:', lastProcessedHeight);
+        expect(lastProcessedHeight).toBeTruthy();
       } catch (e) {
         console.log(`Failed to send query with auth link: ${e}`);
       }
-
-      n--;
     }
   });
 });

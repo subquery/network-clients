@@ -21,14 +21,12 @@ export class DynamicHttpLink extends ApolloLink {
   }
 
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
-    return new Observable<FetchResult>(observer => {
-      const { url } = operation.getContext();
-      const httpLink = this.createHttpLink(url);
-      operation.setContext({ link: httpLink });
+    const { url } = operation.getContext();
+    const httpLink = this.createHttpLink(url);
 
-      const sub = forward && forward(operation).subscribe(observer);
-      return () => sub?.unsubscribe();
-    });
+    console.log('request url:', url);
+
+    return httpLink.request(operation, forward);
   }
 
   private createHttpLink(url = this.backupDictionary): HttpLink {

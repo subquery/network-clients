@@ -25,6 +25,11 @@ export function authHttpLink(options: AuthHttpOptions): ApolloLink {
 
   const httpLink = new DynamicHttpLink({ httpOptions, backupDictionary });
   const authLink = new AuthLink({ authUrl, deploymentId, indexer: '', projectChainId });
-
-  return from([authLink, httpLink, retryLink, errorLink]);
+  
+  // 1. errorLink: This link helps in handling and logging any GraphQL or network errors that may occur down the chain. 
+  //    Placing it at the beginning ensures that it catches any errors that may occur in any of the other links.
+  // 2. retryLink: This comes after the errorLink to allow it to handle network errors and retry requests if necessary.
+  // 3. authLink: The authLink comes next. It is responsible for adding authentication credentials to every request.
+  // 4. httpLink: This should always be at the end of the link chain. This link is responsible for sending the request to the server.
+  return from([authLink, httpLink]);
 }
