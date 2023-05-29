@@ -10,7 +10,7 @@ export const retryLink = new RetryLink({
     jitter: true
   },
   attempts: {
-    max: 5,
+    max: 2,
     retryIf: (error) => !!error
   }
 });
