@@ -11,7 +11,7 @@ class AgreementMananger {
 
   private authUrl: string;
   private projectChainId: string;
-  private interval = 3600 * 1000 * 2;
+  private interval = 300_000;
 
   constructor() {
     this.nextAgreementIndex = 0;
@@ -30,6 +30,7 @@ class AgreementMananger {
   }
 
   public start() {
+    this.refreshAgreements();
     setInterval(this.refreshAgreements, this.interval);
   }
 
@@ -38,11 +39,7 @@ class AgreementMananger {
     this.projectChainId = projectNetworkId;
   }
 
-  public async getNextAgreement(): Promise<Agreement | undefined> {
-    if (this.agreements.length === 0) {
-      await this.refreshAgreements();
-    }
-
+  public getNextAgreement(): Agreement | undefined {
     if (this.agreements.length === 0) return;
 
     let agreement = this.agreements[this.nextAgreementIndex];
