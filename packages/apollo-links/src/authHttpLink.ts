@@ -31,5 +31,5 @@ export function authHttpLink(options: AuthHttpOptions): ApolloLink {
   // 2. retryLink: This comes after the errorLink to allow it to handle network errors and retry requests if necessary.
   // 3. authLink: The authLink comes next. It is responsible for adding authentication credentials to every request.
   // 4. httpLink: This should always be at the end of the link chain. This link is responsible for sending the request to the server.
-  return from([authLink, httpLink]);
+  return from([errorLink, retryLink, authLink, httpLink]);
 }

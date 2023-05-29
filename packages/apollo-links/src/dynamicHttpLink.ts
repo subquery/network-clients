@@ -4,7 +4,7 @@
 import { ApolloLink, FetchResult, HttpLink, HttpOptions, NextLink, Observable, Operation } from '@apollo/client/core';
 
 export interface Options {
-  httpOptions: HttpOptions; // http options for init `HttpLink`
+  httpOptions: HttpOptions;  // http options for init `HttpLink`
   backupDictionary?: string; // backup dictionary for `HttpLink`
 }
 
@@ -23,8 +23,6 @@ export class DynamicHttpLink extends ApolloLink {
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
     const { url } = operation.getContext();
     const httpLink = this.createHttpLink(url);
-
-    console.log('request url:', url);
 
     return httpLink.request(operation, forward);
   }

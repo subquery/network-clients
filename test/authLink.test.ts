@@ -55,9 +55,9 @@ describe.skip('auth link', () => {
 
 describe.only('auth link with auth center', () => {
   let client: ApolloClient<unknown>;
-  let n = 20;
 
   beforeAll(async () => {
+    // TODO: config this in github env
     const authUrl = 'http://localhost:3031';
     const projectChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
     const deploymentId = 'QmZGAZQ7e1oZgfuK4V29Fa5gveYK3G2zEwvUzTZKNvSBsm';
@@ -66,12 +66,13 @@ describe.only('auth link with auth center', () => {
     const link = authHttpLink(options);
 
     client = new ApolloClient({
-      // cache: new InMemoryCache({ resultCaching: true }),
+      cache: new InMemoryCache(),
+      defaultOptions: { query: { fetchPolicy: 'no-cache' } },
       link,
     });
   });
 
-  it('can query with auth link', async () => {
+  it('can query data with auth link', async () => {
     try {
       const result = await client.query({ query: metadataQuery });
       expect(result?.data._metadata).toBeTruthy();
@@ -80,16 +81,14 @@ describe.only('auth link with auth center', () => {
     }
   });
 
-  it.only('auth link routing should work', async () => {
-    for (let i = 0; i < n; i++) {
+  it('auth link routing should work', async () => {
+    const count = 35;
+    for (let i = 0; i < count; i++) {
       try {
         const result = await client.query({ query: metadataQuery });
-        console.log(`Query ${i} success`);
-        const { lastProcessedHeight } = result?.data._metadata;
-        console.log('lastProcessedHeight:', lastProcessedHeight);
-        expect(lastProcessedHeight).toBeTruthy();
-      } catch (e) {
-        console.log(`Failed to send query with auth link: ${e}`);
+        expect(result?.data._metadata).toBeTruthy();
+      } catch {
+        console.log(`Failed to send query with auth link: ${i}`);
       }
     }
   });
