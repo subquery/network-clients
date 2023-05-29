@@ -11,7 +11,7 @@ class AgreementMananger {
 
   private authUrl: string;
   private projectChainId: string;
-  private interval = 3600 * 1000 * 12;
+  private interval = 3600 * 1000 * 2;
 
   constructor() {
     this.nextAgreementIndex = 0;
