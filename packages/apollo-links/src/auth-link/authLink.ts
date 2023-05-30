@@ -38,8 +38,11 @@ export class AuthLink extends ApolloLink {
           const headers = { authorization: `Bearer ${token}` };
           operation.setContext({ url, headers }); 
         }
+      })
+      .catch((error) => observer.error(error))
+      .finally(() => {
         sub = forward(operation).subscribe(observer);
-      }).catch((error) => observer.error(error));
+      });
 
       return () => sub?.unsubscribe();
     });
