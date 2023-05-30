@@ -9,10 +9,9 @@ import { Message } from './eip712';
 import { Logger } from '../logger';
 
 interface AuthOptions extends Message {
-  indexerUrl: string;         // the url for geting token
-  chainId?: number;        // chainId for the network
-  projectChainId?: string; // chainId for the project
-  sk: string;              // `sk` of the consumer or corresponding controller account
+  indexerUrl: string;     // indexer url
+  chainId: number;        // chainId for the network
+  sk: string;             // `sk` of the consumer or corresponding controller account
 }
 
 export class AuthLink extends ApolloLink {
