@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApolloClient, from, HttpLink, InMemoryCache } from '@apollo/client/core';
-import { Logger } from '@subql/utils'
+import Pino from 'pino'
 import fetch from 'cross-fetch';
 import gql from 'graphql-tag';
 import dotenv from 'dotenv';
@@ -12,7 +12,7 @@ dotenv.config();
 import { authHttpLink, AuthLink } from '../packages/apollo-links/src';
 
 
-const logger = new Logger({ level: 'debug' }).getLogger('authLink');
+const logger = Pino({ level: 'debug' });
 const indexerProxyEndpoint = 'http://ec2-3-27-14-20.ap-southeast-2.compute.amazonaws.com';
 const deploymentId = 'Qmdpka4MpaUtGP7B3AAoPji4H6X7a2ir53a1mxnUumqMm4';
 const uri = `${indexerProxyEndpoint}/query/${deploymentId}`;
@@ -76,7 +76,7 @@ describe.only('auth link with auth center', () => {
   });
 
   it('can query data with auth link', async () => {
-    expect(await client.query({ query: metadataQuery })).toBeTruthy();
+    await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
   });
 
   it.only('auth link routing should work', async () => {

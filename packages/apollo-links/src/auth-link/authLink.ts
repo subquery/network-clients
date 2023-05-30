@@ -3,12 +3,12 @@
 
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
 import { Subscription } from 'zen-observable-ts';
-import Pino from 'pino';
 
 import { isTokenExpired, requestAuthToken } from './authHelper';
 import { POST } from '../query';
 import { Message } from './eip712';
 import cache from '../agreementMananger';
+import { Logger } from "../types";
 
 export interface AuthOptions extends Message {
   authUrl: string;         // the url for geting token
@@ -19,9 +19,9 @@ export interface AuthOptions extends Message {
 
 export class AuthLink extends ApolloLink {
   private _options: AuthOptions;
-  private _logger: Pino.Logger;
+  private _logger: Logger;
 
-  constructor(options: AuthOptions, logger: Pino.Logger) {
+  constructor(options: AuthOptions, logger: Logger) {
     super();
     this._options = options;
     this._logger = logger;
@@ -36,7 +36,7 @@ export class AuthLink extends ApolloLink {
         if (data) {
           const { token, url } = data;
           const headers = { authorization: `Bearer ${token}` };
-          operation.setContext({ url, headers }); 
+          operation.setContext({ url, headers });
         }
       })
       .catch((error) => observer.error(error))
@@ -60,7 +60,7 @@ export class AuthLink extends ApolloLink {
 
     const { token, id, url, indexer } = nextAgreement;
     if (!isTokenExpired(token)) return { token, url };
-    
+
     const { projectChainId, sk, chainId, agreement, deploymentId, authUrl } = this._options;
 
     if (!sk) {

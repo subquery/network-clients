@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { onError } from "@apollo/client/link/error";
-import Pino from 'pino';
+import { Logger } from "./types";
 
-export const creatErrorLink = (logger: Pino.Logger) => onError(({ graphQLErrors, networkError }) => {
+export const creatErrorLink = (logger: Logger) => onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors)
     graphQLErrors.forEach(({ message, locations, path }) =>
       logger.warn(
