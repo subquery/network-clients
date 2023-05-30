@@ -5,7 +5,7 @@ import { ApolloLink, FetchResult, HttpLink, HttpOptions, NextLink, Observable, O
 
 export interface Options {
   httpOptions: HttpOptions;  // http options for init `HttpLink`
-  backupDictionary?: string; // backup dictionary for `HttpLink`
+  fallbackServiceUrl?: string; // fall back service url for `HttpLink`
 }
 
 export class DynamicHttpLink extends ApolloLink {
@@ -16,8 +16,8 @@ export class DynamicHttpLink extends ApolloLink {
     this._options = options;
   }
 
-  get backupDictionary(): string {
-    return this._options.backupDictionary ?? '';
+  get fallbackServiceUrl(): string {
+    return this._options.fallbackServiceUrl ?? '';
   }
 
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
@@ -27,7 +27,7 @@ export class DynamicHttpLink extends ApolloLink {
     return httpLink.request(operation, forward);
   }
 
-  private createHttpLink(url = this.backupDictionary): HttpLink {
+  private createHttpLink(url = this.fallbackServiceUrl): HttpLink {
     return new HttpLink({
       ...this._options.httpOptions,
       uri: url,

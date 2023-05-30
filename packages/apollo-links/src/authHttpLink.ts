@@ -16,17 +16,17 @@ interface AuthHttpOptions {
   httpOptions: HttpOptions; // http options for init `HttpLink`
   deploymentId: string;     // deployment id of the project
   logger: Logger       // logger for `AuthLink`
-  backupDictionary?: string; // backup dictionary for `AuthLink`
+  fallbackServiceUrl?: string; // fall back service url for `AuthLink`
 }
 
 export function authHttpLink(options: AuthHttpOptions): ApolloLink {
-  const { projectChainId, httpOptions, backupDictionary, deploymentId, authUrl, logger } = options;
+  const { projectChainId, httpOptions, fallbackServiceUrl, deploymentId, authUrl, logger } = options;
 
   agreementMananger.init(authUrl, projectChainId);
   agreementMananger.start();
 
   const errorLink = creatErrorLink(logger);
-  const httpLink = new DynamicHttpLink({ httpOptions, backupDictionary });
+  const httpLink = new DynamicHttpLink({ httpOptions, fallbackServiceUrl });
   const authLink = new AuthLink({ authUrl, deploymentId, indexer: '', projectChainId }, logger);
 
   // 1. errorLink: This link helps in handling and logging any GraphQL or network errors that may occur down the chain.
