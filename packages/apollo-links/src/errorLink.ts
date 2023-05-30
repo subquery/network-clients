@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { onError } from "@apollo/client/link/error";
-import { Logger } from "./types";
+import { Logger } from "./logger";
 
 export const creatErrorLink = (logger: Logger) => onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors)

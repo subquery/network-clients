@@ -6,7 +6,7 @@ import { Subscription } from 'zen-observable-ts';
 
 import { isTokenExpired, requestAuthToken } from './authHelper';
 import { Message } from './eip712';
-import { Logger } from "../types";
+import { Logger } from '../logger';
 
 interface AuthOptions extends Message {
   indexerUrl: string;         // the url for geting token
@@ -62,12 +62,12 @@ export class AuthLink extends ApolloLink {
   private async getUrlAndToken(): Promise<{ url: string; token: string } | undefined> {
     if (!isTokenExpired(this._token)) return { token: this._token, url: this.queryEndpoint };
 
-    const { sk, chainId, agreement } = this._options;
+    const { sk, chainId, agreement, indexerUrl } = this._options;
 
     if (!chainId || !agreement) throw new Error('chainId and agreement are required');
 
     const message = this.generateMessage();
-    const tokenUrl = new URL('/token', this._options.indexerUrl);
+    const tokenUrl = new URL('/token', indexerUrl);
     const authToken = await requestAuthToken(tokenUrl.toString(), message, sk, chainId)
     this._token = authToken;
 

@@ -8,7 +8,7 @@ import { DynamicHttpLink } from './dynamicHttpLink';
 import agreementMananger from './agreementMananger';
 import { creatErrorLink } from './errorLink';
 import { retryLink } from './retryLink';
-import { Logger } from "./types";
+import { Logger, silentLogger } from './logger';
 
 interface AuthHttpOptions {
   authUrl: string;          // auth service url
@@ -16,17 +16,6 @@ interface AuthHttpOptions {
   httpOptions: HttpOptions; // http options for init `HttpLink`
   logger?: Logger       // logger for `AuthLink`
   fallbackServiceUrl?: string; // fall back service url for `AuthLink`
-}
-
-function silentLogger(): Logger{
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const logfn = () => {};
-  return {
-    debug: logfn,
-    info: logfn,
-    warn: logfn,
-    error: logfn
-  };
 }
 
 export function authHttpLink(options: AuthHttpOptions): ApolloLink {

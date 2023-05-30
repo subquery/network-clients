@@ -7,7 +7,7 @@ import { Subscription } from 'zen-observable-ts';
 import { isTokenExpired } from './authHelper';
 import { POST } from '../query';
 import cache from '../agreementMananger';
-import { Logger } from "../types";
+import { Logger } from '../logger';
 
 interface AuthOptions {
   authUrl: string;         // the url for geting token
