@@ -18,7 +18,6 @@ export function isTokenExpired(token: string): boolean {
     const currentDate = new Date().getTime();
     return exp < currentDate;
   } catch {
-    console.log('Invalid token specified');
     return true;
   }
 }

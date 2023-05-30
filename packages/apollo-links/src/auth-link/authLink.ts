@@ -3,6 +3,7 @@
 
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
 import { Subscription } from 'zen-observable-ts';
+import Pino from 'pino';
 
 import { isTokenExpired, requestAuthToken } from './authHelper';
 import { POST } from '../query';
@@ -18,10 +19,12 @@ export interface AuthOptions extends Message {
 
 export class AuthLink extends ApolloLink {
   private _options: AuthOptions;
+  private _logger: Pino.Logger;
 
-  constructor(options: AuthOptions) {
+  constructor(options: AuthOptions, logger: Pino.Logger) {
     super();
     this._options = options;
+    this._logger = logger;
   }
 
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {

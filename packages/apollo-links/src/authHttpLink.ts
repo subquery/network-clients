@@ -2,29 +2,32 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { from, ApolloLink, HttpOptions } from '@apollo/client/core';
+import Pino from 'pino';
 
 import { AuthLink } from './auth-link';
 import { DynamicHttpLink } from './dynamicHttpLink';
 import agreementMananger from './agreementMananger';
-import { errorLink } from './errorLink';
+import { creatErrorLink } from './errorLink';
 import { retryLink } from './retryLink';
 
 interface AuthHttpOptions {
   authUrl: string;          // auth service url
   projectChainId: string;   // genesis hash of the chain
   httpOptions: HttpOptions; // http options for init `HttpLink`
-  backupDictionary?: string; // backup dictionary for `AuthLink`
   deploymentId: string;     // deployment id of the project
+  logger: Pino.Logger       // logger for `AuthLink`
+  backupDictionary?: string; // backup dictionary for `AuthLink`
 }
 
 export function authHttpLink(options: AuthHttpOptions): ApolloLink {
-  const { projectChainId, httpOptions, backupDictionary, deploymentId, authUrl } = options;
+  const { projectChainId, httpOptions, backupDictionary, deploymentId, authUrl, logger } = options;
 
   agreementMananger.init(authUrl, projectChainId);
   agreementMananger.start();
 
+  const errorLink = creatErrorLink(logger);
   const httpLink = new DynamicHttpLink({ httpOptions, backupDictionary });
-  const authLink = new AuthLink({ authUrl, deploymentId, indexer: '', projectChainId });
+  const authLink = new AuthLink({ authUrl, deploymentId, indexer: '', projectChainId }, logger);
   
   // 1. errorLink: This link helps in handling and logging any GraphQL or network errors that may occur down the chain. 
   //    Placing it at the beginning ensures that it catches any errors that may occur in any of the other links.
