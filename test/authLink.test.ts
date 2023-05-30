@@ -82,7 +82,7 @@ describe.only('auth link with auth center', () => {
   it.only('auth link routing should work', async () => {
     const count = 3;
     for (let i = 0; i < count; i++) {
-      expect(await client.query({ query: metadataQuery })).toBeTruthy();
+      await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
     }
   });
 });
