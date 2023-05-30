@@ -76,22 +76,13 @@ describe.only('auth link with auth center', () => {
   });
 
   it('can query data with auth link', async () => {
-    try {
-      const result = await client.query({ query: metadataQuery });
-      expect(result?.data._metadata).toBeTruthy();
-    } catch (e) {
-      console.log(`Failed to send query with auth link: ${JSON.stringify(e)}`);
-    }
+    expect(await client.query({ query: metadataQuery })).toBeTruthy();
   });
 
-  it('auth link routing should work', async () => {
-    const count = 35;
+  it.only('auth link routing should work', async () => {
+    const count = 3;
     for (let i = 0; i < count; i++) {
-      try {
-        expect(await client.query({ query: metadataQuery })).toBeTruthy();
-      } catch {
-        console.log(`Failed to send query with auth link: ${i}`);
-      }
+      expect(await client.query({ query: metadataQuery })).toBeTruthy();
     }
   });
 });

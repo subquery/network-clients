@@ -4,13 +4,8 @@
 import { RetryLink } from "@apollo/client/link/retry";
 
 export const retryLink = new RetryLink({
-  delay: {
-    initial: 500,
-    max: 5000,
-    jitter: true
-  },
   attempts: {
-    max: 2,
+    max: 5,
     retryIf: (error) => !!error
   }
 });

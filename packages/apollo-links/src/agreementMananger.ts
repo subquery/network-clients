@@ -7,7 +7,7 @@ import { Agreement } from "./types";
 class AgreementMananger {
 
   private nextAgreementIndex: number;
-  private agreements: Agreement[];
+  private agreements: Agreement[] | undefined;
 
   private authUrl: string;
   private projectChainId: string;
@@ -15,7 +15,6 @@ class AgreementMananger {
 
   constructor() {
     this.nextAgreementIndex = 0;
-    this.agreements = [];
     this.authUrl = '';
     this.projectChainId = '';
   }
@@ -39,7 +38,11 @@ class AgreementMananger {
     this.projectChainId = projectNetworkId;
   }
 
-  public getNextAgreement(): Agreement | undefined {
+  public async getNextAgreement(): Promise<Agreement | undefined> {
+    if (this.agreements === undefined) {
+      this.agreements = await fetchAgreements(this.authUrl, this.projectChainId);
+    }
+
     if (this.agreements.length === 0) return;
 
     let agreement = this.agreements[this.nextAgreementIndex];
@@ -54,7 +57,8 @@ class AgreementMananger {
   }
 
   public updateTokenById(agreementId: string, token: string) {
-    const index = this.agreements.findIndex((a) => a.id === agreementId);
+    if (this.agreements === undefined) return;
+    const index = this.agreements?.findIndex((a) => a.id === agreementId);
     if (index === -1) return;
 
     this.agreements[index].token = token;

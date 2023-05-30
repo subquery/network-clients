@@ -55,7 +55,7 @@ export class AuthLink extends ApolloLink {
   }
 
   private async getUrlAndToken(): Promise<{ url: string; token: string } | undefined> {
-    const nextAgreement = cache.getNextAgreement();
+    const nextAgreement = await cache.getNextAgreement();
     if (!nextAgreement) return undefined;
 
     const { token, id, url, indexer } = nextAgreement;
