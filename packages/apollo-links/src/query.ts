@@ -24,9 +24,8 @@ interface AgreementsResponse {
 }
 
 export async function fetchAgreements(authUrl: string, projectChainId: string): Promise<Agreement[]> {
-  const url = authUrl?.trim().replace(/\/+$/, '');
-  const agreementsURL = `${url}/agreements/${projectChainId}`;
-  const result = await GET<AgreementsResponse>(agreementsURL);
+  const agreementsURL = new URL(`/agreements/${projectChainId}`, authUrl);
+  const result = await GET<AgreementsResponse>(agreementsURL.toString());
 
   const { agreements } = result;
   return agreements;

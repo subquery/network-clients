@@ -64,8 +64,8 @@ export class AuthLink extends ApolloLink {
     const { projectChainId, sk, chainId, agreement, deploymentId, authUrl } = this._options;
 
     if (!sk) {
-      const host = authUrl?.trim().replace(/\/+$/, '');
-      const res = await POST<{ token: string }>(`${host}/token`, { projectChainId, indexer, agreementId: id });
+      const tokenUrl = new URL('/token', authUrl);
+      const res = await POST<{ token: string }>(tokenUrl.toString(), { projectChainId, indexer, agreementId: id });
       const token = res.token;
       cache.updateTokenById(id, token);
       return { token, url };
@@ -74,10 +74,11 @@ export class AuthLink extends ApolloLink {
     if (!chainId || !agreement) throw new Error('chainId and agreement are required');
 
     const message = this.generateMessage();
-    const queryUrl = `${authUrl}/query/${deploymentId}`;
-    const authToken = await requestAuthToken(authUrl, message, sk, chainId)
+    const queryUrl = new URL(`/query/${deploymentId}`, authUrl);
+    const tokenUrl = new URL('/token', authUrl);
+    const authToken = await requestAuthToken(tokenUrl.toString(), message, sk, chainId)
     cache.updateTokenById(agreement, token);
 
-    return { token: authToken, url: queryUrl };
+    return { token: authToken, url: queryUrl.toString() };
   }
 }
