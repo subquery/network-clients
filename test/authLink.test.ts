@@ -56,7 +56,7 @@ describe.skip('auth link', () => {
   });
 });
 
-describe.only('auth link with auth center', () => {
+describe('auth link with auth center', () => {
   let client: ApolloClient<unknown>;
 
   beforeAll(async () => {
@@ -78,8 +78,8 @@ describe.only('auth link with auth center', () => {
     await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
   });
 
-  it.only('auth link routing should work', async () => {
-    const count = 3;
+  it('auth link routing should work', async () => {
+    const count = 20;
     for (let i = 0; i < count; i++) {
       await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
     }
