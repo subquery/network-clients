@@ -5,26 +5,26 @@ import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apoll
 import { Subscription } from 'zen-observable-ts';
 
 import { isTokenExpired, requestAuthToken } from './authHelper';
-import { POST } from '../query';
 import { Message } from './eip712';
-import cache from '../agreementMananger';
 import { Logger } from "../types";
 
-export interface AuthOptions extends Message {
-  authUrl: string;         // the url for geting token
+interface AuthOptions extends Message {
+  indexerUrl: string;         // the url for geting token
   chainId?: number;        // chainId for the network
   projectChainId?: string; // chainId for the project
-  sk?: string;             // `sk` of the consumer or corresponding controller account
+  sk: string;              // `sk` of the consumer or corresponding controller account
 }
 
 export class AuthLink extends ApolloLink {
   private _options: AuthOptions;
   private _logger: Logger;
+  private _token: string;
 
   constructor(options: AuthOptions, logger: Logger) {
     super();
     this._options = options;
     this._logger = logger;
+    this._token = '';
   }
 
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
@@ -48,6 +48,11 @@ export class AuthLink extends ApolloLink {
     });
   }
 
+  get queryEndpoint() {
+    const url = new URL('/query', this._options.indexerUrl);
+    return url.toString();
+  }
+
   private generateMessage() {
     const { indexer, consumer, agreement, deploymentId } = this._options;
     const timestamp = new Date().getTime();
@@ -55,30 +60,17 @@ export class AuthLink extends ApolloLink {
   }
 
   private async getUrlAndToken(): Promise<{ url: string; token: string } | undefined> {
-    const nextAgreement = await cache.getNextAgreement();
-    if (!nextAgreement) return undefined;
+    if (!isTokenExpired(this._token)) return { token: this._token, url: this.queryEndpoint };
 
-    const { token, id, url, indexer } = nextAgreement;
-    if (!isTokenExpired(token)) return { token, url };
-
-    const { projectChainId, sk, chainId, agreement, deploymentId, authUrl } = this._options;
-
-    if (!sk) {
-      const tokenUrl = new URL('/token', authUrl);
-      const res = await POST<{ token: string }>(tokenUrl.toString(), { projectChainId, indexer, agreementId: id });
-      const token = res.token;
-      cache.updateTokenById(id, token);
-      return { token, url };
-    }
+    const { sk, chainId, agreement } = this._options;
 
     if (!chainId || !agreement) throw new Error('chainId and agreement are required');
 
     const message = this.generateMessage();
-    const queryUrl = new URL(`/query/${deploymentId}`, authUrl);
-    const tokenUrl = new URL('/token', authUrl);
+    const tokenUrl = new URL('/token', this._options.indexerUrl);
     const authToken = await requestAuthToken(tokenUrl.toString(), message, sk, chainId)
-    cache.updateTokenById(agreement, token);
+    this._token = authToken;
 
-    return { token: authToken, url: queryUrl.toString() };
+    return { token: authToken, url: this.queryEndpoint };
   }
 }

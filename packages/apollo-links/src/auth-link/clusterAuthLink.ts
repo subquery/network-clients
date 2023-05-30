@@ -1,0 +1,62 @@
+// Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
+import { Subscription } from 'zen-observable-ts';
+
+import { isTokenExpired } from './authHelper';
+import { POST } from '../query';
+import cache from '../agreementMananger';
+import { Logger } from "../types";
+
+interface AuthOptions {
+  authUrl: string;         // the url for geting token
+  projectChainId: string; // chainId for the project
+}
+
+export class ClusterAuthLink extends ApolloLink {
+  private _options: AuthOptions;
+  private _logger: Logger;
+
+  constructor(options: AuthOptions, logger: Logger) {
+    super();
+    this._options = options;
+    this._logger = logger;
+  }
+
+  override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
+    if (!forward) return null;
+
+    return new Observable<FetchResult>(observer => {
+      let sub: Subscription;
+      this.getUrlAndToken().then((data) => {
+        if (data) {
+          const { token, url } = data;
+          const headers = { authorization: `Bearer ${token}` };
+          operation.setContext({ url, headers });
+        }
+      })
+      .catch((error) => observer.error(error))
+      .finally(() => {
+        sub = forward(operation).subscribe(observer);
+      });
+
+      return () => sub?.unsubscribe();
+    });
+  }
+
+  private async getUrlAndToken(): Promise<{ url: string; token: string } | undefined> {
+    const nextAgreement = await cache.getNextAgreement();
+    if (!nextAgreement) return undefined;
+
+    const { token, id, url, indexer } = nextAgreement;
+    if (!isTokenExpired(token)) return { token, url };
+
+    const { projectChainId, authUrl } = this._options;
+
+    const tokenUrl = new URL('/token', authUrl);
+    const res = await POST<{ token: string }>(tokenUrl.toString(), { projectChainId, indexer, agreementId: id });
+    cache.updateTokenById(id, res.token);
+    return { token: res.token, url };
+  }
+}
