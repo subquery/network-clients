@@ -14,16 +14,28 @@ interface AuthHttpOptions {
   authUrl: string;          // auth service url
   projectChainId: string;   // genesis hash of the chain
   httpOptions: HttpOptions; // http options for init `HttpLink`
-  logger: Logger       // logger for `AuthLink`
+  logger?: Logger       // logger for `AuthLink`
   fallbackServiceUrl?: string; // fall back service url for `AuthLink`
 }
 
+function silentLogger(): Logger{
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const logfn = () => {};
+  return {
+    debug: logfn,
+    info: logfn,
+    warn: logfn,
+    error: logfn
+  };
+}
+
 export function authHttpLink(options: AuthHttpOptions): ApolloLink {
-  const { projectChainId, httpOptions, fallbackServiceUrl, authUrl, logger } = options;
+  const { projectChainId, httpOptions, fallbackServiceUrl, authUrl, logger: _logger } = options;
 
   agreementMananger.init(authUrl, projectChainId);
   agreementMananger.start();
 
+  const logger = _logger ?? silentLogger();
   const errorLink = creatErrorLink(logger);
   const httpLink = new DynamicHttpLink({ httpOptions, fallbackServiceUrl });
   const authLink = new ClusterAuthLink({ authUrl, projectChainId }, logger);
