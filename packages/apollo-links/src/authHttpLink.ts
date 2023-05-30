@@ -15,16 +15,28 @@ interface AuthHttpOptions {
   projectChainId: string;   // genesis hash of the chain
   httpOptions: HttpOptions; // http options for init `HttpLink`
   deploymentId: string;     // deployment id of the project
-  logger: Logger       // logger for `AuthLink`
+  logger?: Logger       // logger for `AuthLink`
   backupDictionary?: string; // backup dictionary for `AuthLink`
 }
 
+function silentLogger(): Logger{
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const logfn = () => {};
+  return {
+    debug: logfn,
+    info: logfn,
+    warn: logfn,
+    error: logfn
+  };
+}
+
 export function authHttpLink(options: AuthHttpOptions): ApolloLink {
-  const { projectChainId, httpOptions, backupDictionary, deploymentId, authUrl, logger } = options;
+  const { projectChainId, httpOptions, backupDictionary, deploymentId, authUrl, logger: _logger } = options;
 
   agreementMananger.init(authUrl, projectChainId);
   agreementMananger.start();
 
+  const logger = _logger ?? silentLogger();
   const errorLink = creatErrorLink(logger);
   const httpLink = new DynamicHttpLink({ httpOptions, backupDictionary });
   const authLink = new AuthLink({ authUrl, deploymentId, indexer: '', projectChainId }, logger);
