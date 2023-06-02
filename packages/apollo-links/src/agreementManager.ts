@@ -1,35 +1,45 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { Logger } from "./logger";
 import { fetchAgreements } from "./query";
 import { Agreement } from "./types";
 
-class AgreementMananger {
+type Options = {
+  logger: Logger;
+  authUrl: string;
+  projectId: string;
+}
+
+class AgreementManager {
 
   private nextAgreementIndex: number;
   private agreements: Agreement[] | undefined;
+  private logger: Logger;
 
   private authUrl: string;
   private projectId: string;
   private interval = 300_000;
 
-  constructor() {
+  constructor(options: Options) {
+    const { authUrl, projectId, logger } = options;
+    this.authUrl = authUrl;
+    this.projectId = projectId;
+    this.logger = logger;
     this.nextAgreementIndex = 0;
-    this.authUrl = '';
-    this.projectId = '';
   }
 
   private async refreshAgreements() {
     try {
       const agreements = await fetchAgreements(this.authUrl, this.projectId);
       this.agreements = agreements;
-    } catch {
-      // TODO: output log
+    } catch (e) {
+      this.logger.warn(`Failed to refresh agreements: ${e}`);
     }
   }
 
   public start() {
-    this.refreshAgreements();
+    void this.refreshAgreements();
     setInterval(this.refreshAgreements, this.interval);
   }
 
@@ -65,6 +75,4 @@ class AgreementMananger {
   }
 }
 
-const agreementMananger = new AgreementMananger();
-
-export default agreementMananger;
+export default AgreementManager;

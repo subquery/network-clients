@@ -5,14 +5,14 @@ import { from, ApolloLink, HttpOptions } from '@apollo/client/core';
 
 import { ClusterAuthLink } from './auth-link';
 import { DynamicHttpLink } from './dynamicHttpLink';
-import agreementMananger from './agreementMananger';
+import AgreementManager from './agreementManager';
 import { creatErrorLink } from './errorLink';
 import { retryLink } from './retryLink';
 import { Logger, silentLogger } from './logger';
 
 interface AuthHttpOptions {
   authUrl: string;             // auth service url
-  projectId: string;      // project chain id or depployment id
+  projectId: string;           // project chain id or depployment id
   httpOptions: HttpOptions;    // http options for init `HttpLink`
   logger?: Logger              // logger for `AuthLink`
   fallbackServiceUrl?: string; // fall back service url for `AuthLink`
@@ -21,13 +21,13 @@ interface AuthHttpOptions {
 export function authHttpLink(options: AuthHttpOptions): ApolloLink {
   const { projectId, httpOptions, fallbackServiceUrl, authUrl, logger: _logger } = options;
 
-  agreementMananger.init(authUrl, projectId);
-  agreementMananger.start();
-
   const logger = _logger ?? silentLogger();
+  const agreementManager = new AgreementManager({ authUrl, projectId, logger });
+  agreementManager.start();
+
   const errorLink = creatErrorLink(logger);
   const httpLink = new DynamicHttpLink({ httpOptions, fallbackServiceUrl });
-  const authLink = new ClusterAuthLink({ authUrl, projectId }, logger);
+  const authLink = new ClusterAuthLink({ authUrl, projectId, logger, agreementManager });
 
   // 1. errorLink: This link helps in handling and logging any GraphQL or network errors that may occur down the chain.
   //    Placing it at the beginning ensures that it catches any errors that may occur in any of the other links.

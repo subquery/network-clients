@@ -5,23 +5,27 @@ import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apoll
 import { Subscription } from 'zen-observable-ts';
 
 import { isTokenExpired } from './authHelper';
+import AgreementManager from '../agreementManager';
 import { POST } from '../query';
-import cache from '../agreementMananger';
 import { Logger } from '../logger';
 
 interface AuthOptions {
-  authUrl: string;         // the url for geting token
-  projectId: string;       // chainId or deploymentId for the project
+  authUrl: string;                      // the url for geting token
+  projectId: string;                    // chainId or deploymentId for the project
+  agreementManager: AgreementManager;   // agreement manager for managing agreements
+  logger: Logger;                       // logger for logging
 }
 
 export class ClusterAuthLink extends ApolloLink {
   private _options: AuthOptions;
-  private _logger: Logger;
 
-  constructor(options: AuthOptions, logger: Logger) {
+  constructor(options: AuthOptions) {
     super();
     this._options = options;
-    this._logger = logger;
+  }
+
+  get agreementManager () {
+    return this._options.agreementManager;
   }
 
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
@@ -46,7 +50,7 @@ export class ClusterAuthLink extends ApolloLink {
   }
 
   private async getUrlAndToken(): Promise<{ url: string; token: string } | undefined> {
-    const nextAgreement = await cache.getNextAgreement();
+    const nextAgreement = await this.agreementManager.getNextAgreement();
     if (!nextAgreement) return undefined;
 
     const { token, id, url, indexer } = nextAgreement;
@@ -56,7 +60,7 @@ export class ClusterAuthLink extends ApolloLink {
 
     const tokenUrl = new URL('/token', authUrl);
     const res = await POST<{ token: string }>(tokenUrl.toString(), { projectId, indexer, agreementId: id });
-    cache.updateTokenById(id, res.token);
+    this.agreementManager.updateTokenById(id, res.token);
     return { token: res.token, url };
   }
 }
