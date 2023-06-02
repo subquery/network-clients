@@ -24,6 +24,8 @@ export class DynamicHttpLink extends ApolloLink {
     const { url } = operation.getContext();
     const httpLink = this.createHttpLink(url);
 
+    console.log('httpLink Url:', httpLink.options.uri);
+
     return httpLink.request(operation, forward);
   }
 

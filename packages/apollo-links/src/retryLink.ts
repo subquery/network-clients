@@ -5,7 +5,7 @@ import { RetryLink } from "@apollo/client/link/retry";
 
 export const retryLink = new RetryLink({
   attempts: {
-    max: 5,
+    max: 2,
     retryIf: (error) => !!error
   }
 });

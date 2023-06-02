@@ -17,15 +17,15 @@ interface AuthOptions {
 }
 
 export class ClusterAuthLink extends ApolloLink {
-  private _options: AuthOptions;
+  private options: AuthOptions;
+  private loggger: Logger;
+  private agreementManager: AgreementManager;
 
   constructor(options: AuthOptions) {
     super();
-    this._options = options;
-  }
-
-  get agreementManager () {
-    return this._options.agreementManager;
+    this.options = options;
+    this.loggger = options.logger;
+    this.agreementManager = options.agreementManager;
   }
 
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
@@ -40,7 +40,7 @@ export class ClusterAuthLink extends ApolloLink {
           operation.setContext({ url, headers });
         }
       })
-      .catch((error) => observer.error(error))
+      .catch((error) => this.loggger.warn(`Failed to get token: ${error.message}`))
       .finally(() => {
         sub = forward(operation).subscribe(observer);
       });
@@ -56,7 +56,7 @@ export class ClusterAuthLink extends ApolloLink {
     const { token, id, url, indexer } = nextAgreement;
     if (!isTokenExpired(token)) return { token, url };
 
-    const { projectId, authUrl } = this._options;
+    const { projectId, authUrl } = this.options;
 
     const tokenUrl = new URL('/token', authUrl);
     const res = await POST<{ token: string }>(tokenUrl.toString(), { projectId, indexer, agreementId: id });

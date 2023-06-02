@@ -30,22 +30,12 @@ class AgreementManager {
   }
 
   private async refreshAgreements() {
-    try {
-      const agreements = await fetchAgreements(this.authUrl, this.projectId);
-      this.agreements = agreements;
-    } catch (e) {
-      this.logger.warn(`Failed to refresh agreements: ${e}`);
-    }
+    this.agreements = await fetchAgreements(this.authUrl, this.projectId);
   }
 
   public start() {
     void this.refreshAgreements();
     setInterval(this.refreshAgreements, this.interval);
-  }
-
-  public init(authUrl: string, projectNetworkId: string) {
-    this.authUrl = authUrl;
-    this.projectId = projectNetworkId;
   }
 
   public async getNextAgreement(): Promise<Agreement | undefined> {

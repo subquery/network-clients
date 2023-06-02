@@ -24,9 +24,13 @@ interface AgreementsResponse {
 }
 
 export async function fetchAgreements(authUrl: string, projectId: string): Promise<Agreement[]> {
-  const agreementsURL = new URL(`/agreements/${projectId}`, authUrl);
-  const result = await GET<AgreementsResponse>(agreementsURL.toString());
-
-  const { agreements } = result;
-  return agreements;
+  try {
+    const agreementsURL = new URL(`/agreements/${projectId}`, authUrl);
+    const result = await GET<AgreementsResponse>(agreementsURL.toString());
+  
+    const { agreements } = result;
+    return agreements ?? [];
+  } catch {
+    return [];
+  }
 }
