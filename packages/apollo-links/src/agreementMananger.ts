@@ -10,18 +10,18 @@ class AgreementMananger {
   private agreements: Agreement[] | undefined;
 
   private authUrl: string;
-  private projectChainId: string;
+  private projectId: string;
   private interval = 300_000;
 
   constructor() {
     this.nextAgreementIndex = 0;
     this.authUrl = '';
-    this.projectChainId = '';
+    this.projectId = '';
   }
 
   private async refreshAgreements() {
     try {
-      const agreements = await fetchAgreements(this.authUrl, this.projectChainId);
+      const agreements = await fetchAgreements(this.authUrl, this.projectId);
       this.agreements = agreements;
     } catch {
       // TODO: output log
@@ -35,12 +35,12 @@ class AgreementMananger {
 
   public init(authUrl: string, projectNetworkId: string) {
     this.authUrl = authUrl;
-    this.projectChainId = projectNetworkId;
+    this.projectId = projectNetworkId;
   }
 
   public async getNextAgreement(): Promise<Agreement | undefined> {
     if (this.agreements === undefined) {
-      this.agreements = await fetchAgreements(this.authUrl, this.projectChainId);
+      this.agreements = await fetchAgreements(this.authUrl, this.projectId);
     }
 
     if (this.agreements.length === 0) return;

@@ -11,7 +11,7 @@ import { Logger } from '../logger';
 
 interface AuthOptions {
   authUrl: string;         // the url for geting token
-  projectChainId: string; // chainId for the project
+  projectId: string;       // chainId or deploymentId for the project
 }
 
 export class ClusterAuthLink extends ApolloLink {
@@ -52,10 +52,10 @@ export class ClusterAuthLink extends ApolloLink {
     const { token, id, url, indexer } = nextAgreement;
     if (!isTokenExpired(token)) return { token, url };
 
-    const { projectChainId, authUrl } = this._options;
+    const { projectId, authUrl } = this._options;
 
     const tokenUrl = new URL('/token', authUrl);
-    const res = await POST<{ token: string }>(tokenUrl.toString(), { projectChainId, indexer, agreementId: id });
+    const res = await POST<{ token: string }>(tokenUrl.toString(), { projectId, indexer, agreementId: id });
     cache.updateTokenById(id, res.token);
     return { token: res.token, url };
   }

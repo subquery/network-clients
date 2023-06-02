@@ -61,10 +61,10 @@ describe('auth link with auth center', () => {
 
   beforeAll(async () => {
     const authUrl = process.env.AUTH_URL ?? '';
-    const projectChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
+    const projectId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
     const fallbackServiceUrl = "https://api.subquery.network/sq/subquery/polkadot-dictionary";
     const httpOptions = { fetch, fetchOptions: { timeout: 3000 } };
-    const options = { authUrl, projectChainId, httpOptions, fallbackServiceUrl, logger }
+    const options = { authUrl, projectId, httpOptions, fallbackServiceUrl, logger }
     const link = authHttpLink(options);
 
     client = new ApolloClient({

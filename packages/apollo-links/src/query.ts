@@ -23,8 +23,8 @@ interface AgreementsResponse {
   agreements: Agreement[];
 }
 
-export async function fetchAgreements(authUrl: string, projectChainId: string): Promise<Agreement[]> {
-  const agreementsURL = new URL(`/agreements/${projectChainId}`, authUrl);
+export async function fetchAgreements(authUrl: string, projectId: string): Promise<Agreement[]> {
+  const agreementsURL = new URL(`/agreements/${projectId}`, authUrl);
   const result = await GET<AgreementsResponse>(agreementsURL.toString());
 
   const { agreements } = result;
