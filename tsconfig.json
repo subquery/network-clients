@@ -21,8 +21,8 @@
     "skipLibCheck": true,                             /* Skip type checking all .d.ts files. */
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "types": ["node", "jest"],
+    "types": ["node", "jest"]
   },
   "include": ["packages/**/*","test"],
-  "exclude": ["**/node_modules/**"],
+  "exclude": ["**/node_modules/**"]
 }
