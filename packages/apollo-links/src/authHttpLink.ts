@@ -9,6 +9,7 @@ import AgreementManager from './agreementManager';
 import { creatErrorLink } from './errorLink';
 import { retryLink } from './retryLink';
 import { Logger, silentLogger } from './logger';
+import { FallbackLink } from './fallbackLink';
 
 interface AuthHttpOptions {
   authUrl: string;             // auth service url
@@ -26,7 +27,8 @@ export function authHttpLink(options: AuthHttpOptions): ApolloLink {
   agreementManager.start();
 
   const errorLink = creatErrorLink(logger);
-  const httpLink = new DynamicHttpLink({ httpOptions, fallbackServiceUrl });
+  const fallbackLink = new FallbackLink(fallbackServiceUrl)
+  const httpLink = new DynamicHttpLink({ httpOptions });
   const authLink = new ClusterAuthLink({ authUrl, projectId, logger, agreementManager });
 
   // 1. errorLink: This link helps in handling and logging any GraphQL or network errors that may occur down the chain.
@@ -34,5 +36,5 @@ export function authHttpLink(options: AuthHttpOptions): ApolloLink {
   // 2. retryLink: This comes after the errorLink to allow it to handle network errors and retry requests if necessary.
   // 3. authLink: The authLink comes next. It is responsible for adding authentication credentials to every request.
   // 4. httpLink: This should always be at the end of the link chain. This link is responsible for sending the request to the server.
-  return from([errorLink, retryLink, authLink, httpLink]);
+  return from([errorLink, retryLink, authLink, fallbackLink, httpLink]);
 }

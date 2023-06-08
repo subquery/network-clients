@@ -39,10 +39,12 @@ export class ClusterAuthLink extends ApolloLink {
           const headers = { authorization: `Bearer ${token}` };
           operation.setContext({ url, headers });
         }
-      })
-      .catch((error) => this.loggger.warn(`Failed to get token: ${error.message}`))
-      .finally(() => {
+
         sub = forward(operation).subscribe(observer);
+      })
+      .catch((error) => {
+        this.loggger.warn(`Failed to get token: ${error.message}`);
+        observer.error(error);
       });
 
       return () => sub?.unsubscribe();

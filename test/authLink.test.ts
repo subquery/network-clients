@@ -74,12 +74,12 @@ describe('auth link with auth center', () => {
     });
   });
 
-  it.only('can query data with auth link', async () => {
+  it('can query data with auth link', async () => {
     await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
   });
 
   it('auth link routing should work', async () => {
-    const count = 2;
+    const count = 20;
     for (let i = 0; i < count; i++) {
       await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
     }
