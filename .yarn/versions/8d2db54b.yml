@@ -1,0 +1,5 @@
+undecided:
+  - "@subql/network-tools"
+  - "@subql/network-config"
+  - "@subql/network-query"
+  - "@subql/react-hooks"
