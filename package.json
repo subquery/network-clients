@@ -1,6 +1,5 @@
 {
   "name": "@subql/network-tools",
-  "version": "0.3.0",
   "description": "Client sdk for Subquery Network",
   "scripts": {
     "build": "yarn workspaces foreach -pt run build",
