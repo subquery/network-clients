@@ -11,15 +11,27 @@ import { retryLink } from './retryLink';
 import { Logger, silentLogger } from './logger';
 import { FallbackLink } from './fallbackLink';
 
-interface AuthHttpOptions {
+interface DictAuthOptions extends BaseAuthOptions{
+  chainId: string // chain id for the requested dictionary
+}
+
+interface ProjectAuthOptions extends BaseAuthOptions {
+  projectId: string;           // deployment id
+}
+
+interface BaseAuthOptions {
   authUrl: string;             // auth service url
-  projectId: string;           // project chain id or depployment id
   httpOptions: HttpOptions;    // http options for init `HttpLink`
   logger?: Logger              // logger for `AuthLink`
   fallbackServiceUrl?: string; // fall back service url for `AuthLink`
 }
 
-export function authHttpLink(options: AuthHttpOptions): ApolloLink {
+export function dictHttpLink(options: DictAuthOptions): ApolloLink {
+  const { chainId} = options;
+  return projectHttpLink({...options, projectId: chainId});
+}
+
+export function projectHttpLink(options: ProjectAuthOptions): ApolloLink {
   const { projectId, httpOptions, fallbackServiceUrl, authUrl, logger: _logger } = options;
 
   const logger = _logger ?? silentLogger();

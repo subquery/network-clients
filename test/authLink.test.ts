@@ -9,7 +9,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-import { authHttpLink, AuthLink } from '../packages/apollo-links/src';
+import { dictHttpLink, AuthLink } from '../packages/apollo-links/src';
 
 // TODO: need fix the test cases
 const logger = Pino({ level: 'debug' });
@@ -61,11 +61,11 @@ describe('auth link with auth center', () => {
 
   beforeAll(async () => {
     const authUrl = process.env.AUTH_URL ?? '';
-    const projectId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
+    const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
     const fallbackServiceUrl = "https://api.subquery.network/sq/subquery/polkadot-dictionary";
     const httpOptions = { fetch, fetchOptions: { timeout: 3000 } };
-    const options = { authUrl, projectId, httpOptions, fallbackServiceUrl, logger }
-    const link = authHttpLink(options);
+    const options = { authUrl, chainId, httpOptions, fallbackServiceUrl, logger }
+    const link = dictHttpLink(options);
 
     client = new ApolloClient({
       cache: new InMemoryCache(),
@@ -83,5 +83,5 @@ describe('auth link with auth center', () => {
     for (let i = 0; i < count; i++) {
       await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
     }
-  });
+  },20000);
 });
