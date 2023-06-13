@@ -15,8 +15,8 @@ interface DictAuthOptions extends BaseAuthOptions{
   chainId: string // chain id for the requested dictionary
 }
 
-interface ProjectAuthOptions extends BaseAuthOptions {
-  projectId: string;           // deployment id
+interface DeploymentAuthOptions extends BaseAuthOptions {
+  deploymentId: string;           // deployment id
 }
 
 interface BaseAuthOptions {
@@ -28,20 +28,20 @@ interface BaseAuthOptions {
 
 export function dictHttpLink(options: DictAuthOptions): ApolloLink {
   const { chainId} = options;
-  return projectHttpLink({...options, projectId: chainId});
+  return deploymentHttpLink({...options, deploymentId: chainId});
 }
 
-export function projectHttpLink(options: ProjectAuthOptions): ApolloLink {
-  const { projectId, httpOptions, fallbackServiceUrl, authUrl, logger: _logger } = options;
+export function deploymentHttpLink(options: DeploymentAuthOptions): ApolloLink {
+  const { deploymentId, httpOptions, fallbackServiceUrl, authUrl, logger: _logger } = options;
 
   const logger = _logger ?? silentLogger();
-  const agreementManager = new AgreementManager({ authUrl, projectId, logger });
+  const agreementManager = new AgreementManager({ authUrl, projectId: deploymentId, logger });
   agreementManager.start();
 
   const errorLink = creatErrorLink(logger);
   const fallbackLink = new FallbackLink(fallbackServiceUrl)
   const httpLink = new DynamicHttpLink({ httpOptions });
-  const authLink = new ClusterAuthLink({ authUrl, projectId, logger, agreementManager });
+  const authLink = new ClusterAuthLink({ authUrl, projectId: deploymentId, logger, agreementManager });
 
   // 1. errorLink: This link helps in handling and logging any GraphQL or network errors that may occur down the chain.
   //    Placing it at the beginning ensures that it catches any errors that may occur in any of the other links.
