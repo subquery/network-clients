@@ -1,5 +1,0 @@
-undecided:
-  - "@subql/network-tools"
-  - "@subql/network-clients"
-  - "@subql/network-config"
-  - "@subql/network-query"

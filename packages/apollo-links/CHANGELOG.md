@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2023-06-14
+### Fixed
+- fix the apollo/client import to /core to avoid react dep (#125)
+
+### Changed
+- separate the link create function for dict & project (#124)
+- rename projectHttpLink to deploymentHttpLink (#126)
+
 ## [0.4.0] - 2023-06-13
 ### Added
 - Feat/auth link routing (#122)
@@ -21,7 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add Authlink for Apollo client
 
-[Unreleased]: https://github.com/subquery/network-clients/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/subquery/network-clients/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/subquery/network-clients/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/subquery/network-clients/compare/v0.3.4...v0.4.0
 [0.3.4]: https://github.com/subquery/network-clients/compare/v0.2.1...v0.3.4
 [0.2.1]: https://github.com/subquery/network-clients/releases/tag/v0.2.1
