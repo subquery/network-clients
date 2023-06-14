@@ -44,7 +44,7 @@ export class ClusterAuthLink extends ApolloLink {
       })
       .catch((error) => {
         this.loggger.warn(`Failed to get token: ${error.message}`);
-        observer.error(error);
+        observer.error(new Error('failed to get indexer url and token'));
       });
 
       return () => sub?.unsubscribe();
@@ -57,12 +57,13 @@ export class ClusterAuthLink extends ApolloLink {
 
     const { token, id, url, indexer } = nextAgreement;
     if (!isTokenExpired(token)) return { token, url };
-
+    this.loggger.debug(`request new token for indexer ${indexer}`);
     const { projectId, authUrl } = this.options;
 
     const tokenUrl = new URL('/token', authUrl);
     const res = await POST<{ token: string }>(tokenUrl.toString(), { projectId, indexer, agreementId: id });
     this.agreementManager.updateTokenById(id, res.token);
+    this.loggger.debug(`request new token for indexer ${indexer} success`);
     return { token: res.token, url };
   }
 }

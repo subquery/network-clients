@@ -3,16 +3,28 @@
 
 import { onError } from "@apollo/client/link/error";
 import { Logger } from "./logger";
+import { ApolloLink, FetchResult, NextLink, Observable } from "@apollo/client/core";
 
-export const creatErrorLink = (logger: Logger) => onError(({ graphQLErrors, networkError }) => {
+export type ErrorLinkOption = {
+  logger?: Logger;
+  fallbackLink: ApolloLink;
+  httpLink: ApolloLink;
+}
+
+export const creatErrorLink = ({logger, fallbackLink, httpLink }: ErrorLinkOption) =>
+    onError(({ graphQLErrors, networkError, operation, forward }) => {
   if (graphQLErrors)
     graphQLErrors.forEach(({ message, locations, path }) =>
-      logger.warn(
+      logger?.warn(
         `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
       )
     );
 
   if (networkError) {
-    logger.warn(`[Network error]: ${networkError}`);
+    if (!operation.getContext().fallback) {
+      operation.setContext({url: undefined});
+      return fallbackLink.request(operation, httpLink.request.bind(httpLink) as NextLink) as Observable<FetchResult>;
+    }
+    logger?.warn(`[Network error]: ${networkError}`);
   }
 });

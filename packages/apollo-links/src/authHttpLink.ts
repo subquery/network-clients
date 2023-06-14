@@ -7,7 +7,7 @@ import { ClusterAuthLink } from './auth-link';
 import { DynamicHttpLink } from './dynamicHttpLink';
 import AgreementManager from './agreementManager';
 import { creatErrorLink } from './errorLink';
-import { retryLink } from './retryLink';
+import { createRetryLink } from './retryLink';
 import { Logger, silentLogger } from './logger';
 import { FallbackLink } from './fallbackLink';
 
@@ -38,9 +38,10 @@ export function deploymentHttpLink(options: DeploymentAuthOptions): ApolloLink {
   const agreementManager = new AgreementManager({ authUrl, projectId: deploymentId, logger });
   agreementManager.start();
 
-  const errorLink = creatErrorLink(logger);
-  const fallbackLink = new FallbackLink(fallbackServiceUrl)
-  const httpLink = new DynamicHttpLink({ httpOptions });
+  const retryLink = createRetryLink(logger);
+  const fallbackLink = new FallbackLink(fallbackServiceUrl, logger)
+  const httpLink = new DynamicHttpLink({ httpOptions, logger });
+  const errorLink = creatErrorLink({logger, fallbackLink, httpLink});
   const authLink = new ClusterAuthLink({ authUrl, projectId: deploymentId, logger, agreementManager });
 
   // 1. errorLink: This link helps in handling and logging any GraphQL or network errors that may occur down the chain.
