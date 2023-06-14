@@ -1,11 +1,19 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ApolloLink, FetchResult, HttpLink, HttpOptions, NextLink, Observable, Operation } from '@apollo/client/core';
-import { Logger } from "./logger";
+import {
+  ApolloLink,
+  FetchResult,
+  HttpLink,
+  HttpOptions,
+  NextLink,
+  Observable,
+  Operation,
+} from '@apollo/client/core';
+import { Logger } from './logger';
 
 export interface Options {
-  httpOptions: HttpOptions;  // http options for init `HttpLink`
+  httpOptions: HttpOptions; // http options for init `HttpLink`
   logger?: Logger;
 }
 
@@ -24,9 +32,9 @@ export class DynamicHttpLink extends ApolloLink {
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
     const { url } = operation.getContext();
     if (!url) {
-      return new Observable<FetchResult>((observer)=>{
+      return new Observable<FetchResult>((observer) => {
         observer.error(new Error(`empty url`));
-      })
+      });
     }
     this.logger?.debug(`use url: ${url}`);
     const httpLink = this.createHttpLink(url);

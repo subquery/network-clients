@@ -10,10 +10,10 @@ import { POST } from '../query';
 import { Logger } from '../logger';
 
 interface AuthOptions {
-  authUrl: string;                      // the url for geting token
-  projectId: string;                    // chainId or deploymentId for the project
-  agreementManager: AgreementManager;   // agreement manager for managing agreements
-  logger: Logger;                       // logger for logging
+  authUrl: string; // the url for geting token
+  projectId: string; // chainId or deploymentId for the project
+  agreementManager: AgreementManager; // agreement manager for managing agreements
+  logger: Logger; // logger for logging
 }
 
 export class ClusterAuthLink extends ApolloLink {
@@ -31,21 +31,22 @@ export class ClusterAuthLink extends ApolloLink {
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
     if (!forward) return null;
 
-    return new Observable<FetchResult>(observer => {
+    return new Observable<FetchResult>((observer) => {
       let sub: Subscription;
-      this.getUrlAndToken().then((data) => {
-        if (data) {
-          const { token, url } = data;
-          const headers = { authorization: `Bearer ${token}` };
-          operation.setContext({ url, headers });
-        }
+      this.getUrlAndToken()
+        .then((data) => {
+          if (data) {
+            const { token, url } = data;
+            const headers = { authorization: `Bearer ${token}` };
+            operation.setContext({ url, headers });
+          }
 
-        sub = forward(operation).subscribe(observer);
-      })
-      .catch((error) => {
-        this.loggger.warn(`Failed to get token: ${error.message}`);
-        observer.error(new Error('failed to get indexer url and token'));
-      });
+          sub = forward(operation).subscribe(observer);
+        })
+        .catch((error) => {
+          this.loggger.warn(`Failed to get token: ${error.message}`);
+          observer.error(new Error('failed to get indexer url and token'));
+        });
 
       return () => sub?.unsubscribe();
     });
@@ -61,7 +62,11 @@ export class ClusterAuthLink extends ApolloLink {
     const { projectId, authUrl } = this.options;
 
     const tokenUrl = new URL('/token', authUrl);
-    const res = await POST<{ token: string }>(tokenUrl.toString(), { projectId, indexer, agreementId: id });
+    const res = await POST<{ token: string }>(tokenUrl.toString(), {
+      projectId,
+      indexer,
+      agreementId: id,
+    });
     this.agreementManager.updateTokenById(id, res.token);
     this.loggger.debug(`request new token for indexer ${indexer} success`);
     return { token: res.token, url };
