@@ -14,38 +14,8 @@ export const createRetryLink = (logger?: Logger, maxRetries = 3, ) => new RetryL
       }
       logger?.debug(`retry: ${count}/${maxRetries}`);
       return true;
-      // const url = operation.getContext().url;
-      // if (url) {
-      //   logger?.debug(`retry for unreachable url ${url}`)
-      // }
-      // return !!url;
     }
     logger?.debug(`reach max retries: ${maxRetries}`);
     return false;
-    // else if(!operation.getContext().fallback) {
-    //   logger?.debug(`reach max retries, try fallback`)
-    //   operation.setContext({ url: undefined });
-    //   return false;
-    // } else {
-    //   return false;
-    // }
   }
 });
-//
-// export const createRetryLink = (logger?: Logger) => new RetryLink({
-//   attempts: {
-//     max: 5,
-//     retryIf: (error, operation) => {
-//       if (error?.message === 'failed to get indexer url and token') {
-//         logger?.debug(`retry for the reason of ${error.message}`)
-//         return true;
-//       } else {
-//         const url = operation.getContext().url;
-//         if (url) {
-//           logger?.debug(`retry for unreachable url ${url}`)
-//         }
-//         return !!url;
-//       }
-//     },
-//   }
-// });
