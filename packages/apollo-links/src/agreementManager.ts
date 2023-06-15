@@ -1,18 +1,17 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Logger } from "./logger";
-import { fetchAgreements } from "./query";
-import { Agreement } from "./types";
+import { Logger } from './logger';
+import { fetchAgreements } from './query';
+import { Agreement } from './types';
 
 type Options = {
   logger: Logger;
   authUrl: string;
   projectId: string;
-}
+};
 
 class AgreementManager {
-
   private nextAgreementIndex: number;
   private agreements: Agreement[] | undefined;
   private logger: Logger;
@@ -20,6 +19,8 @@ class AgreementManager {
   private authUrl: string;
   private projectId: string;
   private interval = 300_000;
+  private healthy = true;
+  private _init: Promise<void>;
 
   constructor(options: Options) {
     const { authUrl, projectId, logger } = options;
@@ -27,23 +28,27 @@ class AgreementManager {
     this.projectId = projectId;
     this.logger = logger;
     this.nextAgreementIndex = 0;
-  }
-
-  private async refreshAgreements() {
-    this.agreements = await fetchAgreements(this.authUrl, this.projectId);
-  }
-
-  public start() {
-    void this.refreshAgreements();
+    this._init = this.refreshAgreements();
     setInterval(this.refreshAgreements, this.interval);
   }
 
-  public async getNextAgreement(): Promise<Agreement | undefined> {
-    if (this.agreements === undefined) {
+  private async refreshAgreements() {
+    try {
       this.agreements = await fetchAgreements(this.authUrl, this.projectId);
+      this.healthy = true;
+    } catch (e) {
+      this.logger.error(`fetchAgreements failed: ${String(e)}`);
+      this.healthy = false;
+    }
+  }
+
+  public async getNextAgreement(): Promise<Agreement | undefined> {
+    await this._init;
+    if (!this.healthy) {
+      return;
     }
 
-    if (this.agreements.length === 0) return;
+    if (!this.agreements?.length) return;
 
     let agreement = this.agreements[this.nextAgreementIndex];
     if (this.nextAgreementIndex < this.agreements.length - 1) {

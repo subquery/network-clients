@@ -1,18 +1,31 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { onError } from "@apollo/client/link/error";
-import { Logger } from "./logger";
+import { onError } from '@apollo/client/link/error';
+import { Logger } from './logger';
+import { ApolloLink, FetchResult, NextLink, Observable } from '@apollo/client/core';
 
-export const creatErrorLink = (logger: Logger) => onError(({ graphQLErrors, networkError }) => {
-  if (graphQLErrors)
-    graphQLErrors.forEach(({ message, locations, path }) =>
-      logger.warn(
-        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
-      )
-    );
+export type ErrorLinkOption = {
+  logger?: Logger;
+  fallbackLink: ApolloLink;
+  httpLink: ApolloLink;
+};
 
-  if (networkError) {
-    logger.warn(`[Network error]: ${networkError}`);
-  }
-});
+export const creatErrorLink = ({ logger, fallbackLink, httpLink }: ErrorLinkOption) =>
+  onError(({ graphQLErrors, networkError, operation, forward }) => {
+    if (graphQLErrors)
+      graphQLErrors.forEach(({ message, locations, path }) =>
+        logger?.warn(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`)
+      );
+
+    if (networkError) {
+      if (!operation.getContext().fallback) {
+        operation.setContext({ url: undefined });
+        return fallbackLink.request(
+          operation,
+          httpLink.request.bind(httpLink) as NextLink
+        ) as Observable<FetchResult>;
+      }
+      logger?.warn(`[Network error]: ${networkError}`);
+    }
+  });
