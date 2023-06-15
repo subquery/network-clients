@@ -3,7 +3,7 @@
 
 import { ApolloClient } from '@apollo/client/core';
 import assert from 'assert';
-import { GraphqlQueryClient, NETWORK_CONFIGS } from '../packages/network-clients';
+import { GraphqlQueryClient, NETWORK_CONFIGS } from '../packages/network-clients/src';
 import {
   GetDelegation,
   GetIndexer,

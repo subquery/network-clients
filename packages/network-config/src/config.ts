@@ -19,17 +19,17 @@ export interface NetworkConfig {
 export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig> = {
   [SQNetworks.MAINNET]: {
     defaultEndpoint: RPC_ENDPOINTS.mainnet,
-    sdkOptions: { deploymentDetails: mainnetDeploymentDetails },
+    sdkOptions: { network: 'mainnet', deploymentDetails: mainnetDeploymentDetails },
     gql: gqlEndpoints(SQNetworks.MAINNET),
   },
   [SQNetworks.KEPLER]: {
     defaultEndpoint: RPC_ENDPOINTS.kepler,
-    sdkOptions: { deploymentDetails: keplerDeploymentDetails },
+    sdkOptions: { network: 'kepler', deploymentDetails: keplerDeploymentDetails },
     gql: gqlEndpoints(SQNetworks.KEPLER),
   },
   [SQNetworks.TESTNET]: {
     defaultEndpoint: RPC_ENDPOINTS.testnet,
-    sdkOptions: { deploymentDetails: testnetDeploymentDetails },
+    sdkOptions: { network: 'testnet', deploymentDetails: testnetDeploymentDetails },
     gql: gqlEndpoints(SQNetworks.TESTNET),
   },
 };
