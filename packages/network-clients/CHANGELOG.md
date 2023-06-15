@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Upgrade Contract SDK to `v0.13.4` (#131)
 
-## [0.2.0] - 2022-08-16
+## [0.2.0] - 2022-08-17
 
 ### Added
 
