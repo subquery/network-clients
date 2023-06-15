@@ -9,10 +9,7 @@ export const createRetryLink = (logger?: Logger, maxRetries = 3) =>
   new RetryLink({
     attempts: function (count: number, operation: Operation, error: any) {
       if (count <= maxRetries) {
-        if (
-          ['failed to get indexer url and token', 'empty url'].includes(error?.message) ||
-          operation.getContext().fallback
-        ) {
+        if (['empty url'].includes(error?.message) || operation.getContext().fallback) {
           return false;
         }
         logger?.debug(`retry: ${count}/${maxRetries}`);

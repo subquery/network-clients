@@ -36,7 +36,6 @@ export function deploymentHttpLink(options: DeploymentAuthOptions): ApolloLink {
 
   const logger = _logger ?? silentLogger();
   const agreementManager = new AgreementManager({ authUrl, projectId: deploymentId, logger });
-  agreementManager.start();
 
   const retryLink = createRetryLink(logger);
   const fallbackLink = new FallbackLink(fallbackServiceUrl, logger);
