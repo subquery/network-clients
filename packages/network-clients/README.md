@@ -12,7 +12,7 @@ This high level client is for when we need to access multiple clients for a meth
 
 ``` TS
 import {NetworkClient, getIndexer} from '@subql/network-clients';
-const client = await NetworkClient.create(SQNetworks.TESTNET);
+const client = NetworkClient.create(SQNetworks.TESTNET);
 
 //this method needs to access contract client and query client
 const indexer = await getIndexer('<insert indexer address here>') 

@@ -28,10 +28,10 @@ export class NetworkClient {
     this._contractClient = new ContractClient(_sdk);
   }
 
-  public static async create(network: SQNetworks, provider?: Provider, ipfsUrl?: string) {
+  public static create(network: SQNetworks, provider?: Provider, ipfsUrl?: string) {
     const config = NETWORK_CONFIGS[network];
     assert(config, `config for ${network} is missing`);
-    const sdk = await ContractSDK.create(
+    const sdk = ContractSDK.create(
       provider ?? new providers.StaticJsonRpcProvider(config.defaultEndpoint),
       config.sdkOptions
     );
