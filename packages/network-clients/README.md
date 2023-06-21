@@ -12,7 +12,7 @@ This high level client is for when we need to access multiple clients for a meth
 
 ``` TS
 import {NetworkClient, getIndexer} from '@subql/network-clients';
-const client = await NetworkClient.create(SQNetworks.TESTNET);
+const client = NetworkClient.create(SQNetworks.TESTNET);
 
 //this method needs to access contract client and query client
 const indexer = await getIndexer('<insert indexer address here>') 
@@ -24,7 +24,7 @@ Client where you can access several methods that use
 the contract sdk values as inputs.
 
 ``` TS
-import {cancelOfferUnspentBalance} from '@subql/network-client';
+import {cancelOfferUnspentBalance} from '@subql/network-clients';
 const offerId = 4
 const balance = await cancelOfferUnspentBalance(offerId);
 ```
@@ -35,7 +35,7 @@ Client where you can call basic ipfs method without having to
 implement the logic yourself.
 
 ```TS 
-import {cat} from '@subql/network-client';
+import {cat} from '@subql/network-clients';
 
 const output = await cat('<insert ipfs address here>');
 console.log(output);
@@ -47,11 +47,11 @@ Client providing commonly used graphql requests that we use
 to get data from the network subquery project.
 
 ```TS
-import {GraphqlQueryClient, getIndexer} from '@subql/network-client';
+import {GraphqlQueryClient, getIndexer} from '@subql/network-clients';
 
 import {GetIndexer} from '@subql/network-query';
 
-const client = new GraphqlQueryClient(config).explorerClient;
+const client = new GraphqlQueryClient(config).networkClient;
 const result = await client.query({
       query: GetIndexer,
       variables: { address: address1 },

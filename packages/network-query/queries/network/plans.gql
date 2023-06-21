@@ -18,6 +18,22 @@ fragment PlanFields on Plan {
   price
 }
 
+fragment PlansNodeFields on Plan {
+  id
+  active
+  creator
+  deploymentId
+  price
+  planTemplate {
+    id
+    period
+    dailyReqCap
+    rateLimit
+    metadata
+    active
+  }
+}
+
 query GetDeploymentPlans($address: String!, $deploymentId: String!) {
   plans(
     filter: {

@@ -3,7 +3,7 @@
 
 import { ApolloClient } from '@apollo/client/core';
 import assert from 'assert';
-import { GraphqlQueryClient, NETWORK_CONFIGS } from '../packages/network-clients';
+import { GraphqlQueryClient, NETWORK_CONFIGS } from '../packages/network-clients/src';
 import {
   GetDelegation,
   GetIndexer,
@@ -12,7 +12,7 @@ import {
   GetIndexerDelegators,
   GetExpiredServiceAgreements,
   GetOngoingServiceAgreements,
-  GetSpecificServiceAgreements,
+  GetProjectOngoingServiceAgreements,
   GetAcceptedOffers,
   GetDeployment,
   GetDeploymentIndexers,
@@ -62,9 +62,9 @@ describe('query client', () => {
   const polkadotDictDeploymentId = 'QmSjjRjfjXXEfSUTheNwvWcBaH54pWoToTHPDsJRby955X';
 
   beforeAll(async () => {
-    const config = NETWORK_CONFIGS.kepler;
+    const config = NETWORK_CONFIGS.testnet;
     assert(config, 'network config not defined');
-    client = new GraphqlQueryClient(config).explorerClient;
+    client = new GraphqlQueryClient(config).networkClient;
   });
 
   it('can query indexer detail', async () => {
@@ -140,9 +140,9 @@ describe('query client', () => {
     deepAssert(result.data.serviceAgreements);
   });
 
-  it('can query project agreements', async () => {
+  it('can query project ongoing agreements', async () => {
     const result = await client.query({
-      query: GetSpecificServiceAgreements,
+      query: GetProjectOngoingServiceAgreements,
       variables: { deploymentId: 'Qmdpka4MpaUtGP7B3AAoPji4H6X7a2ir53a1mxnUumqMm4', now: date },
     });
     assert(result, 'cannot request query GET_SPECIFIC_SERVICE_AGREEMENTS');

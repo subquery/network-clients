@@ -1,6 +1,5 @@
 {
-  "name": "@subql/network-client",
-  "version": "0.3.0",
+  "name": "@subql/network-tools",
   "description": "Client sdk for Subquery Network",
   "scripts": {
     "build": "yarn workspaces foreach -pt run build",
@@ -15,7 +14,8 @@
     "@actions/core": "^1.9.1",
     "@apollo/client": "^3.7.0",
     "@metamask/eth-sig-util": "^4.0.1",
-    "@subql/contract-sdk": "^0.12.5-0",
+    "@octokit/request": "^5.6.3",
+    "@subql/contract-sdk": "^0.13.5",
     "@types/jest": "^28.1.6",
     "@types/react": "^18.0.12",
     "@typescript-eslint/eslint-plugin": "^5.27.0",
@@ -41,6 +41,7 @@
     "ts-node": "^10.8.1"
   },
   "workspaces": [
+    "packages/network-config",
     "packages/network-query",
     "packages/apollo-links",
     "packages/network-clients",

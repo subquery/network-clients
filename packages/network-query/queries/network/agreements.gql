@@ -114,11 +114,11 @@ query GetConsumerExpiredServiceAgreements($address: String!, $now: Datetime!) {
   }
 }
 
-# Specific Service Agreement Queries
+# Project Service Agreement Queries
 
-query GetSpecificServiceAgreements($deploymentId: String!, $now: Datetime!) {
+query GetProjectOngoingServiceAgreements($deploymentId: String!, $now: Datetime!) {
   serviceAgreements(
-    filter: { deploymentId: { equalTo: $deploymentId }, endTime: { lessThan: $now } }
+    filter: { deploymentId: { equalTo: $deploymentId }, endTime: { greaterThanOrEqualTo: $now } }
     orderBy: END_TIME_ASC
   ) {
     totalCount

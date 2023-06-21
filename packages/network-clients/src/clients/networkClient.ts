@@ -11,10 +11,11 @@ import { IPFSClient } from './ipfsClient';
 import { GraphqlQueryClient } from './queryClient';
 
 import { isCID, min } from '../utils';
-import { DEFAULT_IPFS_URL, NETWORK_CONFIGS, SQNetworks } from '../config';
+import { DEFAULT_IPFS_URL, NETWORK_CONFIGS } from '@subql/network-config';
 import assert from 'assert';
 import { Indexer } from '../models/indexer';
 import { parseRawEraValue } from '../utils/parseEraValue';
+import { SQNetworks } from '@subql/network-config';
 
 type Provider = AbstractProvider | Signer;
 
@@ -27,10 +28,10 @@ export class NetworkClient {
     this._contractClient = new ContractClient(_sdk);
   }
 
-  public static async create(network: SQNetworks, provider?: Provider, ipfsUrl?: string) {
+  public static create(network: SQNetworks, provider?: Provider, ipfsUrl?: string) {
     const config = NETWORK_CONFIGS[network];
     assert(config, `config for ${network} is missing`);
-    const sdk = await ContractSDK.create(
+    const sdk = ContractSDK.create(
       provider ?? new providers.StaticJsonRpcProvider(config.defaultEndpoint),
       config.sdkOptions
     );
@@ -121,7 +122,9 @@ export class NetworkClient {
     const ownStake = ownDelegation?.amount;
     const { totalDelegations } = delegator;
 
-    const sortedOwnStake = ownStake ? parseRawEraValue(ownStake, eraNumber).after : BigNumber.from(0);
+    const sortedOwnStake = ownStake
+      ? parseRawEraValue(ownStake, eraNumber).after
+      : BigNumber.from(0);
     const sortedTotalDelegations = parseRawEraValue(totalDelegations, eraNumber).after;
     return sortedTotalDelegations.sub(sortedOwnStake);
   }

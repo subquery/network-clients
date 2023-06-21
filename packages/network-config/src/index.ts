@@ -1,5 +1,5 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-export * from './authHttpLink';
-export * from './auth-link';
+export * from './constants';
+export * from './config';

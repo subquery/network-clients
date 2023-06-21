@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # base types
-graphql-codegen --require dotenv/config --config types.codegen.ts
+graphql-codegen --config types.codegen.ts
 
 # exchange
-graphql-codegen --require dotenv/config --config exchange.codegen.ts
+graphql-codegen --config exchange.codegen.ts
 
 # network
-graphql-codegen --require dotenv/config --config network.codegen.ts
+graphql-codegen --config network.codegen.ts
 
 # leadboard
 graphql-codegen --require dotenv/config --config leaderboard.codegen.ts
