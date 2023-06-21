@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.4] - 2023-06-15
 
 ### Changed
+
 - Upgrade Contract SDK to `v0.13.4` (#131)
 
 ### Added

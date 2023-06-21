@@ -11,6 +11,7 @@ export enum GQLEndpoint {
   Network = 'network',
   Exchange = 'exchange',
   Airdrop = 'airdrop',
+  Leadboard = 'leadboard',
 }
 
 export const IPFS_URLS = {
@@ -42,10 +43,17 @@ export const EXCHANGE_SUBQL_ENDPOINTS = {
   testnet: 'https://api.subquery.network/sq/subquery/kepler-testnet-exchange',
 };
 
+export const LEADBOARD_SUBQL_ENDPOINTS = {
+  mainnet: 'https://leaderboard-api.subquery.network/graphql',
+  kepler: 'https://leaderboard-api.subquery.network/graphql',
+  testnet: 'https://leaderboard-api.thechaindata.com/graphql',
+};
+
 export function gqlEndpoints(network: SQNetworks) {
   return {
     [GQLEndpoint.Network]: NETWORK_SUBQL_ENDPOINTS[network],
     [GQLEndpoint.Airdrop]: AIRDROP_SUBQL_ENDPOINTS[network],
     [GQLEndpoint.Exchange]: EXCHANGE_SUBQL_ENDPOINTS[network],
+    [GQLEndpoint.Leadboard]: LEADBOARD_SUBQL_ENDPOINTS[network],
   };
 }

@@ -10,7 +10,7 @@ graphql-codegen --config exchange.codegen.ts
 graphql-codegen --config network.codegen.ts
 
 # leadboard
-graphql-codegen --require dotenv/config --config leaderboard.codegen.ts
+graphql-codegen --config leaderboard.codegen.ts
 
 yarn prettier --write . 
 
