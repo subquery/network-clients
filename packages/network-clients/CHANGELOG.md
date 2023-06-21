@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.6] - 2023-06-21
+
 ## [0.3.4] - 2023-06-15
 
 ### Changed
+
 - Upgrade Contract SDK to `v0.13.4` (#131)
 
 ## [0.2.0] - 2022-08-17
@@ -24,7 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Release first version
 
-[unreleased]: https://github.com/subquery/network-clients/compare/v0.3.4...HEAD
+[unreleased]: https://github.com/subquery/network-clients/compare/v0.3.6...HEAD
+[0.3.6]: https://github.com/subquery/network-clients/compare/v0.3.4...v0.3.6
 [0.3.4]: https://github.com/subquery/network-clients/compare/v0.2.0...v0.3.4
 [0.2.0]: https://github.com/subquery/network-clients/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/subquery/network-clients/releases/tag/v0.1.0
