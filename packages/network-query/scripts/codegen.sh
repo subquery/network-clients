@@ -9,7 +9,7 @@ graphql-codegen --config exchange.codegen.ts
 # network
 graphql-codegen --config network.codegen.ts
 
-# leadboard
+# leaderboard
 graphql-codegen --config leaderboard.codegen.ts
 
 yarn prettier --write . 
