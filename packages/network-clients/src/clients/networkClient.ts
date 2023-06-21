@@ -122,7 +122,9 @@ export class NetworkClient {
     const ownStake = ownDelegation?.amount;
     const { totalDelegations } = delegator;
 
-    const sortedOwnStake = ownStake ? parseRawEraValue(ownStake, eraNumber).after : BigNumber.from(0);
+    const sortedOwnStake = ownStake
+      ? parseRawEraValue(ownStake, eraNumber).after
+      : BigNumber.from(0);
     const sortedTotalDelegations = parseRawEraValue(totalDelegations, eraNumber).after;
     return sortedTotalDelegations.sub(sortedOwnStake);
   }

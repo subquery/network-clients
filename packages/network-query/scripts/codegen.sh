@@ -9,6 +9,9 @@ graphql-codegen --config exchange.codegen.ts
 # network
 graphql-codegen --config network.codegen.ts
 
+# leaderboard
+graphql-codegen --config leaderboard.codegen.ts
+
 yarn prettier --write . 
 
 # creating export files

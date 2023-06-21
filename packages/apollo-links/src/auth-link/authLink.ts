@@ -9,9 +9,9 @@ import { Message } from './eip712';
 import { Logger } from '../logger';
 
 interface AuthOptions extends Message {
-  indexerUrl: string;     // indexer url
-  chainId: number;        // chainId for the network
-  sk: string;             // `sk` of the consumer or corresponding controller account
+  indexerUrl: string; // indexer url
+  chainId: number; // chainId for the network
+  sk: string; // `sk` of the consumer or corresponding controller account
 }
 
 export class AuthLink extends ApolloLink {
@@ -29,19 +29,20 @@ export class AuthLink extends ApolloLink {
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
     if (!forward) return null;
 
-    return new Observable<FetchResult>(observer => {
+    return new Observable<FetchResult>((observer) => {
       let sub: Subscription;
-      this.getUrlAndToken().then((data) => {
-        if (data) {
-          const { token, url } = data;
-          const headers = { authorization: `Bearer ${token}` };
-          operation.setContext({ url, headers });
-        }
-      })
-      .catch((error) => observer.error(error))
-      .finally(() => {
-        sub = forward(operation).subscribe(observer);
-      });
+      this.getUrlAndToken()
+        .then((data) => {
+          if (data) {
+            const { token, url } = data;
+            const headers = { authorization: `Bearer ${token}` };
+            operation.setContext({ url, headers });
+          }
+        })
+        .catch((error) => observer.error(error))
+        .finally(() => {
+          sub = forward(operation).subscribe(observer);
+        });
 
       return () => sub?.unsubscribe();
     });
@@ -67,7 +68,7 @@ export class AuthLink extends ApolloLink {
 
     const message = this.generateMessage();
     const tokenUrl = new URL('/token', indexerUrl);
-    const authToken = await requestAuthToken(tokenUrl.toString(), message, sk, chainId)
+    const authToken = await requestAuthToken(tokenUrl.toString(), message, sk, chainId);
     this._token = authToken;
 
     return { token: authToken, url: this.queryEndpoint };

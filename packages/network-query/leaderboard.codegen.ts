@@ -5,12 +5,8 @@ import { CodegenConfig } from '@graphql-codegen/cli';
 import { NETWORK_CONFIGS } from '@subql/network-config';
 
 const config: CodegenConfig = {
-  schema: [
-    `${NETWORK_CONFIGS.testnet.gql.network}`,
-    `${NETWORK_CONFIGS.kepler.gql.exchange}`,
-    `${NETWORK_CONFIGS.kepler.gql.leaderboard}`,
-  ],
-  documents: ['./queries/exchange/*.gql', './queries/network/*.gql', './queries/leaderboard/*.gql'],
+  schema: NETWORK_CONFIGS.kepler.gql.leaderboard,
+  documents: './queries/leaderboard/*.gql',
   config: {
     preResolveTypes: true,
     namingConvention: 'keep',
@@ -27,8 +23,17 @@ const config: CodegenConfig = {
     },
   },
   generates: {
-    'src/__graphql__/base-types.ts': {
-      plugins: ['typescript', 'typescript-operations'],
+    'src/': {
+      preset: 'near-operation-file',
+      presetConfig: {
+        folder: '../../src/__graphql__/leaderboard',
+        extensions: '.generated.ts',
+        baseTypesPath: '__graphql__/base-types.ts',
+      },
+      config: {
+        importOperationTypesFrom: 'Types',
+      },
+      plugins: ['typescript-document-nodes'],
     },
   },
 };

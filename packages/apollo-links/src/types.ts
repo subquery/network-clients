@@ -6,4 +6,4 @@ export type Agreement = {
   indexer: string;
   url: string;
   token: string;
-}
+};

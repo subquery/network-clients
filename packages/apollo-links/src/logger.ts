@@ -13,15 +13,15 @@ export type Logger = {
   warn: LogFn;
   info: LogFn;
   debug: LogFn;
-}
+};
 
-export function silentLogger(): Logger{
+export function silentLogger(): Logger {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   const logfn = () => {};
   return {
     debug: logfn,
     info: logfn,
     warn: logfn,
-    error: logfn
+    error: logfn,
   };
 }

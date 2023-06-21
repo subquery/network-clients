@@ -9,7 +9,6 @@ import mainnetDeploymentDetails from '@subql/contract-sdk/publish/mainnet.json';
 import keplerDeploymentDetails from '@subql/contract-sdk/publish/kepler.json';
 import testnetDeploymentDetails from '@subql/contract-sdk/publish/testnet.json';
 
-
 export interface NetworkConfig {
   gql: Record<GQLEndpoint, string | undefined>;
   defaultEndpoint: string | undefined;

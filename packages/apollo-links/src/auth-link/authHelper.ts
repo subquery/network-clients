@@ -33,9 +33,9 @@ export function signMessage(msg: AuthMessage, sk: string, chainId: number): stri
 }
 
 export async function requestAuthToken(
-  authUrl: string, 
-  msg: AuthMessage, 
-  sk: string, 
+  authUrl: string,
+  msg: AuthMessage,
+  sk: string,
   chainId: number
 ): Promise<string> {
   if (!sk) return '';
