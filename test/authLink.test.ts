@@ -20,7 +20,12 @@ import { Logger } from '../packages/apollo-links/src/logger';
 
 dotenv.config();
 
-// import { dictHttpLink, AuthLink, ClusterAuthLink } from '../packages/apollo-links/src';
+const mockLogger: Logger = {
+  debug: jest.fn(console.log),
+  error: jest.fn(console.log),
+  warn: jest.fn(console.log),
+  info: jest.fn(console.log),
+};
 
 // TODO: need fix the test cases
 const logger: Logger = Pino({ level: 'debug' });
@@ -70,7 +75,7 @@ describe.skip('auth link', () => {
 
 describe('auth link with auth center', () => {
   let client: ApolloClient<unknown>;
-  const authUrl = process.env.AUTH_URL ?? 'https://kepler-auth.subquery.network';
+  const authUrl = process.env.AUTH_URL ?? 'input your local test auth url here';
   const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
   const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
   const options = { authUrl, chainId, httpOptions };
@@ -98,12 +103,6 @@ describe('auth link with auth center', () => {
   }, 20000);
 
   it('use fallback url when no agreement available', async () => {
-    const mockLogger: Logger = {
-      debug: jest.fn(console.log),
-      error: jest.fn(console.log),
-      warn: jest.fn(console.log),
-      info: jest.fn(console.log),
-    };
     const fallbackServiceUrl = 'https://api.subquery.network/sq/subquery/polkadot-dictionary';
     const { dictHttpLink } = await import('../packages/apollo-links/src');
     const link = dictHttpLink({
@@ -118,17 +117,12 @@ describe('auth link with auth center', () => {
       defaultOptions: { query: { fetchPolicy: 'no-cache' } },
       link,
     });
+
     await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
     expect(mockLogger.debug).toHaveBeenCalledWith(expect.stringMatching(/use fallback url:/));
   });
 
   it('should not retry if no endpoint can be found', async () => {
-    const mockLogger: Logger = {
-      debug: jest.fn(console.log),
-      error: jest.fn(console.log),
-      warn: jest.fn(console.log),
-      info: jest.fn(console.log),
-    };
     const { dictHttpLink } = await import('../packages/apollo-links/src');
     const link = dictHttpLink({
       ...options,
@@ -141,6 +135,7 @@ describe('auth link with auth center', () => {
       defaultOptions: { query: { fetchPolicy: 'no-cache' } },
       link,
     });
+
     await expect(client.query({ query: metadataQuery })).rejects.toThrow('empty url');
     expect(mockLogger.debug).not.toHaveBeenCalledWith(expect.stringMatching(/retry:/));
   });
@@ -166,12 +161,6 @@ describe('auth link with auth center', () => {
         },
       };
     });
-    const mockLogger: Logger = {
-      debug: jest.fn(console.log),
-      error: jest.fn(console.log),
-      warn: jest.fn(console.log),
-      info: jest.fn(console.log),
-    };
 
     const { dictHttpLink } = await import('../packages/apollo-links/src');
     const fallbackServiceUrl = 'https://api.subquery.network/sq/subquery/polkadot-dictionary';
@@ -182,6 +171,7 @@ describe('auth link with auth center', () => {
       defaultOptions: { query: { fetchPolicy: 'no-cache' } },
       link,
     });
+
     await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
     expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
   });
@@ -206,12 +196,6 @@ describe('auth link with auth center', () => {
         },
       };
     });
-    const mockLogger: Logger = {
-      debug: jest.fn(console.log),
-      error: jest.fn(console.log),
-      warn: jest.fn(console.log),
-      info: jest.fn(console.log),
-    };
 
     const { dictHttpLink } = await import('../packages/apollo-links/src');
     const fallbackServiceUrl = 'https://api.subquery.network/sq/subquery/polkadot-dictionary';
@@ -222,19 +206,13 @@ describe('auth link with auth center', () => {
       defaultOptions: { query: { fetchPolicy: 'no-cache' } },
       link,
     });
+
     await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
     expect(mockLogger.debug).toHaveBeenCalledWith(expect.stringMatching(/reach max retries:/));
     expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
   });
 
   it('fallback url should not trigger retry', async () => {
-    const mockLogger: Logger = {
-      debug: jest.fn(console.log),
-      error: jest.fn(console.log),
-      warn: jest.fn(console.log),
-      info: jest.fn(console.log),
-    };
-
     const { dictHttpLink } = await import('../packages/apollo-links/src');
     const fallbackServiceUrl = 'https://api.subquery.network/wrong';
 
@@ -244,6 +222,7 @@ describe('auth link with auth center', () => {
       defaultOptions: { query: { fetchPolicy: 'no-cache' } },
       link,
     });
+
     await expect(client.query({ query: metadataQuery })).rejects.toThrow(/Response not successful/);
     expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
     expect(mockLogger.debug).not.toHaveBeenCalledWith(expect.stringMatching(/retry:/));
