@@ -148,9 +148,21 @@ describe('auth link with auth center', () => {
     jest.clearAllMocks();
   });
 
-  it('can query data with auth link', async () => {
+  it('can query data with dictionary auth link', async () => {
     const { dictHttpLink } = await getLinks();
     const link = dictHttpLink(options);
+    client = createApolloClient(link);
+
+    const count = 3;
+    for (let i = 0; i < count; i++) {
+      await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
+    }
+  }, 20000);
+
+  it.only('can query data with deployment auth link', async () => {
+    const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
+    const { deploymentHttpLink } = await getLinks();
+    const link = deploymentHttpLink({ ...options, deploymentId });
     client = createApolloClient(link);
 
     const count = 3;
