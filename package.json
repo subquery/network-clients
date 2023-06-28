@@ -5,7 +5,7 @@
     "build": "yarn workspaces foreach -pt run build",
     "lint": "eslint . --ext .ts,.tsx",
     "postinstall": "husky install",
-    "test": "jest --passWithNoTests --testTimeout=160000"
+    "test": "jest --passWithNoTests --detectOpenHandles --testTimeout=160000"
   },
   "author": "SubQuery Pte Limited",
   "license": "Apache-2.0",

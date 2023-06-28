@@ -38,7 +38,7 @@ class AgreementManager {
 
   private async refreshAgreements() {
     try {
-      this.agreements = await fetchAgreements(this.authUrl, this.projectId);
+      this.agreements = await fetchAgreements(this.authUrl, this.projectId, this.orderType);
       this.healthy = true;
     } catch (e) {
       this.logger.error(`fetchAgreements failed: ${String(e)}`);
