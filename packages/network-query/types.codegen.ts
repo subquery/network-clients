@@ -6,7 +6,7 @@ import { NETWORK_CONFIGS } from '@subql/network-config';
 
 const config: CodegenConfig = {
   schema: [
-    `${NETWORK_CONFIGS.testnet.gql.network}`,
+    'https://api.subquery.network/sq/subquery/kepler-network__c3Vic',
     `${NETWORK_CONFIGS.kepler.gql.exchange}`,
     `${NETWORK_CONFIGS.kepler.gql.leaderboard}`,
   ],

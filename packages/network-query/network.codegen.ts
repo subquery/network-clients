@@ -5,7 +5,7 @@ import { CodegenConfig } from '@graphql-codegen/cli';
 import { NETWORK_CONFIGS } from '@subql/network-config';
 
 const config: CodegenConfig = {
-  schema: NETWORK_CONFIGS.testnet.gql.network,
+  schema: 'https://api.subquery.network/sq/subquery/kepler-network__c3Vic',
   documents: './queries/network/*.gql',
   config: {
     preResolveTypes: true,
