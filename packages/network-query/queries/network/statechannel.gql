@@ -6,6 +6,7 @@ fragment StateChannelFields on StateChannel {
   indexer
   consumer
   status
+  agent
   total
   spent
   price

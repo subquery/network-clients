@@ -3,7 +3,9 @@
 
 import { NetworkClient, SQNetworks } from '../packages/network-clients/src';
 
-const TEST_INDEXER = '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04';
+// TODO: reset
+// const TEST_INDEXER = '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04';
+const TEST_INDEXER = '0x33b8D680e49145Bac668991f9A8e0f7681f72858';
 
 describe.only('network client', () => {
   let client: NetworkClient;
