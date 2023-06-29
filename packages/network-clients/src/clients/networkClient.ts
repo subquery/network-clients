@@ -50,8 +50,11 @@ export class NetworkClient {
     const { controller, commission, totalStake, metadata: indexerMetadata } = indexer;
     const { amount: ownStake } = delegation;
 
-    const metadata = { name: indexerMetadata?.name ?? '', url: indexerMetadata?.url ?? '' };
-
+    // const metadata = { name: indexerMetadata?.name ?? '', url: indexerMetadata?.url ?? '' };
+    const metadata = await this._ipfs.getJSON<{
+      name: string;
+      url: string;
+    }>(indexerMetadata);
     const sortedTotalStake = parseRawEraValue(totalStake, currentEra.toNumber());
     const sortedOwnStake = parseRawEraValue(ownStake, currentEra.toNumber());
 
