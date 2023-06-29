@@ -42,19 +42,18 @@ export class NetworkClient {
   public async getIndexer(address: string): Promise<Indexer | undefined> {
     const currentEra = await this._sdk.eraManager.eraNumber();
     const leverageLimit = await this._sdk.staking.indexerLeverageLimit();
+
     const indexer = await this._gqlClient.getIndexer(address);
     const delegation = await this._gqlClient.getDelegation(address, address);
 
     if (!indexer || !delegation) return;
-
     const { controller, commission, totalStake, metadata: indexerMetadata } = indexer;
     const { amount: ownStake } = delegation;
-
-    // const metadata = { name: indexerMetadata?.name ?? '', url: indexerMetadata?.url ?? '' };
     const metadata = await this._ipfs.getJSON<{
       name: string;
       url: string;
     }>(indexerMetadata);
+
     const sortedTotalStake = parseRawEraValue(totalStake, currentEra.toNumber());
     const sortedOwnStake = parseRawEraValue(ownStake, currentEra.toNumber());
 
