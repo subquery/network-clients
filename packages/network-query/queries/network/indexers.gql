@@ -8,11 +8,7 @@ fragment IndexerFields on Indexer {
   totalStake
   maxUnstakeAmount
   capacity
-  metadata {
-    metadataCID
-    name
-    url
-  }
+  metadata
 }
 
 query GetIndexer($address: String!) {
