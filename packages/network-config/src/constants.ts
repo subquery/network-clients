@@ -28,7 +28,7 @@ export const RPC_ENDPOINTS = {
 export const NETWORK_SUBQL_ENDPOINTS = {
   mainnet: 'https://api.subquery.network/sq/subquery/kepler-network',
   kepler: 'https://api.subquery.network/sq/subquery/kepler-network',
-  testnet: 'https://api.subquery.network/sq/subquery/kepler-network__c3Vic',
+  testnet: 'https://api.subquery.network/sq/subquery/kepler-network',
 };
 
 export const AIRDROP_SUBQL_ENDPOINTS = {
