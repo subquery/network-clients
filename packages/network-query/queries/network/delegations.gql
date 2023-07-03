@@ -48,11 +48,7 @@ query GetDelegations($delegator: String!, $offset: Int) {
       ...DelegationFields
       indexer {
         active
-        metadata {
-          metadataCID
-          name
-          url
-        }
+        metadata
       }
     }
   }
@@ -67,11 +63,7 @@ query GetFilteredDelegations($delegator: String!, $filterIndexer: String!, $offs
     nodes {
       ...DelegationFields
       indexer {
-        metadata {
-          metadataCID
-          name
-          url
-        }
+        metadata
         active
       }
     }
@@ -87,11 +79,7 @@ query GetFilteredDelegation($delegator: String!, $indexer: String!, $offset: Int
     nodes {
       ...DelegationFields
       indexer {
-        metadata {
-          metadataCID
-          name
-          url
-        }
+        metadata
         active
       }
     }

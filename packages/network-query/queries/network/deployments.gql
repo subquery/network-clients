@@ -1,12 +1,6 @@
 # Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 # SPDX-License-Identifier: Apache-2.0
 
-fragment MetadataFields on IndexerMetadatum {
-  metadataCID
-  name
-  url
-}
-
 fragment DeploymentIndexerFields on DeploymentIndexer {
   id
   indexerId
@@ -15,9 +9,7 @@ fragment DeploymentIndexerFields on DeploymentIndexer {
   timestamp
   status
   indexer {
-    metadata {
-      ...MetadataFields
-    }
+    metadata
   }
 }
 
