@@ -5,6 +5,7 @@
 import dotenv from 'dotenv';
 import {
   ApolloClient,
+  ApolloLink,
   FetchResult,
   from,
   HttpLink,
@@ -20,7 +21,69 @@ import { Logger } from '../packages/apollo-links/src/logger';
 
 dotenv.config();
 
-// import { dictHttpLink, AuthLink, ClusterAuthLink } from '../packages/apollo-links/src';
+const mockLogger: Logger = {
+  debug: jest.fn(console.log),
+  error: jest.fn(console.log),
+  warn: jest.fn(console.log),
+  info: jest.fn(console.log),
+};
+
+function createApolloClient(link: ApolloLink) {
+  return new ApolloClient({
+    cache: new InMemoryCache(),
+    defaultOptions: { query: { fetchPolicy: 'no-cache' } },
+    link,
+  });
+}
+
+function getLinks() {
+  return import('../packages/apollo-links/src');
+}
+
+function mockIndexerRequestFailed() {
+  jest.mock('../packages/apollo-links/src/auth-link/clusterAuthLink', () => {
+    const originalModule = jest.requireActual(
+      '../packages/apollo-links/src/auth-link/clusterAuthLink'
+    );
+    return {
+      ClusterAuthLink: class MockLink extends originalModule.ClusterAuthLink {
+        // @ts-ignore
+        constructor(options) {
+          super(options);
+        }
+
+        request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
+          operation.setContext({ url: 'https://abcd.com' });
+          return forward!(operation);
+          // return super.request(operation, forward);
+        }
+      },
+    };
+  });
+}
+
+function mockGetIndexerUrlOrTokenFailed() {
+  jest.mock('../packages/apollo-links/src/auth-link/clusterAuthLink', () => {
+    const originalModule = jest.requireActual(
+      '../packages/apollo-links/src/auth-link/clusterAuthLink'
+    );
+    return {
+      ClusterAuthLink: class MockLink extends originalModule.ClusterAuthLink {
+        // @ts-ignore
+        constructor(options) {
+          super(options);
+        }
+
+        request(): Observable<FetchResult> | null {
+          return new Observable<FetchResult>((observer) =>
+            observer.error(new Error('failed to get indexer url and token'))
+          );
+          // return super.request(operation, forward);
+        }
+      },
+    };
+  });
+}
 
 // TODO: need fix the test cases
 const logger: Logger = Pino({ level: 'debug' });
@@ -50,7 +113,7 @@ describe.skip('auth link', () => {
   let client: ApolloClient<unknown>;
 
   beforeAll(async () => {
-    const { AuthLink } = await import('../packages/apollo-links/src');
+    const { AuthLink } = await getLinks();
     const authLink = new AuthLink(options, logger);
     client = new ApolloClient({
       cache: new InMemoryCache({ resultCaching: true }),
@@ -70,10 +133,12 @@ describe.skip('auth link', () => {
 
 describe.skip('auth link with auth center', () => {
   let client: ApolloClient<unknown>;
-  const authUrl = process.env.AUTH_URL ?? 'https://kepler-auth.subquery.network';
+  const authUrl = process.env.AUTH_URL ?? 'input your local test auth url here';
   const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
   const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
   const options = { authUrl, chainId, httpOptions };
+  const invalidChainId = '0x1234';
+
   afterEach(() => {
     jest.mock('../packages/apollo-links/src/auth-link/clusterAuthLink', () =>
       jest.requireActual('../packages/apollo-links/src/auth-link/clusterAuthLink')
@@ -83,14 +148,23 @@ describe.skip('auth link with auth center', () => {
     jest.clearAllMocks();
   });
 
-  it('can query data with auth link', async () => {
-    const { dictHttpLink } = await import('../packages/apollo-links/src');
+  it('can query data with dictionary auth link', async () => {
+    const { dictHttpLink } = await getLinks();
     const link = dictHttpLink(options);
-    client = new ApolloClient({
-      cache: new InMemoryCache(),
-      defaultOptions: { query: { fetchPolicy: 'no-cache' } },
-      link,
-    });
+    client = createApolloClient(link);
+
+    const count = 3;
+    for (let i = 0; i < count; i++) {
+      await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
+    }
+  }, 20000);
+
+  it.only('can query data with deployment auth link', async () => {
+    const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
+    const { deploymentHttpLink } = await getLinks();
+    const link = deploymentHttpLink({ ...options, deploymentId });
+    client = createApolloClient(link);
+
     const count = 3;
     for (let i = 0; i < count; i++) {
       await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
@@ -98,152 +172,68 @@ describe.skip('auth link with auth center', () => {
   }, 20000);
 
   it('use fallback url when no agreement available', async () => {
-    const mockLogger: Logger = {
-      debug: jest.fn(console.log),
-      error: jest.fn(console.log),
-      warn: jest.fn(console.log),
-      info: jest.fn(console.log),
-    };
     const fallbackServiceUrl = 'https://api.subquery.network/sq/subquery/polkadot-dictionary';
-    const { dictHttpLink } = await import('../packages/apollo-links/src');
+    const { dictHttpLink } = await getLinks();
     const link = dictHttpLink({
       ...options,
       logger: mockLogger,
-      chainId: '0x1234',
+      chainId: invalidChainId,
       fallbackServiceUrl,
     });
 
-    client = new ApolloClient({
-      cache: new InMemoryCache(),
-      defaultOptions: { query: { fetchPolicy: 'no-cache' } },
-      link,
-    });
+    client = createApolloClient(link);
     await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
     expect(mockLogger.debug).toHaveBeenCalledWith(expect.stringMatching(/use fallback url:/));
   });
 
   it('should not retry if no endpoint can be found', async () => {
-    const mockLogger: Logger = {
-      debug: jest.fn(console.log),
-      error: jest.fn(console.log),
-      warn: jest.fn(console.log),
-      info: jest.fn(console.log),
-    };
-    const { dictHttpLink } = await import('../packages/apollo-links/src');
+    const { dictHttpLink } = await getLinks();
     const link = dictHttpLink({
       ...options,
       logger: mockLogger,
-      chainId: '0x1234',
+      chainId: invalidChainId,
       fallbackServiceUrl: '',
     });
-    client = new ApolloClient({
-      cache: new InMemoryCache(),
-      defaultOptions: { query: { fetchPolicy: 'no-cache' } },
-      link,
-    });
+
+    client = createApolloClient(link);
     await expect(client.query({ query: metadataQuery })).rejects.toThrow('empty url');
     expect(mockLogger.debug).not.toHaveBeenCalledWith(expect.stringMatching(/retry:/));
   });
 
   it('should use fallback when failed to get token', async () => {
-    jest.mock('../packages/apollo-links/src/auth-link/clusterAuthLink', () => {
-      const originalModule = jest.requireActual(
-        '../packages/apollo-links/src/auth-link/clusterAuthLink'
-      );
-      return {
-        ClusterAuthLink: class MockLink extends originalModule.ClusterAuthLink {
-          // @ts-ignore
-          constructor(options) {
-            super(options);
-          }
+    mockGetIndexerUrlOrTokenFailed();
 
-          request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
-            return new Observable<FetchResult>((observer) =>
-              observer.error(new Error('failed to get indexer url and token'))
-            );
-            // return super.request(operation, forward);
-          }
-        },
-      };
-    });
-    const mockLogger: Logger = {
-      debug: jest.fn(console.log),
-      error: jest.fn(console.log),
-      warn: jest.fn(console.log),
-      info: jest.fn(console.log),
-    };
-
-    const { dictHttpLink } = await import('../packages/apollo-links/src');
+    const { dictHttpLink } = await getLinks();
     const fallbackServiceUrl = 'https://api.subquery.network/sq/subquery/polkadot-dictionary';
 
     const link = dictHttpLink({ ...options, logger: mockLogger, fallbackServiceUrl });
-    client = new ApolloClient({
-      cache: new InMemoryCache(),
-      defaultOptions: { query: { fetchPolicy: 'no-cache' } },
-      link,
-    });
+    client = createApolloClient(link);
+
     await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
     expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
   });
 
   it('should fall back to fallback url after max retries (request indexer failed)', async () => {
-    jest.mock('../packages/apollo-links/src/auth-link/clusterAuthLink', () => {
-      const originalModule = jest.requireActual(
-        '../packages/apollo-links/src/auth-link/clusterAuthLink'
-      );
-      return {
-        ClusterAuthLink: class MockLink extends originalModule.ClusterAuthLink {
-          // @ts-ignore
-          constructor(options) {
-            super(options);
-          }
+    mockIndexerRequestFailed();
 
-          request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
-            operation.setContext({ url: 'https://abcd.com' });
-            return forward!(operation);
-            // return super.request(operation, forward);
-          }
-        },
-      };
-    });
-    const mockLogger: Logger = {
-      debug: jest.fn(console.log),
-      error: jest.fn(console.log),
-      warn: jest.fn(console.log),
-      info: jest.fn(console.log),
-    };
-
-    const { dictHttpLink } = await import('../packages/apollo-links/src');
+    const { dictHttpLink } = await getLinks();
     const fallbackServiceUrl = 'https://api.subquery.network/sq/subquery/polkadot-dictionary';
 
     const link = dictHttpLink({ ...options, logger: mockLogger, fallbackServiceUrl });
-    client = new ApolloClient({
-      cache: new InMemoryCache(),
-      defaultOptions: { query: { fetchPolicy: 'no-cache' } },
-      link,
-    });
+    client = createApolloClient(link);
+
     await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
     expect(mockLogger.debug).toHaveBeenCalledWith(expect.stringMatching(/reach max retries:/));
     expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
   });
 
   it('fallback url should not trigger retry', async () => {
-    const mockLogger: Logger = {
-      debug: jest.fn(console.log),
-      error: jest.fn(console.log),
-      warn: jest.fn(console.log),
-      info: jest.fn(console.log),
-    };
-
-    const { dictHttpLink } = await import('../packages/apollo-links/src');
+    const { dictHttpLink } = await getLinks();
     const fallbackServiceUrl = 'https://api.subquery.network/wrong';
 
     const link = dictHttpLink({ ...options, authUrl: '', logger: mockLogger, fallbackServiceUrl });
-    client = new ApolloClient({
-      cache: new InMemoryCache(),
-      defaultOptions: { query: { fetchPolicy: 'no-cache' } },
-      link,
-    });
+    client = createApolloClient(link);
+
     await expect(client.query({ query: metadataQuery })).rejects.toThrow(/Response not successful/);
     expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
     expect(mockLogger.debug).not.toHaveBeenCalledWith(expect.stringMatching(/retry:/));

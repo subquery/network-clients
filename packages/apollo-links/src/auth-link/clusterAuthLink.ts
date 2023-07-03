@@ -61,7 +61,7 @@ export class ClusterAuthLink extends ApolloLink {
     this.loggger.debug(`request new token for indexer ${indexer}`);
     const { projectId, authUrl } = this.options;
 
-    const tokenUrl = new URL('/token', authUrl);
+    const tokenUrl = new URL('/orders/token', authUrl);
     const res = await POST<{ token: string }>(tokenUrl.toString(), {
       projectId,
       indexer,
