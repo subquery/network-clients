@@ -2953,7 +2953,7 @@ __metadata:
     graphql: ^16.5.0
     typescript: ^4.6.4
   peerDependencies:
-    "@subql/contract-sdk": ^0.13.5
+    "@subql/contract-sdk": ^0.13.7
     ipfs-http-client: ^53.0.1
   languageName: unknown
   linkType: soft
@@ -2964,7 +2964,7 @@ __metadata:
   dependencies:
     typescript: ^4.8.4
   peerDependencies:
-    "@subql/contract-sdk": ^0.13.5
+    "@subql/contract-sdk": ^0.13.7
     ipfs-http-client: ^53.0.1
   languageName: unknown
   linkType: soft
