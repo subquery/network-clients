@@ -1,6 +1,6 @@
 {
   "name": "@subql/network-query",
-  "version": "0.3.11",
+  "version": "0.3.13",
   "main": "dist/index.js",
   "description": "SubQuery package containing all gql queries for network dapps",
   "author": "SubQuery Pte Limited",
