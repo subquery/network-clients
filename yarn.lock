@@ -2927,12 +2927,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/contract-sdk@npm:^0.13.5":
-  version: 0.13.5
-  resolution: "@subql/contract-sdk@npm:0.13.5"
+"@subql/contract-sdk@npm:^0.13.7":
+  version: 0.13.7
+  resolution: "@subql/contract-sdk@npm:0.13.7"
   dependencies:
     "@openzeppelin/contracts-upgradeable": ^4.5.2
-  checksum: f2211999fc3eec9808350a7387e952eb52987c9e2638afe2def78b2154022f1bd5e7ebbad4cbd53981fe240f9fa0c242569d9643b9f252af331d22d4969aa5fa
+  checksum: e915cf4fe97e5e621b4899726efcf12f3ffb79c4233c8c9001df26e03a41fb7be25ad3136525b3a495820aa9d2a24ddf2b929007b2e330b530e8fc3f5e93b068
   languageName: node
   linkType: hard
 
@@ -2995,7 +2995,7 @@ __metadata:
     "@apollo/client": ^3.7.0
     "@metamask/eth-sig-util": ^4.0.1
     "@octokit/request": ^5.6.3
-    "@subql/contract-sdk": ^0.13.5
+    "@subql/contract-sdk": ^0.13.7
     "@types/jest": ^28.1.6
     "@types/react": ^18.0.12
     "@typescript-eslint/eslint-plugin": ^5.27.0
