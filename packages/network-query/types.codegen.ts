@@ -14,7 +14,12 @@ const config: CodegenConfig = {
   config: {
     preResolveTypes: true,
     namingConvention: 'keep',
-    avoidOptionals: true,
+    avoidOptionals: {
+      field: true,
+      object: false,
+      inputValue: false,
+      defaultValue: false,
+    },
     nonOptionalTypename: true,
     skipTypeNameForRoot: true,
     immutableTypes: true,
