@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.11] - 2023-07-04
+
 ## [0.3.9] - 2023-06-29
 
 ## [0.3.8] - 2023-06-29
@@ -33,7 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Release first version
 
-[unreleased]: https://github.com/subquery/network-clients/compare/v0.3.9...HEAD
+[unreleased]: https://github.com/subquery/network-clients/compare/v0.3.11...HEAD
+[0.3.11]: https://github.com/subquery/network-clients/compare/v0.3.9...v0.3.11
 [0.3.9]: https://github.com/subquery/network-clients/compare/v0.3.7...v0.3.9
 [0.3.7]: https://github.com/subquery/network-clients/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/subquery/network-clients/compare/v0.3.4...v0.3.6
