@@ -17,13 +17,13 @@ query GetIndexer($address: String!) {
   }
 }
 
-query GetIndexers($first: Int, $offset: Int, $order: IndexersOrderBy = ID_ASC) {
-  indexers(
-    first: $first
-    offset: $offset
-    orderBy: [$order]
-    filter: { active: { equalTo: true } }
-  ) {
+query GetIndexers(
+  $first: Int
+  $offset: Int
+  $order: IndexersOrderBy = ID_ASC
+  $filter: IndexerFilter = { active: { equalTo: true } }
+) {
+  indexers(first: $first, offset: $offset, orderBy: [$order], filter: $filter) {
     totalCount
     pageInfo {
       startCursor
