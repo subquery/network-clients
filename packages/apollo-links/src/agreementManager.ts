@@ -3,17 +3,19 @@
 
 import { Logger } from './logger';
 import { fetchAgreements } from './query';
-import { Agreement } from './types';
+import { Agreement, OrderType } from './types';
 
 type Options = {
   logger: Logger;
   authUrl: string;
   projectId: string;
+  orderType: OrderType;
 };
 
 class AgreementManager {
   private nextAgreementIndex: number;
   private agreements: Agreement[] | undefined;
+  private orderType: OrderType;
   private logger: Logger;
 
   private authUrl: string;
@@ -23,10 +25,12 @@ class AgreementManager {
   private _init: Promise<void>;
 
   constructor(options: Options) {
-    const { authUrl, projectId, logger } = options;
+    const { authUrl, projectId, logger, orderType } = options;
     this.authUrl = authUrl;
     this.projectId = projectId;
+    this.orderType = orderType;
     this.logger = logger;
+
     this.nextAgreementIndex = 0;
     this._init = this.refreshAgreements();
     setInterval(this.refreshAgreements, this.interval);
@@ -34,7 +38,7 @@ class AgreementManager {
 
   private async refreshAgreements() {
     try {
-      this.agreements = await fetchAgreements(this.authUrl, this.projectId);
+      this.agreements = await fetchAgreements(this.authUrl, this.projectId, this.orderType);
       this.healthy = true;
     } catch (e) {
       this.logger.error(`fetchAgreements failed: ${String(e)}`);

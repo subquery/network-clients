@@ -15,7 +15,11 @@ export const creatErrorLink = ({ logger, fallbackLink, httpLink }: ErrorLinkOpti
   onError(({ graphQLErrors, networkError, operation, forward }) => {
     if (graphQLErrors)
       graphQLErrors.forEach(({ message, locations, path }) =>
-        logger?.warn(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`)
+        logger?.debug(
+          `[GraphQL error]: Message: ${message}, Location: ${JSON.stringify(
+            locations
+          )}, Path: ${path}`
+        )
       );
 
     if (networkError) {
@@ -26,6 +30,6 @@ export const creatErrorLink = ({ logger, fallbackLink, httpLink }: ErrorLinkOpti
           httpLink.request.bind(httpLink) as NextLink
         ) as Observable<FetchResult>;
       }
-      logger?.warn(`[Network error]: ${networkError}`);
+      logger?.debug(`[Network error]: ${networkError}`);
     }
   });
