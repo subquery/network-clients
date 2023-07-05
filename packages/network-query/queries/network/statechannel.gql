@@ -49,13 +49,19 @@ query GetStateChannels($status: ChannelStatus!) {
 
 # CONSUMER STATE CHANNEL QUERIES
 
-query GetConsumerOngoingFlexPlans($consumer: String!, $now: Datetime!, $offset: Int) {
+query GetConsumerOngoingFlexPlans(
+  $consumer: String!
+  $now: Datetime!
+  $first: Int = 0
+  $offset: Int
+) {
   stateChannels(
     filter: {
       consumer: { equalTo: $consumer }
       status: { equalTo: OPEN }
       expiredAt: { greaterThan: $now }
     }
+    first: $first
     offset: $offset
   ) {
     totalCount
@@ -137,5 +143,11 @@ query GetIndexerUnfinalisedPlans($indexer: String!, $now: Datetime!) {
     nodes {
       ...StateChannelFields
     }
+  }
+}
+
+query GetConsumerFlexPlan($id: String!) {
+  stateChannel(id: $id) {
+    ...StateChannelFields
   }
 }

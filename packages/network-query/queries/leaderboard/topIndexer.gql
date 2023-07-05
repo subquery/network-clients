@@ -1,14 +1,13 @@
 # Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 # SPDX-License-Identifier: Apache-2.0
 
-fragment indexerProgramsFields on IndexerProgramEntity {
+fragment indexerProgramsFields on IndexerProgram {
   id
   delegated
   ownStaked
   rewardCollection
   socialCredibility
   sslEnabled
-  updatedAt
   uptime
   totalPoints
   currICR
