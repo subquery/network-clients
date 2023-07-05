@@ -3,13 +3,13 @@
 
 import { Logger } from './logger';
 import { fetchOrders } from './query';
-import { Agreement, OrderType, Plan } from './types';
+import { Agreement, ProjectType, Plan } from './types';
 
 type Options = {
   logger: Logger;
   authUrl: string;
   projectId: string;
-  orderType: OrderType;
+  projectType: ProjectType;
 };
 
 class OrderManager {
@@ -19,7 +19,7 @@ class OrderManager {
   private nextPlanIndex: number;
   private plans: Plan[] | undefined;
 
-  private orderType: OrderType;
+  private projectType: ProjectType;
   private logger: Logger;
 
   private authUrl: string;
@@ -29,10 +29,10 @@ class OrderManager {
   private _init: Promise<void>;
 
   constructor(options: Options) {
-    const { authUrl, projectId, logger, orderType } = options;
+    const { authUrl, projectId, logger, projectType } = options;
     this.authUrl = authUrl;
     this.projectId = projectId;
-    this.orderType = orderType;
+    this.projectType = projectType;
     this.logger = logger;
 
     this.nextAgreementIndex = 0;
@@ -44,7 +44,11 @@ class OrderManager {
 
   private async refreshAgreements() {
     try {
-      const { agreements, plans } = await fetchOrders(this.authUrl, this.projectId, this.orderType);
+      const { agreements, plans } = await fetchOrders(
+        this.authUrl,
+        this.projectId,
+        this.projectType
+      );
       this.agreements = agreements;
       this.plans = plans;
       this.healthy = true;

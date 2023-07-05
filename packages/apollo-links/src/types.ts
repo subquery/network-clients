@@ -1,7 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-export enum OrderType {
+export enum ProjectType {
   dictionary = 'dictionary',
   deployment = 'deployment',
 }

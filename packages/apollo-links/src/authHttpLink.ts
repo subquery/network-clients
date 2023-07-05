@@ -10,7 +10,7 @@ import { creatErrorLink } from './errorLink';
 import { createRetryLink } from './retryLink';
 import { Logger, silentLogger } from './logger';
 import { FallbackLink } from './fallbackLink';
-import { OrderType } from './types';
+import { ProjectType } from './types';
 
 interface DictAuthOptions extends BaseAuthOptions {
   chainId: string; // chain id for the requested dictionary
@@ -21,7 +21,7 @@ interface DeploymentAuthOptions extends BaseAuthOptions {
 }
 
 interface AuthOptions extends DeploymentAuthOptions {
-  orderType: OrderType; // order type
+  projectType: ProjectType; // order type
 }
 
 interface BaseAuthOptions {
@@ -33,11 +33,11 @@ interface BaseAuthOptions {
 
 export function dictHttpLink(options: DictAuthOptions): ApolloLink {
   const { chainId } = options;
-  return authHttpLink({ ...options, deploymentId: chainId, orderType: OrderType.dictionary });
+  return authHttpLink({ ...options, deploymentId: chainId, projectType: ProjectType.dictionary });
 }
 
 export function deploymentHttpLink(options: DeploymentAuthOptions): ApolloLink {
-  return authHttpLink({ ...options, orderType: OrderType.deployment });
+  return authHttpLink({ ...options, projectType: ProjectType.deployment });
 }
 
 function authHttpLink(options: AuthOptions): ApolloLink {
@@ -47,7 +47,7 @@ function authHttpLink(options: AuthOptions): ApolloLink {
     fallbackServiceUrl,
     authUrl,
     logger: _logger,
-    orderType,
+    projectType,
   } = options;
 
   const logger = _logger ?? silentLogger();
@@ -55,7 +55,7 @@ function authHttpLink(options: AuthOptions): ApolloLink {
     authUrl,
     projectId: deploymentId,
     logger,
-    orderType,
+    projectType,
   });
 
   const retryLink = createRetryLink(logger);

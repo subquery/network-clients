@@ -3,7 +3,7 @@
 
 import axios from 'axios';
 
-import { Agreement, OrderType, Plan } from './types';
+import { Agreement, ProjectType, Plan } from './types';
 
 export async function POST<T>(url: string, body: Record<string, string | number | undefined>) {
   const headers = { 'Content-Type': 'application/json' };
@@ -27,10 +27,10 @@ interface AgreementsResponse {
 export async function fetchOrders(
   authUrl: string,
   projectId: string,
-  orderType: OrderType
+  projectType: ProjectType
 ): Promise<AgreementsResponse> {
   try {
-    const agreementsURL = new URL(`/orders/${orderType}/${projectId}`, authUrl);
+    const agreementsURL = new URL(`/orders/${projectType}/${projectId}`, authUrl);
     const result = await GET<AgreementsResponse>(agreementsURL.toString());
 
     return result;
