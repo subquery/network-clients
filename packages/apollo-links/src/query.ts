@@ -5,7 +5,10 @@ import axios from 'axios';
 
 import { Agreement, ProjectType, Plan } from './types';
 
-export async function POST<T>(url: string, body: Record<string, string | number | undefined>) {
+export async function POST<T>(
+  url: string,
+  body: Record<string, string | number | boolean | undefined>
+) {
   const headers = { 'Content-Type': 'application/json' };
   const res = await axios.post<T>(url, body, { headers });
 

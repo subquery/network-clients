@@ -3,7 +3,7 @@
 
 import { Logger } from './logger';
 import { fetchOrders } from './query';
-import { Agreement, ProjectType, Plan } from './types';
+import { Agreement, ProjectType, Plan, OrderType } from './types';
 
 type Options = {
   logger: Logger;
@@ -56,6 +56,12 @@ class OrderManager {
       this.logger.error(`fetch orders failed: ${String(e)}`);
       this.healthy = false;
     }
+  }
+
+  public getNextOrderType(): OrderType | undefined {
+    if (this.agreements?.length) return OrderType.agreement;
+    if (this.plans?.length) return OrderType.flexPlan;
+    return undefined;
   }
 
   public async getNextAgreement(): Promise<Agreement | undefined> {

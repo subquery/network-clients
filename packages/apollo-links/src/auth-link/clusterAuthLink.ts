@@ -8,13 +8,20 @@ import { isTokenExpired } from './authHelper';
 import OrderMananger from '../orderManager';
 import { POST } from '../query';
 import { Logger } from '../logger';
+import { ChannelState, OrderType } from '../types';
 
-interface AuthOptions {
+type AuthOptions = {
   authUrl: string; // the url for geting token
   projectId: string; // chainId or deploymentId for the project
   orderMananger: OrderMananger; // agreement manager for managing agreements
   logger: Logger; // logger for logging
-}
+};
+
+type RequestParams = {
+  url: string;
+  token: string;
+  type: OrderType;
+};
 
 export class ClusterAuthLink extends ApolloLink {
   private options: AuthOptions;
@@ -33,12 +40,12 @@ export class ClusterAuthLink extends ApolloLink {
 
     return new Observable<FetchResult>((observer) => {
       let sub: Subscription;
-      this.getUrlAndToken()
+      this.getRequestParams()
         .then((data) => {
           if (data) {
-            const { token, url } = data;
+            const { token, url, type } = data;
             const headers = { authorization: `Bearer ${token}` };
-            operation.setContext({ url, headers });
+            operation.setContext({ url, headers, type });
           }
 
           sub = forward(operation).subscribe(observer);
@@ -52,12 +59,27 @@ export class ClusterAuthLink extends ApolloLink {
     });
   }
 
-  private async getUrlAndToken(): Promise<{ url: string; token: string } | undefined> {
+  private async getRequestParams(): Promise<RequestParams | undefined> {
+    const orderType = this.orderMananger.getNextOrderType();
+    if (!orderType) return undefined;
+
+    switch (orderType) {
+      case OrderType.agreement:
+        return this.getAgreementRequestParams();
+      case OrderType.flexPlan:
+        return this.getPlanRequestParams();
+      default:
+        return undefined;
+    }
+  }
+
+  private async getAgreementRequestParams(): Promise<RequestParams | undefined> {
     const nextAgreement = await this.orderMananger.getNextAgreement();
     if (!nextAgreement) return undefined;
 
+    const type = OrderType.agreement;
     const { token, id, url, indexer } = nextAgreement;
-    if (!isTokenExpired(token)) return { token, url };
+    if (!isTokenExpired(token)) return { token, url, type };
     this.loggger.debug(`request new token for indexer ${indexer}`);
     const { projectId, authUrl } = this.options;
 
@@ -67,8 +89,32 @@ export class ClusterAuthLink extends ApolloLink {
       indexer,
       agreementId: id,
     });
+
     this.orderMananger.updateTokenById(id, res.token);
     this.loggger.debug(`request new token for indexer ${indexer} success`);
-    return { token: res.token, url };
+    return { token: res.token, url, type };
+  }
+
+  private async getPlanRequestParams(): Promise<RequestParams | undefined> {
+    const nextPlan = await this.orderMananger.getNextPlan();
+    if (!nextPlan) return undefined;
+
+    const type = OrderType.flexPlan;
+    const { id: channelId, url, indexer } = nextPlan;
+
+    this.loggger.debug(`request new signature for indexer ${indexer}`);
+    const { projectId: deployment, authUrl } = this.options;
+
+    const tokenUrl = new URL('/channel/sign', authUrl);
+    const signedState = await POST<ChannelState>(tokenUrl.toString(), {
+      deployment,
+      channelId,
+    });
+
+    this.loggger.debug(`state signature: ${signedState}`);
+    const token = JSON.stringify({ QueryState: signedState });
+    this.loggger.debug(`request new state signature for indexer ${indexer} success`);
+
+    return { token, url, type };
   }
 }

@@ -60,7 +60,7 @@ function authHttpLink(options: AuthOptions): ApolloLink {
 
   const retryLink = createRetryLink(logger);
   const fallbackLink = new FallbackLink(fallbackServiceUrl, logger);
-  const httpLink = new DynamicHttpLink({ httpOptions, logger });
+  const httpLink = new DynamicHttpLink({ httpOptions, logger, authUrl });
   const errorLink = creatErrorLink({ logger, fallbackLink, httpLink });
   const authLink = new ClusterAuthLink({
     authUrl,
