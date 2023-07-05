@@ -5,27 +5,27 @@ import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apoll
 import { Subscription } from 'zen-observable-ts';
 
 import { isTokenExpired } from './authHelper';
-import AgreementManager from '../agreementManager';
+import OrderMananger from '../orderManager';
 import { POST } from '../query';
 import { Logger } from '../logger';
 
 interface AuthOptions {
   authUrl: string; // the url for geting token
   projectId: string; // chainId or deploymentId for the project
-  agreementManager: AgreementManager; // agreement manager for managing agreements
+  orderMananger: OrderMananger; // agreement manager for managing agreements
   logger: Logger; // logger for logging
 }
 
 export class ClusterAuthLink extends ApolloLink {
   private options: AuthOptions;
   private loggger: Logger;
-  private agreementManager: AgreementManager;
+  private orderMananger: OrderMananger;
 
   constructor(options: AuthOptions) {
     super();
     this.options = options;
     this.loggger = options.logger;
-    this.agreementManager = options.agreementManager;
+    this.orderMananger = options.orderMananger;
   }
 
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
@@ -53,7 +53,7 @@ export class ClusterAuthLink extends ApolloLink {
   }
 
   private async getUrlAndToken(): Promise<{ url: string; token: string } | undefined> {
-    const nextAgreement = await this.agreementManager.getNextAgreement();
+    const nextAgreement = await this.orderMananger.getNextAgreement();
     if (!nextAgreement) return undefined;
 
     const { token, id, url, indexer } = nextAgreement;
@@ -67,7 +67,7 @@ export class ClusterAuthLink extends ApolloLink {
       indexer,
       agreementId: id,
     });
-    this.agreementManager.updateTokenById(id, res.token);
+    this.orderMananger.updateTokenById(id, res.token);
     this.loggger.debug(`request new token for indexer ${indexer} success`);
     return { token: res.token, url };
   }

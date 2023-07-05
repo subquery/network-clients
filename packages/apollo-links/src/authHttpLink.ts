@@ -5,7 +5,7 @@ import { from, ApolloLink, HttpOptions } from '@apollo/client/core';
 
 import { ClusterAuthLink } from './auth-link';
 import { DynamicHttpLink } from './dynamicHttpLink';
-import AgreementManager from './agreementManager';
+import OrderMananger from './orderManager';
 import { creatErrorLink } from './errorLink';
 import { createRetryLink } from './retryLink';
 import { Logger, silentLogger } from './logger';
@@ -51,7 +51,7 @@ function authHttpLink(options: AuthOptions): ApolloLink {
   } = options;
 
   const logger = _logger ?? silentLogger();
-  const agreementManager = new AgreementManager({
+  const orderMananger = new OrderMananger({
     authUrl,
     projectId: deploymentId,
     logger,
@@ -66,7 +66,7 @@ function authHttpLink(options: AuthOptions): ApolloLink {
     authUrl,
     projectId: deploymentId,
     logger,
-    agreementManager,
+    orderMananger,
   });
 
   // 1. errorLink: This link helps in handling and logging any GraphQL or network errors that may occur down the chain.

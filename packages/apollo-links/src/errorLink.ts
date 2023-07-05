@@ -12,7 +12,7 @@ export type ErrorLinkOption = {
 };
 
 export const creatErrorLink = ({ logger, fallbackLink, httpLink }: ErrorLinkOption) =>
-  onError(({ graphQLErrors, networkError, operation, forward }) => {
+  onError(({ graphQLErrors, networkError, operation }) => {
     if (graphQLErrors)
       graphQLErrors.forEach(({ message, locations, path }) =>
         logger?.debug(

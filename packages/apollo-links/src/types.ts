@@ -7,8 +7,14 @@ export enum OrderType {
 }
 
 export type Agreement = {
-  id: string;
+  id: string; // agreement id
   indexer: string;
   url: string;
   token: string;
+};
+
+export type Plan = {
+  id: string; // state channel id
+  indexer: string;
+  url: string;
 };

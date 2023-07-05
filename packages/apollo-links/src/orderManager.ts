@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Logger } from './logger';
-import { fetchAgreements } from './query';
-import { Agreement, OrderType } from './types';
+import { fetchOrders } from './query';
+import { Agreement, OrderType, Plan } from './types';
 
 type Options = {
   logger: Logger;
@@ -12,9 +12,13 @@ type Options = {
   orderType: OrderType;
 };
 
-class AgreementManager {
+class OrderManager {
   private nextAgreementIndex: number;
   private agreements: Agreement[] | undefined;
+
+  private nextPlanIndex: number;
+  private plans: Plan[] | undefined;
+
   private orderType: OrderType;
   private logger: Logger;
 
@@ -32,25 +36,27 @@ class AgreementManager {
     this.logger = logger;
 
     this.nextAgreementIndex = 0;
+    this.nextPlanIndex = 0;
+
     this._init = this.refreshAgreements();
     setInterval(this.refreshAgreements, this.interval);
   }
 
   private async refreshAgreements() {
     try {
-      this.agreements = await fetchAgreements(this.authUrl, this.projectId, this.orderType);
+      const { agreements, plans } = await fetchOrders(this.authUrl, this.projectId, this.orderType);
+      this.agreements = agreements;
+      this.plans = plans;
       this.healthy = true;
     } catch (e) {
-      this.logger.error(`fetchAgreements failed: ${String(e)}`);
+      this.logger.error(`fetch orders failed: ${String(e)}`);
       this.healthy = false;
     }
   }
 
   public async getNextAgreement(): Promise<Agreement | undefined> {
     await this._init;
-    if (!this.healthy) {
-      return;
-    }
+    if (!this.healthy) return;
 
     if (!this.agreements?.length) return;
 
@@ -65,6 +71,23 @@ class AgreementManager {
     return agreement;
   }
 
+  public async getNextPlan(): Promise<Plan | undefined> {
+    await this._init;
+    if (!this.healthy) return;
+
+    if (!this.plans?.length) return;
+
+    let plan = this.plans[this.nextAgreementIndex];
+    if (this.nextPlanIndex < this.plans.length - 1) {
+      this.nextPlanIndex = this.nextPlanIndex + 1;
+      plan = this.plans[this.nextPlanIndex];
+    } else {
+      this.nextPlanIndex = 0;
+    }
+
+    return plan;
+  }
+
   public updateTokenById(agreementId: string, token: string) {
     if (this.agreements === undefined) return;
     const index = this.agreements?.findIndex((a) => a.id === agreementId);
@@ -74,4 +97,4 @@ class AgreementManager {
   }
 }
 
-export default AgreementManager;
+export default OrderManager;
