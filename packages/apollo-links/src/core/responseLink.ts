@@ -6,10 +6,10 @@ import { Logger } from '../utils/logger';
 import { POST } from '../utils/query';
 import { ChannelState, OrderType } from '../types';
 
-export interface Options {
+type Options = {
   authUrl: string;
   logger?: Logger;
-}
+};
 
 export class ResponseLink extends ApolloLink {
   private options: Options;
@@ -44,6 +44,7 @@ export class ResponseLink extends ApolloLink {
 
       const stateUrl = new URL('/channel/state', this.options.authUrl);
       await POST(stateUrl.toString(), state);
+      this.logger?.debug(`syncChannelState succeed`);
     } catch (e) {
       this.logger?.debug(`syncChannelState failed: ${e}`);
     }

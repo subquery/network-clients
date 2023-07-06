@@ -3,3 +3,4 @@
 
 export * from './authHttpLink';
 export * from './auth';
+export * from './core';

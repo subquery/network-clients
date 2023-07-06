@@ -12,10 +12,10 @@ import {
 } from '@apollo/client/core';
 import { Logger } from '../utils/logger';
 
-export interface Options {
+type Options = {
   httpOptions: HttpOptions; // http options for init `HttpLink`
   logger?: Logger;
-}
+};
 
 export class DynamicHttpLink extends ApolloLink {
   private options: Options;

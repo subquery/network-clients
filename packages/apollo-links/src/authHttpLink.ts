@@ -3,15 +3,17 @@
 
 import { from, ApolloLink, HttpOptions } from '@apollo/client/core';
 
-import { ClusterAuthLink } from './core/clusterAuthLink';
-import { DynamicHttpLink } from './core/dynamicHttpLink';
 import OrderMananger from './utils/orderManager';
-import { creatErrorLink } from './core/errorLink';
-import { createRetryLink } from './core/retryLink';
 import { Logger, silentLogger } from './utils/logger';
-import { FallbackLink } from './core/fallbackLink';
 import { ProjectType } from './types';
-import { ResponseLink } from './core/responseLink';
+import {
+  createRetryLink,
+  FallbackLink,
+  DynamicHttpLink,
+  ResponseLink,
+  creatErrorLink,
+  ClusterAuthLink,
+} from './core';
 
 interface DictAuthOptions extends BaseAuthOptions {
   chainId: string; // chain id for the requested dictionary
