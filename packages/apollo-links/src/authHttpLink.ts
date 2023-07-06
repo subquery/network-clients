@@ -3,7 +3,7 @@
 
 import { from, ApolloLink, HttpOptions } from '@apollo/client/core';
 
-import { ClusterAuthLink } from './auth';
+import { ClusterAuthLink } from './core/clusterAuthLink';
 import { DynamicHttpLink } from './core/dynamicHttpLink';
 import OrderMananger from './utils/orderManager';
 import { creatErrorLink } from './core/errorLink';
@@ -11,6 +11,7 @@ import { createRetryLink } from './core/retryLink';
 import { Logger, silentLogger } from './utils/logger';
 import { FallbackLink } from './core/fallbackLink';
 import { ProjectType } from './types';
+import { ResponseLink } from './core/responseLink';
 
 interface DictAuthOptions extends BaseAuthOptions {
   chainId: string; // chain id for the requested dictionary
@@ -60,7 +61,8 @@ function authHttpLink(options: AuthOptions): ApolloLink {
 
   const retryLink = createRetryLink(logger);
   const fallbackLink = new FallbackLink(fallbackServiceUrl, logger);
-  const httpLink = new DynamicHttpLink({ httpOptions, logger, authUrl });
+  const httpLink = new DynamicHttpLink({ httpOptions, logger });
+  const responseLink = new ResponseLink({ logger, authUrl });
   const errorLink = creatErrorLink({ logger, fallbackLink, httpLink });
   const authLink = new ClusterAuthLink({
     authUrl,
@@ -74,5 +76,5 @@ function authHttpLink(options: AuthOptions): ApolloLink {
   // 2. retryLink: This comes after the errorLink to allow it to handle network errors and retry requests if necessary.
   // 3. authLink: The authLink comes next. It is responsible for adding authentication credentials to every request.
   // 4. httpLink: This should always be at the end of the link chain. This link is responsible for sending the request to the server.
-  return from([errorLink, retryLink, authLink, fallbackLink, httpLink]);
+  return from([errorLink, retryLink, authLink, fallbackLink, responseLink, httpLink]);
 }

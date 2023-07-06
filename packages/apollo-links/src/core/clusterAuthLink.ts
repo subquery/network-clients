@@ -25,13 +25,13 @@ type RequestParams = {
 
 export class ClusterAuthLink extends ApolloLink {
   private options: AuthOptions;
-  private loggger: Logger;
+  private logger: Logger;
   private orderMananger: OrderMananger;
 
   constructor(options: AuthOptions) {
     super();
     this.options = options;
-    this.loggger = options.logger;
+    this.logger = options.logger;
     this.orderMananger = options.orderMananger;
   }
 
@@ -51,7 +51,7 @@ export class ClusterAuthLink extends ApolloLink {
           sub = forward(operation).subscribe(observer);
         })
         .catch((error) => {
-          this.loggger.warn(`Failed to get token: ${error.message}`);
+          this.logger.warn(`Failed to get token: ${error.message}`);
           observer.error(new Error('failed to get indexer url and token'));
         });
 
@@ -80,7 +80,7 @@ export class ClusterAuthLink extends ApolloLink {
     const type = OrderType.agreement;
     const { token, id, url, indexer } = nextAgreement;
     if (!isTokenExpired(token)) return { token, url, type };
-    this.loggger.debug(`request new token for indexer ${indexer}`);
+    this.logger.debug(`request new token for indexer ${indexer}`);
     const { projectId, authUrl } = this.options;
 
     const tokenUrl = new URL('/orders/token', authUrl);
@@ -91,7 +91,7 @@ export class ClusterAuthLink extends ApolloLink {
     });
 
     this.orderMananger.updateTokenById(id, res.token);
-    this.loggger.debug(`request new token for indexer ${indexer} success`);
+    this.logger.debug(`request new token for indexer ${indexer} success`);
     return { token: res.token, url, type };
   }
 
@@ -102,7 +102,7 @@ export class ClusterAuthLink extends ApolloLink {
     const type = OrderType.flexPlan;
     const { id: channelId, url, indexer } = nextPlan;
 
-    this.loggger.debug(`request new signature for indexer ${indexer}`);
+    this.logger.debug(`request new signature for indexer ${indexer}`);
     const { projectId: deployment, authUrl } = this.options;
 
     const tokenUrl = new URL('/channel/sign', authUrl);
@@ -111,9 +111,9 @@ export class ClusterAuthLink extends ApolloLink {
       channelId,
     });
 
-    this.loggger.debug(`state signature: ${signedState}`);
+    this.logger.debug(`state signature: ${signedState}`);
     const token = JSON.stringify({ QueryState: signedState });
-    this.loggger.debug(`request new state signature for indexer ${indexer} success`);
+    this.logger.debug(`request new state signature for indexer ${indexer} success`);
 
     return { token, url, type };
   }
