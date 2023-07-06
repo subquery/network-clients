@@ -6,7 +6,7 @@ import jwt_decode from 'jwt-decode';
 import buffer from 'buffer';
 
 import { AuthMessage, buildTypedMessage, createAuthRequestBody } from './eip712';
-import { POST } from '../query';
+import { POST } from '../utils/query';
 
 const Buffer = buffer.Buffer;
 

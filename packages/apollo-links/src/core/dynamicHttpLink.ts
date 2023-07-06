@@ -10,9 +10,9 @@ import {
   Observable,
   Operation,
 } from '@apollo/client/core';
-import { Logger } from './logger';
-import { POST } from './query';
-import { ChannelState, OrderType } from './types';
+import { Logger } from '../utils/logger';
+import { POST } from '../utils/query';
+import { ChannelState, OrderType } from '../types';
 
 export interface Options {
   httpOptions: HttpOptions; // http options for init `HttpLink`

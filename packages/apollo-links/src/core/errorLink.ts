@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { onError } from '@apollo/client/link/error';
-import { Logger } from './logger';
+import { Logger } from '../utils/logger';
 import { ApolloLink, FetchResult, NextLink, Observable } from '@apollo/client/core';
 
 export type ErrorLinkOption = {

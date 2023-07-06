@@ -3,7 +3,7 @@
 
 import { Logger } from './logger';
 import { fetchOrders } from './query';
-import { Agreement, ProjectType, Plan, OrderType } from './types';
+import { Agreement, ProjectType, Plan, OrderType } from '../types';
 
 type Options = {
   logger: Logger;

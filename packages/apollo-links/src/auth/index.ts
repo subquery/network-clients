@@ -3,5 +3,5 @@
 
 export * from './authHelper';
 export * from './eip712';
-export * from './clusterAuthLink';
-export * from './authLink';
+export * from '../core/clusterAuthLink';
+export * from '../core/authLink';

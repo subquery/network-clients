@@ -17,7 +17,7 @@ import {
 import fetch from 'cross-fetch';
 import gql from 'graphql-tag';
 import Pino from 'pino';
-import { Logger } from '../packages/apollo-links/src/logger';
+import { Logger } from '../packages/apollo-links/src/utils/logger';
 
 dotenv.config();
 

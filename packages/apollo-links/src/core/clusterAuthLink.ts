@@ -4,10 +4,10 @@
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
 import { Subscription } from 'zen-observable-ts';
 
-import { isTokenExpired } from './authHelper';
-import OrderMananger from '../orderManager';
-import { POST } from '../query';
-import { Logger } from '../logger';
+import { isTokenExpired } from '../auth/authHelper';
+import OrderMananger from '../utils/orderManager';
+import { POST } from '../utils/query';
+import { Logger } from '../utils/logger';
 import { ChannelState, OrderType } from '../types';
 
 type AuthOptions = {

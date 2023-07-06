@@ -2,4 +2,4 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './authHttpLink';
-export * from './auth-link';
+export * from './auth';

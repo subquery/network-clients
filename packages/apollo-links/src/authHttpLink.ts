@@ -3,13 +3,13 @@
 
 import { from, ApolloLink, HttpOptions } from '@apollo/client/core';
 
-import { ClusterAuthLink } from './auth-link';
-import { DynamicHttpLink } from './dynamicHttpLink';
-import OrderMananger from './orderManager';
-import { creatErrorLink } from './errorLink';
-import { createRetryLink } from './retryLink';
-import { Logger, silentLogger } from './logger';
-import { FallbackLink } from './fallbackLink';
+import { ClusterAuthLink } from './auth';
+import { DynamicHttpLink } from './core/dynamicHttpLink';
+import OrderMananger from './utils/orderManager';
+import { creatErrorLink } from './core/errorLink';
+import { createRetryLink } from './core/retryLink';
+import { Logger, silentLogger } from './utils/logger';
+import { FallbackLink } from './core/fallbackLink';
 import { ProjectType } from './types';
 
 interface DictAuthOptions extends BaseAuthOptions {
