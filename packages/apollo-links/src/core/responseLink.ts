@@ -6,15 +6,15 @@ import { Logger } from '../utils/logger';
 import { POST } from '../utils/query';
 import { ChannelState, OrderType } from '../types';
 
-type Options = {
+export type ResponseLinkOptions = {
   authUrl: string;
   logger?: Logger;
 };
 
 export class ResponseLink extends ApolloLink {
-  private options: Options;
+  private options: ResponseLinkOptions;
 
-  constructor(private option: Options) {
+  constructor(private option: ResponseLinkOptions) {
     super();
     this.options = option;
   }

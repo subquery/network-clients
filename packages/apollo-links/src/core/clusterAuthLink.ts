@@ -10,7 +10,7 @@ import { POST } from '../utils/query';
 import { Logger } from '../utils/logger';
 import { ChannelState, OrderType } from '../types';
 
-type AuthOptions = {
+export type AuthOptions = {
   authUrl: string; // the url for geting token
   projectId: string; // chainId or deploymentId for the project
   orderMananger: OrderMananger; // agreement manager for managing agreements
