@@ -132,7 +132,7 @@ describe('auth link with auth center', () => {
   const authUrl = process.env.AUTH_URL ?? 'input your local test auth url here';
   const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
   const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
-  const options = { authUrl, chainId, httpOptions };
+  const options = { authUrl, chainId, httpOptions, logger: mockLogger };
   const invalidChainId = '0x1234';
 
   afterEach(() => {

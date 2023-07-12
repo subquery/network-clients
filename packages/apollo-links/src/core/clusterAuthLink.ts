@@ -60,7 +60,7 @@ export class ClusterAuthLink extends ApolloLink {
   }
 
   private async getRequestParams(): Promise<RequestParams | undefined> {
-    const orderType = this.orderMananger.getNextOrderType();
+    const orderType = await this.orderMananger.getNextOrderType();
     if (!orderType) return undefined;
 
     switch (orderType) {

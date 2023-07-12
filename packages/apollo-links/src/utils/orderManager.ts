@@ -58,7 +58,8 @@ class OrderManager {
     }
   }
 
-  public getNextOrderType(): OrderType | undefined {
+  public async getNextOrderType(): Promise<OrderType | undefined> {
+    await this._init;
     if (this.agreements?.length) return OrderType.agreement;
     if (this.plans?.length) return OrderType.flexPlan;
     return undefined;
