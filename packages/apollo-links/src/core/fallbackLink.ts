@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApolloLink, Operation, NextLink, Observable, FetchResult } from '@apollo/client/core';
-import { Logger } from './logger';
+import { Logger } from '../utils/logger';
 
 export class FallbackLink extends ApolloLink {
   constructor(private url?: string, private logger?: Logger) {

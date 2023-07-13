@@ -4,9 +4,9 @@
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
 import { Subscription } from 'zen-observable-ts';
 
-import { isTokenExpired, requestAuthToken } from './authHelper';
-import { Message } from './eip712';
-import { Logger } from '../logger';
+import { isTokenExpired, requestAuthToken } from '../auth/authHelper';
+import { Message } from '../auth/eip712';
+import { Logger } from '../utils/logger';
 
 interface AuthOptions extends Message {
   indexerUrl: string; // indexer url

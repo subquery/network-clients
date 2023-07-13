@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { onError } from '@apollo/client/link/error';
-import { Logger } from './logger';
+import { Logger } from '../utils/logger';
 import { ApolloLink, FetchResult, NextLink, Observable } from '@apollo/client/core';
 
 export type ErrorLinkOption = {
@@ -12,7 +12,7 @@ export type ErrorLinkOption = {
 };
 
 export const creatErrorLink = ({ logger, fallbackLink, httpLink }: ErrorLinkOption) =>
-  onError(({ graphQLErrors, networkError, operation, forward }) => {
+  onError(({ graphQLErrors, networkError, operation }) => {
     if (graphQLErrors)
       graphQLErrors.forEach(({ message, locations, path }) =>
         logger?.debug(

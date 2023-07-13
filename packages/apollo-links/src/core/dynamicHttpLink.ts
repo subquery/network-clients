@@ -10,23 +10,23 @@ import {
   Observable,
   Operation,
 } from '@apollo/client/core';
-import { Logger } from './logger';
+import { Logger } from '../utils/logger';
 
-export interface Options {
+type Options = {
   httpOptions: HttpOptions; // http options for init `HttpLink`
   logger?: Logger;
-}
+};
 
 export class DynamicHttpLink extends ApolloLink {
-  private _options: Options;
+  private options: Options;
 
   constructor(options: Options) {
     super();
-    this._options = options;
+    this.options = options;
   }
 
   get logger(): Logger | undefined {
-    return this._options.logger;
+    return this.options.logger;
   }
 
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
@@ -36,6 +36,7 @@ export class DynamicHttpLink extends ApolloLink {
         observer.error(new Error(`empty url`));
       });
     }
+
     this.logger?.debug(`use url: ${url}`);
     const httpLink = this.createHttpLink(url);
 
@@ -44,7 +45,7 @@ export class DynamicHttpLink extends ApolloLink {
 
   private createHttpLink(url: string): HttpLink {
     return new HttpLink({
-      ...this._options.httpOptions,
+      ...this.options.httpOptions,
       uri: url,
     });
   }

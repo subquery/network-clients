@@ -3,14 +3,17 @@
 
 import { from, ApolloLink, HttpOptions } from '@apollo/client/core';
 
-import { ClusterAuthLink } from './auth-link';
-import { DynamicHttpLink } from './dynamicHttpLink';
-import AgreementManager from './agreementManager';
-import { creatErrorLink } from './errorLink';
-import { createRetryLink } from './retryLink';
-import { Logger, silentLogger } from './logger';
-import { FallbackLink } from './fallbackLink';
-import { OrderType } from './types';
+import OrderMananger from './utils/orderManager';
+import { Logger, silentLogger } from './utils/logger';
+import { ProjectType } from './types';
+import {
+  createRetryLink,
+  FallbackLink,
+  DynamicHttpLink,
+  ResponseLink,
+  creatErrorLink,
+  ClusterAuthLink,
+} from './core';
 
 interface DictAuthOptions extends BaseAuthOptions {
   chainId: string; // chain id for the requested dictionary
@@ -21,7 +24,7 @@ interface DeploymentAuthOptions extends BaseAuthOptions {
 }
 
 interface AuthOptions extends DeploymentAuthOptions {
-  orderType: OrderType; // order type
+  projectType: ProjectType; // order type
 }
 
 interface BaseAuthOptions {
@@ -33,11 +36,11 @@ interface BaseAuthOptions {
 
 export function dictHttpLink(options: DictAuthOptions): ApolloLink {
   const { chainId } = options;
-  return authHttpLink({ ...options, deploymentId: chainId, orderType: OrderType.dictionary });
+  return authHttpLink({ ...options, deploymentId: chainId, projectType: ProjectType.dictionary });
 }
 
 export function deploymentHttpLink(options: DeploymentAuthOptions): ApolloLink {
-  return authHttpLink({ ...options, orderType: OrderType.deployment });
+  return authHttpLink({ ...options, projectType: ProjectType.deployment });
 }
 
 function authHttpLink(options: AuthOptions): ApolloLink {
@@ -47,26 +50,27 @@ function authHttpLink(options: AuthOptions): ApolloLink {
     fallbackServiceUrl,
     authUrl,
     logger: _logger,
-    orderType,
+    projectType,
   } = options;
 
   const logger = _logger ?? silentLogger();
-  const agreementManager = new AgreementManager({
+  const orderMananger = new OrderMananger({
     authUrl,
     projectId: deploymentId,
     logger,
-    orderType,
+    projectType,
   });
 
   const retryLink = createRetryLink(logger);
   const fallbackLink = new FallbackLink(fallbackServiceUrl, logger);
   const httpLink = new DynamicHttpLink({ httpOptions, logger });
+  const responseLink = new ResponseLink({ logger, authUrl });
   const errorLink = creatErrorLink({ logger, fallbackLink, httpLink });
   const authLink = new ClusterAuthLink({
     authUrl,
     projectId: deploymentId,
     logger,
-    agreementManager,
+    orderMananger,
   });
 
   // 1. errorLink: This link helps in handling and logging any GraphQL or network errors that may occur down the chain.
@@ -74,5 +78,5 @@ function authHttpLink(options: AuthOptions): ApolloLink {
   // 2. retryLink: This comes after the errorLink to allow it to handle network errors and retry requests if necessary.
   // 3. authLink: The authLink comes next. It is responsible for adding authentication credentials to every request.
   // 4. httpLink: This should always be at the end of the link chain. This link is responsible for sending the request to the server.
-  return from([errorLink, retryLink, authLink, fallbackLink, httpLink]);
+  return from([errorLink, retryLink, authLink, fallbackLink, responseLink, httpLink]);
 }

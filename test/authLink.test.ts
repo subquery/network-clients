@@ -17,7 +17,7 @@ import {
 import fetch from 'cross-fetch';
 import gql from 'graphql-tag';
 import Pino from 'pino';
-import { Logger } from '../packages/apollo-links/src/logger';
+import { Logger } from '../packages/apollo-links/src/utils/logger';
 
 dotenv.config();
 
@@ -41,10 +41,8 @@ function getLinks() {
 }
 
 function mockIndexerRequestFailed() {
-  jest.mock('../packages/apollo-links/src/auth-link/clusterAuthLink', () => {
-    const originalModule = jest.requireActual(
-      '../packages/apollo-links/src/auth-link/clusterAuthLink'
-    );
+  jest.mock('../packages/apollo-links/src/core/clusterAuthLink', () => {
+    const originalModule = jest.requireActual('../packages/apollo-links/src/core/clusterAuthLink');
     return {
       ClusterAuthLink: class MockLink extends originalModule.ClusterAuthLink {
         // @ts-ignore
@@ -63,10 +61,8 @@ function mockIndexerRequestFailed() {
 }
 
 function mockGetIndexerUrlOrTokenFailed() {
-  jest.mock('../packages/apollo-links/src/auth-link/clusterAuthLink', () => {
-    const originalModule = jest.requireActual(
-      '../packages/apollo-links/src/auth-link/clusterAuthLink'
-    );
+  jest.mock('../packages/apollo-links/src/core/clusterAuthLink', () => {
+    const originalModule = jest.requireActual('../packages/apollo-links/src/core/clusterAuthLink');
     return {
       ClusterAuthLink: class MockLink extends originalModule.ClusterAuthLink {
         // @ts-ignore
@@ -131,17 +127,18 @@ describe.skip('auth link', () => {
   });
 });
 
+// TODO: fix this test
 describe.skip('auth link with auth center', () => {
   let client: ApolloClient<unknown>;
   const authUrl = process.env.AUTH_URL ?? 'input your local test auth url here';
   const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
   const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
-  const options = { authUrl, chainId, httpOptions };
+  const options = { authUrl, chainId, httpOptions, logger: mockLogger };
   const invalidChainId = '0x1234';
 
   afterEach(() => {
-    jest.mock('../packages/apollo-links/src/auth-link/clusterAuthLink', () =>
-      jest.requireActual('../packages/apollo-links/src/auth-link/clusterAuthLink')
+    jest.mock('../packages/apollo-links/src/core/clusterAuthLink', () =>
+      jest.requireActual('../packages/apollo-links/src/core/clusterAuthLink')
     );
     jest.resetModules();
     jest.resetAllMocks();
@@ -159,7 +156,7 @@ describe.skip('auth link with auth center', () => {
     }
   }, 20000);
 
-  it.only('can query data with deployment auth link', async () => {
+  it('can query data with deployment auth link', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
     const { deploymentHttpLink } = await getLinks();
     const link = deploymentHttpLink({ ...options, deploymentId });

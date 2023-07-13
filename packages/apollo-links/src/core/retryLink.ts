@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { RetryLink } from '@apollo/client/link/retry';
-import { Logger } from './logger';
+import { Logger } from '../utils/logger';
 import type { Operation } from '@apollo/client/core';
 
 export const createRetryLink = (logger?: Logger, maxRetries = 3) =>
