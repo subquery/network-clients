@@ -24,24 +24,16 @@ export class ResponseLink extends ApolloLink {
   }
 
   tokenToStateChannel(authToken: string): ChannelState | undefined {
-    const parts = authToken.split(/\s+/);
     try {
-      if (parts.length >= 2 && parts[0] === 'Bearer') {
-        const token = parts[1];
-        return JSON.parse(token);
-      } else {
-        this.logger?.debug(`invalid token: ${authToken}`);
-      }
+      const token = JSON.parse(authToken) as ChannelState;
+      return token;
     } catch (e) {
       this.logger?.debug(`invalid token: ${authToken} ${e}`);
     }
   }
 
-  async syncChannelState(token: string): Promise<void> {
+  async syncChannelState(state: ChannelState): Promise<void> {
     try {
-      const state = this.tokenToStateChannel(token);
-      if (!state) return;
-
       const stateUrl = new URL('/channel/state', this.options.authUrl);
       await POST(stateUrl.toString(), state);
       this.logger?.debug(`syncChannelState succeed`);
@@ -53,13 +45,13 @@ export class ResponseLink extends ApolloLink {
   override request(operation: Operation, forward: NextLink): Observable<FetchResult> | null {
     if (!forward) return null;
 
-    const { type, headers } = operation.getContext();
+    const { type } = operation.getContext();
 
     return new Observable<FetchResult>((observer) => {
       const subscription = forward(operation).subscribe({
-        next: (response) => {
+        next: (response: FetchResult<Record<string, any>> & { state: ChannelState }) => {
           if (!response.errors && type === OrderType.flexPlan) {
-            void this.syncChannelState(headers.authorization);
+            void this.syncChannelState(response.state);
           }
 
           observer.next(response);

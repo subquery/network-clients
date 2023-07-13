@@ -44,7 +44,7 @@ export class ClusterAuthLink extends ApolloLink {
         .then((data) => {
           if (data) {
             const { token, url, type } = data;
-            const headers = { authorization: `Bearer ${token}` };
+            const headers = { authorization: `${token}` };
             operation.setContext({ url, headers, type });
           }
 
@@ -62,7 +62,6 @@ export class ClusterAuthLink extends ApolloLink {
   private async getRequestParams(): Promise<RequestParams | undefined> {
     const orderType = await this.orderMananger.getNextOrderType();
     if (!orderType) return undefined;
-
     switch (orderType) {
       case OrderType.agreement:
         return this.getAgreementRequestParams();
@@ -92,7 +91,7 @@ export class ClusterAuthLink extends ApolloLink {
 
     this.orderMananger.updateTokenById(id, res.token);
     this.logger.debug(`request new token for indexer ${indexer} success`);
-    return { token: res.token, url, type };
+    return { token: `Bearer ${res.token}`, url, type };
   }
 
   private async getPlanRequestParams(): Promise<RequestParams | undefined> {
@@ -112,7 +111,7 @@ export class ClusterAuthLink extends ApolloLink {
     });
 
     this.logger.debug(`state signature: ${signedState}`);
-    const token = JSON.stringify({ QueryState: signedState });
+    const token = JSON.stringify(signedState);
     this.logger.debug(`request new state signature for indexer ${indexer} success`);
 
     return { token, url, type };
