@@ -1,6 +1,6 @@
 {
   "name": "@subql/network-clients",
-  "version": "0.3.14-0",
+  "version": "0.3.14-1",
   "description": "SubQuery client sdk for network",
   "main": "dist/index.js",
   "author": "SubQuery Pte Limited",
@@ -28,5 +28,5 @@
     "@subql/contract-sdk": "^0.13.7",
     "ipfs-http-client": "^53.0.1"
   },
-  "stableVersion": "0.3.13"
+  "stableVersion": "0.3.14-0"
 }
