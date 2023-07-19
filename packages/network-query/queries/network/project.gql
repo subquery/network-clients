@@ -17,8 +17,8 @@ query GetProject($id: String!) {
   }
 }
 
-query GetProjects($offset: Int) {
-  projects(first: 10, offset: $offset) {
+query GetProjects($offset: Int, $orderBy: [ProjectsOrderBy!] = ID_ASC) {
+  projects(first: 10, offset: $offset, orderBy: $orderBy) {
     totalCount
     nodes {
       ...ProjectFields
