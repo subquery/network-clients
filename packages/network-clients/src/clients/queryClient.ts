@@ -38,7 +38,7 @@ export class GraphqlQueryClient {
   constructor(
     private config: NetworkConfig,
     apolloClientOptionsOrClient?:
-      | ApolloClientOptions<NormalizedCacheObject>
+      | Partial<ApolloClientOptions<NormalizedCacheObject>>
       | ApolloClient<NormalizedCacheObject>
   ) {
     if (apolloClientOptionsOrClient instanceof ApolloClient) {
