@@ -36,7 +36,7 @@ export class NetworkClient {
     options?: {
       queryClientOptions?:
         | ApolloClient<NormalizedCacheObject>
-        | ApolloClientOptions<NormalizedCacheObject>;
+        | Partial<ApolloClientOptions<NormalizedCacheObject>>;
     }
   ) {
     const config = NETWORK_CONFIGS[network];
