@@ -13,10 +13,10 @@ type Options = {
 };
 
 class OrderManager {
-  private nextAgreementIndex: number;
+  private nextAgreementIndex: number | undefined;
   private agreements: Agreement[] | undefined;
 
-  private nextPlanIndex: number;
+  private nextPlanIndex: number | undefined;
   private plans: Plan[] | undefined;
 
   private projectType: ProjectType;
@@ -34,9 +34,6 @@ class OrderManager {
     this.projectId = projectId;
     this.projectType = projectType;
     this.logger = logger;
-
-    this.nextAgreementIndex = 0;
-    this.nextPlanIndex = 0;
 
     this._init = this.refreshAgreements();
     setInterval(this.refreshAgreements, this.interval);
@@ -58,6 +55,10 @@ class OrderManager {
     }
   }
 
+  private getRandomStartIndex(n: number) {
+    return Math.floor(Math.random() * n);
+  }
+
   public async getNextOrderType(): Promise<OrderType | undefined> {
     await this._init;
     if (this.agreements?.length) return OrderType.agreement;
@@ -67,9 +68,12 @@ class OrderManager {
 
   public async getNextAgreement(): Promise<Agreement | undefined> {
     await this._init;
-    if (!this.healthy) return;
 
-    if (!this.agreements?.length) return;
+    if (!this.healthy || !this.agreements?.length) return;
+
+    if (this.nextAgreementIndex === undefined) {
+      this.nextAgreementIndex = this.getRandomStartIndex(this.agreements.length);
+    }
 
     let agreement = this.agreements[this.nextAgreementIndex];
     if (this.nextAgreementIndex < this.agreements.length - 1) {
@@ -84,11 +88,14 @@ class OrderManager {
 
   public async getNextPlan(): Promise<Plan | undefined> {
     await this._init;
-    if (!this.healthy) return;
 
-    if (!this.plans?.length) return;
+    if (!this.healthy || !this.plans?.length) return;
 
-    let plan = this.plans[this.nextAgreementIndex];
+    if (this.nextPlanIndex === undefined) {
+      this.nextPlanIndex = this.getRandomStartIndex(this.plans.length);
+    }
+
+    let plan = this.plans[this.nextPlanIndex];
     if (this.nextPlanIndex < this.plans.length - 1) {
       this.nextPlanIndex = this.nextPlanIndex + 1;
       plan = this.plans[this.nextPlanIndex];
