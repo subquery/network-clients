@@ -16,6 +16,7 @@ import assert from 'assert';
 import { Indexer } from '../models/indexer';
 import { parseRawEraValue } from '../utils/parseEraValue';
 import { SQNetworks } from '@subql/network-config';
+import { ApolloClient, ApolloClientOptions, NormalizedCacheObject } from '@apollo/client/core';
 
 type Provider = AbstractProvider | Signer;
 
@@ -33,7 +34,9 @@ export class NetworkClient {
     provider?: Provider,
     ipfsUrl?: string,
     options?: {
-      queryClient?: GraphqlQueryClient;
+      queryClientOptions?:
+        | ApolloClient<NormalizedCacheObject>
+        | ApolloClientOptions<NormalizedCacheObject>;
     }
   ) {
     const config = NETWORK_CONFIGS[network];
@@ -42,7 +45,7 @@ export class NetworkClient {
       provider ?? new providers.StaticJsonRpcProvider(config.defaultEndpoint),
       config.sdkOptions
     );
-    const gqlClient = options?.queryClient ? options?.queryClient : new GraphqlQueryClient(config);
+    const gqlClient = new GraphqlQueryClient(config, options?.queryClientOptions);
     return new NetworkClient(sdk, gqlClient, ipfsUrl);
   }
 

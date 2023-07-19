@@ -35,10 +35,11 @@ export class GraphqlQueryClient {
     return this.apolloClients[GQLEndpoint.Network];
   }
 
-  constructor(config: NetworkConfig, apolloClient?: ApolloClient<NormalizedCacheObject>);
   constructor(
     private config: NetworkConfig,
-    apolloClientOptionsOrClient?: ApolloClientOptions<NormalizedCacheObject>
+    apolloClientOptionsOrClient?:
+      | ApolloClientOptions<NormalizedCacheObject>
+      | ApolloClient<NormalizedCacheObject>
   ) {
     if (apolloClientOptionsOrClient instanceof ApolloClient) {
       this.apolloClients[GQLEndpoint.Network] = apolloClientOptionsOrClient;
