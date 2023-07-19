@@ -23,6 +23,12 @@ fragment StateChannelFields on StateChannel {
   terminateByIndexer
 }
 
+query GetFlexPlan($id: String!) {
+  stateChannel(id: $id) {
+    ...StateChannelFields
+  }
+}
+
 query GetPaygPlans($indexer: String!, $deploymentId: String!, $status: ChannelStatus!) {
   stateChannels(
     filter: {
