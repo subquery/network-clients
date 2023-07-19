@@ -28,14 +28,21 @@ export class NetworkClient {
     this._contractClient = new ContractClient(_sdk);
   }
 
-  public static create(network: SQNetworks, provider?: Provider, ipfsUrl?: string) {
+  public static create(
+    network: SQNetworks,
+    provider?: Provider,
+    ipfsUrl?: string,
+    options?: {
+      queryClient?: GraphqlQueryClient;
+    }
+  ) {
     const config = NETWORK_CONFIGS[network];
     assert(config, `config for ${network} is missing`);
     const sdk = ContractSDK.create(
       provider ?? new providers.StaticJsonRpcProvider(config.defaultEndpoint),
       config.sdkOptions
     );
-    const gqlClient = new GraphqlQueryClient(config);
+    const gqlClient = options?.queryClient ? options?.queryClient : new GraphqlQueryClient(config);
     return new NetworkClient(sdk, gqlClient, ipfsUrl);
   }
 
@@ -135,5 +142,9 @@ export class NetworkClient {
     if (!isCID(cid)) throw new Error(`Invalid cid: ${cid}`);
     // get project metadata
     // cat project metadata
+  }
+
+  public setGqlClient(gqlClient: GraphqlQueryClient) {
+    this._gqlClient = gqlClient;
   }
 }

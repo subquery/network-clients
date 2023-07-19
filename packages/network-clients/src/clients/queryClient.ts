@@ -1,7 +1,13 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
+import {
+  ApolloClient,
+  ApolloClientOptions,
+  HttpLink,
+  InMemoryCache,
+  NormalizedCacheObject,
+} from '@apollo/client/core';
 import fetch from 'cross-fetch';
 import {
   GetDelegation,
@@ -29,19 +35,29 @@ export class GraphqlQueryClient {
     return this.apolloClients[GQLEndpoint.Network];
   }
 
-  constructor(private config: NetworkConfig) {
-    this.apolloClients[GQLEndpoint.Network] = new ApolloClient({
-      cache: new InMemoryCache({ resultCaching: true }),
-      link: new HttpLink({ uri: config.gql.network, fetch: fetch }),
-      defaultOptions: {
-        watchQuery: {
-          fetchPolicy: 'no-cache',
+  constructor(config: NetworkConfig, apolloClient?: ApolloClient<NormalizedCacheObject>);
+  constructor(
+    private config: NetworkConfig,
+    apolloClientOptionsOrClient?: ApolloClientOptions<NormalizedCacheObject>
+  ) {
+    if (apolloClientOptionsOrClient instanceof ApolloClient) {
+      this.apolloClients[GQLEndpoint.Network] = apolloClientOptionsOrClient;
+    } else {
+      this.apolloClients[GQLEndpoint.Network] = new ApolloClient({
+        cache: new InMemoryCache({ resultCaching: true }),
+        link: new HttpLink({ uri: config.gql.network, fetch: fetch }),
+        defaultOptions: {
+          watchQuery: {
+            fetchPolicy: 'no-cache',
+          },
+          query: {
+            fetchPolicy: 'no-cache',
+          },
         },
-        query: {
-          fetchPolicy: 'no-cache',
-        },
-      },
-    });
+
+        ...apolloClientOptionsOrClient,
+      });
+    }
   }
 
   // QUERY REGISTRY QUERY FUNCTIONS
