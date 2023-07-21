@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.5] - 2023-07-21
+
 ## [0.5.3] - 2023-07-13
 
 ## [0.5.2] - 2023-06-19
@@ -58,7 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add Authlink for Apollo client
 
-[unreleased]: https://github.com/subquery/network-clients/compare/v0.5.3...HEAD
+[unreleased]: https://github.com/subquery/network-clients/compare/v0.5.5...HEAD
+[0.5.5]: https://github.com/subquery/network-clients/compare/v0.5.3...v0.5.5
 [0.5.3]: https://github.com/subquery/network-clients/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/subquery/network-clients/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/subquery/network-clients/compare/v0.5.0...v0.5.1
