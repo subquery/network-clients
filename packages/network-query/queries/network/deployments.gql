@@ -36,17 +36,35 @@ query GetDeployment($deploymentId: String!) {
 }
 
 query GetDeploymentIndexers(
+  $first: Int = 20
   $offset: Int
   $deploymentId: String!
   $orderby: [DeploymentIndexersOrderBy!] = LAST_EVENT_ASC
-  $filter: DeploymentIndexerFilter = { deploymentId: { equalTo: $deploymentId }, status: { notEqualTo: TERMINATED } }
+  $search: Boolean! = false
+  $indexerId: String!
 ) {
   deploymentIndexers(
-    first: 20
+    first: $first
     offset: $offset
     orderBy: $orderby
-    filter:  $filter
-  ) {
+    filter: { deploymentId: { equalTo: $deploymentId }, status: { notEqualTo: TERMINATED } }
+  ) @skip(if: $search) {
+    totalCount
+    nodes {
+      ...DeploymentIndexerFields
+    }
+  }
+
+  deploymentIndexersBySearch: deploymentIndexers(
+    first: $first
+    offset: $offset
+    orderBy: $orderby
+    filter: {
+      deploymentId: { equalTo: $deploymentId }
+      status: { notEqualTo: TERMINATED }
+      indexerId: { equalTo: $indexerId }
+    }
+  ) @include(if: $search) {
     totalCount
     nodes {
       ...DeploymentIndexerFields
