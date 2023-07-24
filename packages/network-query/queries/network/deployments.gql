@@ -35,11 +35,17 @@ query GetDeployment($deploymentId: String!) {
   }
 }
 
-query GetDeploymentIndexers($offset: Int, $deploymentId: String!) {
+query GetDeploymentIndexers(
+  $offset: Int
+  $deploymentId: String!
+  $orderby: [DeploymentIndexersOrderBy!] = LAST_EVENT_ASC
+  $filter: DeploymentIndexerFilter = { deploymentId: { equalTo: $deploymentId }, status: { notEqualTo: TERMINATED } }
+) {
   deploymentIndexers(
     first: 20
     offset: $offset
-    filter: { deploymentId: { equalTo: $deploymentId }, status: { notEqualTo: TERMINATED } }
+    orderBy: $orderby
+    filter:  $filter
   ) {
     totalCount
     nodes {
