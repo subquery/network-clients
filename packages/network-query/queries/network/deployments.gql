@@ -41,7 +41,7 @@ query GetDeploymentIndexers(
   $deploymentId: String!
   $orderby: [DeploymentIndexersOrderBy!] = LAST_EVENT_ASC
   $search: Boolean! = false
-  $indexerId: String!
+  $indexerId: String! = ""
 ) {
   deploymentIndexers(
     first: $first
