@@ -1,24 +1,27 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ContractSDK } from '@subql/contract-sdk';
+import assert from 'assert';
+import { ApolloClient, ApolloClientOptions, NormalizedCacheObject } from '@apollo/client/core';
 import type { Provider as AbstractProvider } from '@ethersproject/abstract-provider';
-import { Signer, providers } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
+import { ContractSDK } from '@subql/contract-sdk';
+import { DEFAULT_IPFS_URL, NETWORK_CONFIGS, SQNetworks } from '@subql/network-config';
+import { providers, Signer } from 'ethers';
 
+import { Indexer, IndexerDetail, IndexerWithController, IndexerWithMetadata } from '../models';
+import { bytes32ToCid, isCID, min } from '../utils';
+import { parseRawEraValue } from '../utils/parseEraValue';
 import { ContractClient } from './contractClient';
 import { IPFSClient } from './ipfsClient';
 import { GraphqlQueryClient } from './queryClient';
 
-import { isCID, min } from '../utils';
-import { DEFAULT_IPFS_URL, NETWORK_CONFIGS } from '@subql/network-config';
-import assert from 'assert';
-import { Indexer } from '../models/indexer';
-import { parseRawEraValue } from '../utils/parseEraValue';
-import { SQNetworks } from '@subql/network-config';
-import { ApolloClient, ApolloClientOptions, NormalizedCacheObject } from '@apollo/client/core';
-
 type Provider = AbstractProvider | Signer;
+
+type GetIndexerOption = {
+  withMetadata: boolean;
+  withController: boolean;
+};
 
 export class NetworkClient {
   private _contractClient: ContractClient;
@@ -29,7 +32,7 @@ export class NetworkClient {
     this._contractClient = new ContractClient(_sdk);
   }
 
-  public static create(
+  static create(
     network: SQNetworks,
     provider?: Provider,
     ipfsUrl?: string,
@@ -49,7 +52,45 @@ export class NetworkClient {
     return new NetworkClient(sdk, gqlClient, ipfsUrl);
   }
 
-  public async getIndexer(address: string): Promise<Indexer | undefined> {
+  async getIndexerWithOption<T extends GetIndexerOption>(
+    address: string,
+    { withMetadata, withController }: T
+  ): Promise<
+    T['withMetadata'] extends true
+      ? T['withController'] extends true
+        ? IndexerWithMetadata & IndexerWithController
+        : IndexerWithMetadata
+      : Indexer
+  > {
+    const metadataCidBytes = await this._sdk.indexerRegistry.metadata(address);
+
+    const indexer = {
+      address,
+      metadataCid: bytes32ToCid(metadataCidBytes),
+    };
+    const promises = [];
+    if (withMetadata) {
+      promises.push(
+        this._ipfs
+          .getJSON<{
+            name: string;
+            url: string;
+          }>(indexer.metadataCid)
+          .then((metadata) => ((indexer as IndexerWithMetadata).metadata = metadata))
+      );
+    }
+    if (withController) {
+      promises.push(
+        this._sdk.indexerRegistry
+          .getController(address)
+          .then((controller) => ((indexer as IndexerWithController).controller = controller))
+      );
+    }
+    await Promise.all(promises);
+    return indexer as any;
+  }
+
+  async getIndexer(address: string): Promise<IndexerDetail | undefined> {
     const currentEra = await this._sdk.eraManager.eraNumber();
     const leverageLimit = await this._sdk.staking.indexerLeverageLimit();
 
@@ -101,14 +142,14 @@ export class NetworkClient {
     };
   }
 
-  public async maxUnstakeAmount(address: string): Promise<BigNumber> {
+  async maxUnstakeAmount(address: string): Promise<BigNumber> {
     const leverageLimit = await this._sdk.staking.indexerLeverageLimit();
     const minStakingAmount = await this._sdk.indexerRegistry.minimumStakingAmount();
     const indexer = await this.getIndexer(address);
 
     if (!indexer) return BigNumber.from(0);
 
-    const { totalStake, ownStake } = await indexer;
+    const { totalStake, ownStake } = indexer;
 
     const totalStakingAmountAfter = BigNumber.from(totalStake?.after ?? 0);
     const ownStakeAfter = BigNumber.from(ownStake?.after ?? 0);
@@ -123,7 +164,7 @@ export class NetworkClient {
     return maxUnstakeAmount.isNegative() ? BigNumber.from(0) : maxUnstakeAmount;
   }
 
-  public async getDelegating(address: string): Promise<BigNumber> {
+  async getDelegating(address: string): Promise<BigNumber> {
     const currentEra = await this._sdk.eraManager.eraNumber();
     const ownDelegation = await this._gqlClient.getDelegation(address, address);
     const delegator = await this._gqlClient.getDelegator(address);
@@ -141,13 +182,14 @@ export class NetworkClient {
     return sortedTotalDelegations.sub(sortedOwnStake);
   }
 
-  public async projectMetadata(cid: string) {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async projectMetadata(cid: string) {
     if (!isCID(cid)) throw new Error(`Invalid cid: ${cid}`);
     // get project metadata
     // cat project metadata
   }
 
-  public setGqlClient(gqlClient: GraphqlQueryClient) {
+  setGqlClient(gqlClient: GraphqlQueryClient) {
     this._gqlClient = gqlClient;
   }
 }

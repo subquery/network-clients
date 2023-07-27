@@ -3,7 +3,7 @@
 
 import { CurrentEraValue } from './eraValue';
 
-export interface Indexer {
+export interface IndexerDetail {
   metadata?: IndexerMetadata;
   address: string;
   controller: string | null;
@@ -12,6 +12,17 @@ export interface Indexer {
   ownStake: CurrentEraValue;
   delegated: CurrentEraValue;
   capacity: CurrentEraValue;
+}
+
+export interface Indexer {
+  address: string;
+  metadataCid: string;
+}
+export interface IndexerWithMetadata extends Indexer {
+  metadata: IndexerMetadata;
+}
+export interface IndexerWithController extends Indexer {
+  controller: string;
 }
 
 export type IndexerMetadata = {
