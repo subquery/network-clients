@@ -5,10 +5,10 @@ import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apoll
 import { Subscription } from 'zen-observable-ts';
 
 import { isTokenExpired } from '../auth/authHelper';
+import { ChannelState, OrderType } from '../types';
+import { Logger } from '../utils/logger';
 import OrderMananger from '../utils/orderManager';
 import { POST } from '../utils/query';
-import { Logger } from '../utils/logger';
-import { ChannelState, OrderType } from '../types';
 
 export type AuthOptions = {
   authUrl: string; // the url for geting token
@@ -19,7 +19,7 @@ export type AuthOptions = {
 
 type RequestParams = {
   url: string;
-  token: string;
+  authorization: string;
   type: OrderType;
 };
 
@@ -43,8 +43,8 @@ export class ClusterAuthLink extends ApolloLink {
       this.getRequestParams()
         .then((data) => {
           if (data) {
-            const { token, url, type } = data;
-            const headers = { authorization: `${token}` };
+            const { authorization, url, type } = data;
+            const headers = { authorization };
             operation.setContext({ url, headers, type });
           }
 
@@ -57,6 +57,10 @@ export class ClusterAuthLink extends ApolloLink {
 
       return () => sub?.unsubscribe();
     });
+  }
+
+  private tokenToAuthHeader(token: string) {
+    return { authorization: `Bearer ${token}` };
   }
 
   private async getRequestParams(): Promise<RequestParams | undefined> {
@@ -78,10 +82,11 @@ export class ClusterAuthLink extends ApolloLink {
 
     const type = OrderType.agreement;
     const { token, id, url, indexer } = nextAgreement;
-    if (!isTokenExpired(token)) return { token, url, type };
-    this.logger.debug(`request new token for indexer ${indexer}`);
-    const { projectId, authUrl } = this.options;
+    if (!isTokenExpired(token)) return { url, type, ...this.tokenToAuthHeader(token) };
 
+    this.logger.debug(`request new token for indexer ${indexer}`);
+
+    const { projectId, authUrl } = this.options;
     const tokenUrl = new URL('/orders/token', authUrl);
     const res = await POST<{ token: string }>(tokenUrl.toString(), {
       projectId,
@@ -91,7 +96,7 @@ export class ClusterAuthLink extends ApolloLink {
 
     this.orderMananger.updateTokenById(id, res.token);
     this.logger.debug(`request new token for indexer ${indexer} success`);
-    return { token: `Bearer ${res.token}`, url, type };
+    return { url, type, ...this.tokenToAuthHeader(token) };
   }
 
   private async getPlanRequestParams(): Promise<RequestParams | undefined> {
@@ -111,9 +116,9 @@ export class ClusterAuthLink extends ApolloLink {
     });
 
     this.logger.debug(`state signature: ${signedState}`);
-    const token = JSON.stringify(signedState);
+    const authorization = JSON.stringify(signedState);
     this.logger.debug(`request new state signature for indexer ${indexer} success`);
 
-    return { token, url, type };
+    return { authorization, url, type };
   }
 }

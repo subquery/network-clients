@@ -1,9 +1,9 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { Agreement, OrderType, Plan, ProjectType } from '../types';
 import { Logger } from './logger';
 import { fetchOrders } from './query';
-import { Agreement, ProjectType, Plan, OrderType } from '../types';
 
 type Options = {
   logger: Logger;
