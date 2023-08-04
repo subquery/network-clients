@@ -19,7 +19,7 @@ export type AuthOptions = {
 
 type RequestParams = {
   url: string;
-  token: string;
+  authorization: string;
   type: OrderType;
 };
 
@@ -43,8 +43,8 @@ export class ClusterAuthLink extends ApolloLink {
       this.getRequestParams()
         .then((data) => {
           if (data) {
-            const { token, url, type } = data;
-            const headers = { authorization: `${token}` };
+            const { authorization, url, type } = data;
+            const headers = { authorization };
             operation.setContext({ url, headers, type });
           }
 
@@ -57,6 +57,10 @@ export class ClusterAuthLink extends ApolloLink {
 
       return () => sub?.unsubscribe();
     });
+  }
+
+  private tokenToAuthHeader(token: string) {
+    return { authorization: `Bearer ${token}` };
   }
 
   private async getRequestParams(): Promise<RequestParams | undefined> {
@@ -78,7 +82,7 @@ export class ClusterAuthLink extends ApolloLink {
 
     const type = OrderType.agreement;
     const { token, id, url, indexer } = nextAgreement;
-    if (!isTokenExpired(token)) return { token, url, type };
+    if (!isTokenExpired(token)) return { url, type, ...this.tokenToAuthHeader(token) };
 
     this.logger.debug(`request new token for indexer ${indexer}`);
 
@@ -90,10 +94,9 @@ export class ClusterAuthLink extends ApolloLink {
       agreementId: id,
     });
 
-    const updatedToken = `Bearer ${res.token}`;
-    this.orderMananger.updateTokenById(id, updatedToken);
+    this.orderMananger.updateTokenById(id, res.token);
     this.logger.debug(`request new token for indexer ${indexer} success`);
-    return { token: updatedToken, url, type };
+    return { url, type, ...this.tokenToAuthHeader(token) };
   }
 
   private async getPlanRequestParams(): Promise<RequestParams | undefined> {
@@ -113,9 +116,9 @@ export class ClusterAuthLink extends ApolloLink {
     });
 
     this.logger.debug(`state signature: ${signedState}`);
-    const token = JSON.stringify(signedState);
+    const authorization = JSON.stringify(signedState);
     this.logger.debug(`request new state signature for indexer ${indexer} success`);
 
-    return { token, url, type };
+    return { authorization, url, type };
   }
 }
