@@ -1,6 +1,6 @@
 {
   "name": "@subql/apollo-links",
-  "version": "0.5.7",
+  "version": "0.5.8-0",
   "description": "SubQuery Network - graphql links",
   "main": "dist/index.js",
   "author": "SubQuery Pte Limited",
@@ -25,5 +25,5 @@
     "@apollo/client": "*",
     "graphql": "*"
   },
-  "stableVersion": "0.5.5"
+  "stableVersion": "0.5.7"
 }

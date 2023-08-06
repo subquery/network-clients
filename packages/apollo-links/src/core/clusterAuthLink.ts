@@ -96,7 +96,7 @@ export class ClusterAuthLink extends ApolloLink {
 
     this.orderMananger.updateTokenById(id, res.token);
     this.logger.debug(`request new token for indexer ${indexer} success`);
-    return { url, type, ...this.tokenToAuthHeader(token) };
+    return { url, type, ...this.tokenToAuthHeader(res.token) };
   }
 
   private async getPlanRequestParams(): Promise<RequestParams | undefined> {
