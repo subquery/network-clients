@@ -59,7 +59,7 @@ class OrderManager {
     return Math.floor(Math.random() * n);
   }
 
-  private getNextOrderIndex(currentIndex: number, total: number) {
+  private getNextOrderIndex(total: number, currentIndex: number) {
     return currentIndex < total - 1 ? currentIndex + 1 : 0;
   }
 
@@ -84,6 +84,8 @@ class OrderManager {
       this.agreements.length,
       this.nextAgreementIndex
     );
+
+    console.log('this.nextAgreementIndex:', this.nextAgreementIndex);
 
     return agreement;
   }
