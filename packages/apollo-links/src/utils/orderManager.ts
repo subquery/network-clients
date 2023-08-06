@@ -59,6 +59,10 @@ class OrderManager {
     return Math.floor(Math.random() * n);
   }
 
+  private getNextOrderIndex(total: number, currentIndex: number) {
+    return currentIndex < total - 1 ? currentIndex + 1 : 0;
+  }
+
   public async getNextOrderType(): Promise<OrderType | undefined> {
     await this._init;
     if (this.agreements?.length) return OrderType.agreement;
@@ -75,13 +79,11 @@ class OrderManager {
       this.nextAgreementIndex = this.getRandomStartIndex(this.agreements.length);
     }
 
-    let agreement = this.agreements[this.nextAgreementIndex];
-    if (this.nextAgreementIndex < this.agreements.length - 1) {
-      this.nextAgreementIndex = this.nextAgreementIndex + 1;
-      agreement = this.agreements[this.nextAgreementIndex];
-    } else {
-      this.nextAgreementIndex = 0;
-    }
+    const agreement = this.agreements[this.nextAgreementIndex];
+    this.nextAgreementIndex = this.getNextOrderIndex(
+      this.agreements.length,
+      this.nextAgreementIndex
+    );
 
     return agreement;
   }
@@ -95,13 +97,8 @@ class OrderManager {
       this.nextPlanIndex = this.getRandomStartIndex(this.plans.length);
     }
 
-    let plan = this.plans[this.nextPlanIndex];
-    if (this.nextPlanIndex < this.plans.length - 1) {
-      this.nextPlanIndex = this.nextPlanIndex + 1;
-      plan = this.plans[this.nextPlanIndex];
-    } else {
-      this.nextPlanIndex = 0;
-    }
+    const plan = this.plans[this.nextPlanIndex];
+    this.nextPlanIndex = this.getNextOrderIndex(this.plans.length, this.nextPlanIndex);
 
     return plan;
   }
