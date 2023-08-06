@@ -85,8 +85,6 @@ class OrderManager {
       this.nextAgreementIndex
     );
 
-    console.log('this.nextAgreementIndex:', this.nextAgreementIndex);
-
     return agreement;
   }
 
