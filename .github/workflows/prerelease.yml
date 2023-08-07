@@ -93,7 +93,7 @@ jobs:
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump react-hooks & deploy
-        if: ${{ steps.changed-react-hooks.outputs.changed == 'true' || steps.changed-network-query.outputs.changed == 'true' }} || github.event.inputs.force-release
+        if: ${{ steps.changed-react-hooks.outputs.changed == 'true' || steps.changed-network-query.outputs.changed == 'true' || github.event.inputs.force-release }}
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/react-hooks
