@@ -191,11 +191,11 @@ describe('auth link with auth center', () => {
     const link = deploymentHttpLink({ ...options, deploymentId });
     client = createApolloClient(link);
 
-    const count = 3;
+    const count = 5;
     for (let i = 0; i < count; i++) {
       await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
     }
-  }, 20000);
+  }, 30000);
 
   it('use fallback url when no agreement available', async () => {
     const fallbackServiceUrl = fallbackUrl;
