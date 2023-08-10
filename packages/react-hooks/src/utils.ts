@@ -29,7 +29,7 @@ export function mapAsync<O, T>(scope: (t: T) => O, data: AsyncData<T>): AsyncDat
   return { ...data, data: data.data ? scope(data.data) : undefined };
 }
 
-export const deploymentProgessNumber = ({
+export const indexingProgress = ({
   currentHeight,
   targetHeight,
   startHeight = 0,
