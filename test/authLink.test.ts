@@ -82,17 +82,17 @@ function mockGetIndexerUrlOrTokenFailed() {
 }
 
 const logger: Logger = Pino({ level: 'debug' });
-const indexerUrl = 'http://ec2-3-27-14-20.ap-southeast-2.compute.amazonaws.com';
-const deploymentId = 'Qmdpka4MpaUtGP7B3AAoPji4H6X7a2ir53a1mxnUumqMm4';
+const indexerUrl = 'https://test.sqindexer.tech' as const;
+const deploymentId = 'QmQqwN439pN8WLQTnf5xig1yRr7nDu3kR6N1kJhceuryEw' as const;
 const uri = `${indexerUrl}/query/${deploymentId}`;
 const options = {
   indexerUrl,
   sk: process.env.SK ?? '',
-  indexer: '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04',
-  consumer: '0x6De0bf7cd34344Ff1356038fAE8ba6E05B50D4c1',
-  chainId: 1287,
+  indexer: '0xFCA0037391B3cfe28f17453D6DBc4A7618F771e1',
+  consumer: '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04',
+  chainId: 80001,
   deploymentId,
-  agreement: '19',
+  agreement: '17',
 };
 
 const metadataQuery = gql`
@@ -104,26 +104,54 @@ const metadataQuery = gql`
   }
 `;
 
-describe.skip('auth link', () => {
+let token = '';
+
+describe('auth link', () => {
   let client: ApolloClient<unknown>;
 
   beforeAll(async () => {
     const { AuthLink } = await getLinks();
-    const authLink = new AuthLink(options, logger);
+
+    const authLink = new AuthLink(options, logger, token);
+    const customFetch = (uri: string, options: any) => {
+      if (options.headers.authorization) {
+        token = options.headers.authorization;
+      }
+
+      return fetch(uri, options);
+    };
     client = new ApolloClient({
       cache: new InMemoryCache({ resultCaching: true }),
-      link: from([authLink, new HttpLink({ uri, fetch })]),
+      link: from([authLink, new HttpLink({ uri, fetch: customFetch })]),
     });
   });
 
-  it('can query with auth link', async () => {
+  const queryTest = async () => {
     try {
       const result = await client.query({ query: metadataQuery });
       expect(result.data._metadata).toBeTruthy();
     } catch (e) {
-      console.log(`Failed to send query with auth link: ${e}`);
+      const errorStack = JSON.parse(JSON.stringify(e));
+
+      // error code 1020 is permission deny, error code is auth Header error, only those error represent auth error.
+      if (
+        errorStack?.networkError?.statusCode === 404 &&
+        (errorStack?.networkError?.result.code === 1020 ||
+          errorStack?.networkError?.result.code === 1030)
+      ) {
+        expect(1).toBe(2);
+        return;
+      }
+
+      console.warn('query auth link pass with warning');
+      expect(1).toBe(1);
     }
-  });
+  };
+
+  // the first test case for test fetch token.
+  it('can query with auth link', queryTest);
+  // the second test case for test query with a not expired token. token set on beforeAll.
+  it('can query with cache tokened auth link', queryTest);
 });
 
 describe('auth link with auth center', () => {
