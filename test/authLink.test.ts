@@ -81,7 +81,6 @@ function mockGetIndexerUrlOrTokenFailed() {
   });
 }
 
-// TODO: need fix the test cases
 const logger: Logger = Pino({ level: 'debug' });
 const indexerUrl = 'http://ec2-3-27-14-20.ap-southeast-2.compute.amazonaws.com';
 const deploymentId = 'Qmdpka4MpaUtGP7B3AAoPji4H6X7a2ir53a1mxnUumqMm4';
@@ -127,10 +126,11 @@ describe.skip('auth link', () => {
   });
 });
 
-// TODO: fix this test
-describe.skip('auth link with auth center', () => {
+describe('auth link with auth center', () => {
   let client: ApolloClient<unknown>;
   const authUrl = process.env.AUTH_URL ?? 'input your local test auth url here';
+  const fallbackUrl =
+    process.env.FALLBACK_URL ?? 'https://api.subquery.network/sq/subquery/kepler-testnet';
   const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
   const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
   const options = { authUrl, chainId, httpOptions, logger: mockLogger };
@@ -148,6 +148,7 @@ describe.skip('auth link with auth center', () => {
   it('can query data with dictionary auth link', async () => {
     const { dictHttpLink } = await getLinks();
     const link = dictHttpLink(options);
+
     client = createApolloClient(link);
 
     const count = 3;
@@ -169,7 +170,7 @@ describe.skip('auth link with auth center', () => {
   }, 20000);
 
   it('use fallback url when no agreement available', async () => {
-    const fallbackServiceUrl = 'https://api.subquery.network/sq/subquery/polkadot-dictionary';
+    const fallbackServiceUrl = fallbackUrl;
     const { dictHttpLink } = await getLinks();
     const link = dictHttpLink({
       ...options,
@@ -201,7 +202,7 @@ describe.skip('auth link with auth center', () => {
     mockGetIndexerUrlOrTokenFailed();
 
     const { dictHttpLink } = await getLinks();
-    const fallbackServiceUrl = 'https://api.subquery.network/sq/subquery/polkadot-dictionary';
+    const fallbackServiceUrl = fallbackUrl;
 
     const link = dictHttpLink({ ...options, logger: mockLogger, fallbackServiceUrl });
     client = createApolloClient(link);
@@ -214,7 +215,7 @@ describe.skip('auth link with auth center', () => {
     mockIndexerRequestFailed();
 
     const { dictHttpLink } = await getLinks();
-    const fallbackServiceUrl = 'https://api.subquery.network/sq/subquery/polkadot-dictionary';
+    const fallbackServiceUrl = fallbackUrl;
 
     const link = dictHttpLink({ ...options, logger: mockLogger, fallbackServiceUrl });
     client = createApolloClient(link);
