@@ -3,6 +3,9 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import dotenv from 'dotenv';
+import jwt_decode from 'jwt-decode';
+import axios from 'axios';
+
 import {
   ApolloClient,
   ApolloLink,
@@ -20,6 +23,8 @@ import Pino from 'pino';
 import { Logger } from '../packages/apollo-links/src/utils/logger';
 
 dotenv.config();
+
+const mockAxios = axios as jest.Mocked<typeof axios>;
 
 const mockLogger: Logger = {
   debug: jest.fn(console.log),
@@ -105,6 +110,8 @@ const metadataQuery = gql`
 `;
 
 let token = '';
+const fakeToken =
+  'eyJhbCI6IkhTMjU2IiwiYWxnIjoiSFMyNTYifQ.eyJleHAiOiIyMDk5LTA5LTA5In0.kau0kzybKIrHqVzTP8QERsD6nWlnsIjyrqqkEK5iyIA';
 
 describe('auth link', () => {
   let client: ApolloClient<unknown>;
@@ -116,12 +123,39 @@ describe('auth link', () => {
     const customFetch = (uri: string, options: any) => {
       if (options.headers.authorization) {
         token = options.headers.authorization;
+        expect(token).toContain('Bearer');
+      }
+
+      if (token === `Bearer ${fakeToken}`) {
+        return Promise.resolve({
+          json: () =>
+            Promise.resolve({
+              data: {
+                _metadata: {
+                  indexerHealthy: true,
+                  indexerNodeVersion: '00.00',
+                },
+              },
+            }),
+          text: () =>
+            Promise.resolve(
+              JSON.stringify({
+                data: {
+                  _metadata: {
+                    indexerHealthy: true,
+                    indexerNodeVersion: '00.00',
+                  },
+                },
+              })
+            ),
+        });
       }
 
       return fetch(uri, options);
     };
     client = new ApolloClient({
       cache: new InMemoryCache({ resultCaching: true }),
+      // @ts-ignore
       link: from([authLink, new HttpLink({ uri, fetch: customFetch })]),
     });
   });
@@ -148,10 +182,38 @@ describe('auth link', () => {
     }
   };
 
+  const queryTestWithMock = async () => {
+    mockAxios.post.mockImplementation((url, data) => {
+      if (url.includes('/token')) {
+        expect(data).toHaveProperty('indexer', options.indexer);
+        expect(data).toHaveProperty('agreement', options.agreement);
+        expect(data).toHaveProperty('chain_id', options.chainId);
+        expect(data).toHaveProperty('consumer', options.consumer);
+        expect(data).toHaveProperty('deployment_id', options.deploymentId);
+        // TODO: verify this actually sign with consumer
+        expect(data).toHaveProperty('signature');
+        expect(data).toHaveProperty('timestamp');
+
+        return Promise.resolve({
+          data: {
+            token: fakeToken,
+          },
+        });
+      }
+
+      return Promise.resolve();
+    });
+
+    const result = await client.query({ query: metadataQuery, fetchPolicy: 'no-cache' });
+    expect(result.data._metadata).toBeTruthy();
+  };
+
+  it('can query token with mock', queryTestWithMock);
+  // the second test case for test query with a not expired token. token set on beforeAll.
+  it('can query token with mock and exist token', queryTestWithMock);
+
   // the first test case for test fetch token.
   it('can query with auth link', queryTest);
-  // the second test case for test query with a not expired token. token set on beforeAll.
-  it('can query with cache tokened auth link', queryTest);
 });
 
 describe('auth link with auth center', () => {
