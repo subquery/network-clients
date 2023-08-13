@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Agreement, OrderType, Plan, ProjectType } from '../types';
+import { CacheTool } from './cache';
 import { Logger } from './logger';
 import { fetchOrders } from './query';
 
@@ -10,6 +11,7 @@ type Options = {
   authUrl: string;
   projectId: string;
   projectType: ProjectType;
+  cache: CacheTool;
 };
 
 class OrderManager {
@@ -21,6 +23,7 @@ class OrderManager {
 
   private projectType: ProjectType;
   private logger: Logger;
+  private cache: CacheTool;
 
   private authUrl: string;
   private projectId: string;
@@ -29,11 +32,12 @@ class OrderManager {
   private _init: Promise<void>;
 
   constructor(options: Options) {
-    const { authUrl, projectId, logger, projectType } = options;
+    const { authUrl, projectId, logger, projectType, cache } = options;
     this.authUrl = authUrl;
     this.projectId = projectId;
     this.projectType = projectType;
     this.logger = logger;
+    this.cache = cache;
 
     this._init = this.refreshAgreements();
     setInterval(this.refreshAgreements, this.interval);

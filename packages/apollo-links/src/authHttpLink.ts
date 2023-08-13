@@ -1,19 +1,20 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { from, ApolloLink, HttpOptions } from '@apollo/client/core';
+import { ApolloLink, HttpOptions, from } from '@apollo/client/core';
 
-import OrderMananger from './utils/orderManager';
-import { Logger, silentLogger } from './utils/logger';
-import { ProjectType } from './types';
 import {
-  createRetryLink,
-  FallbackLink,
+  ClusterAuthLink,
   DynamicHttpLink,
+  FallbackLink,
   ResponseLink,
   creatErrorLink,
-  ClusterAuthLink,
+  createRetryLink,
 } from './core';
+import { ProjectType } from './types';
+import { CacheTool, MemoryCache } from './utils/cache';
+import { Logger, silentLogger } from './utils/logger';
+import OrderMananger from './utils/orderManager';
 
 interface DictAuthOptions extends BaseAuthOptions {
   chainId: string; // chain id for the requested dictionary
@@ -31,6 +32,7 @@ interface BaseAuthOptions {
   authUrl: string; // auth service url
   httpOptions: HttpOptions; // http options for init `HttpLink`
   logger?: Logger; // logger for `AuthLink`
+  cache?: CacheTool; // cache for `OrderMananger`
   fallbackServiceUrl?: string; // fall back service url for `AuthLink`
 }
 
@@ -50,15 +52,18 @@ function authHttpLink(options: AuthOptions): ApolloLink {
     fallbackServiceUrl,
     authUrl,
     logger: _logger,
+    cache: _cache,
     projectType,
   } = options;
 
   const logger = _logger ?? silentLogger();
+  const cache = _cache ?? new MemoryCache();
   const orderMananger = new OrderMananger({
     authUrl,
     projectId: deploymentId,
-    logger,
     projectType,
+    logger,
+    cache,
   });
 
   const retryLink = createRetryLink(logger);
