@@ -217,11 +217,11 @@ describe('auth link', () => {
     expect(result.data._metadata).toBeTruthy();
   };
 
-  it('can query token with mock', queryTestWithMock);
+  it('mock: can query token ', queryTestWithMock);
   // the second test case for test query with a not expired token. token set on beforeAll.
-  it('can query token with mock and exist token', queryTestWithMock);
+  it('mock: can query token with exist token', queryTestWithMock);
 
-  it('can query when token be polluted', async () => {
+  it('mock: can query if token be polluted', async () => {
     clearAllExistData();
 
     const newClinet = await makeAnAuthLink(
@@ -390,4 +390,402 @@ describe('auth link with auth center', () => {
     expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
     expect(mockLogger.debug).not.toHaveBeenCalledWith(expect.stringMatching(/retry:/));
   }, 20000);
+});
+
+describe('mock: auth link with auth center', () => {
+  let client: ApolloClient<unknown>;
+  const authUrl = process.env.AUTH_URL ?? 'input your local test auth url here';
+  const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
+  const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
+  const options = { authUrl, chainId, httpOptions, logger: mockLogger };
+
+  afterEach(() => {
+    jest.mock('../packages/apollo-links/src/core/clusterAuthLink', () =>
+      jest.requireActual('../packages/apollo-links/src/core/clusterAuthLink')
+    );
+    jest.resetModules();
+    jest.resetAllMocks();
+    jest.clearAllMocks();
+  });
+
+  it('mock: can query data with payg', async () => {
+    const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
+    const { deploymentHttpLink } = await getLinks();
+    const signBeforeQueryPayg = jest.fn();
+    const stateAfterQueryPayg = jest.fn();
+
+    mockAxios.get.mockImplementation((url) => {
+      if (url.includes(authUrl)) {
+        return Promise.resolve({
+          data: {
+            agreements: [],
+            plans: [
+              {
+                id: '0x091abb40d77fe1f340a98a57a0c5bc24b3a9b91007e345ea4795901d9698adf4',
+                url: 'https://mock-request/payg/QmUVXKjcsYkS6WfJQfeD7juDbnMWCuo5qKgRRo893LajE2',
+                indexer: '0x000000000000000c',
+                metadata: {
+                  chain: '137',
+                  genesisHash: '0xa9c28ce2141b56c474f1dc504bee9b01eb1bd7d1a507580d5519d4437a97de1b',
+                  indexerHealthy: true,
+                  indexerNodeVersion: '2.10.0',
+                  lastProcessedHeight: 46285057,
+                  lastProcessedTimestamp: '1691992757459',
+                  queryNodeVersion: '2.4.0',
+                  specName: 'ethereum',
+                  startHeight: 41192135,
+                  targetHeight: 46285057,
+                },
+                score: 100,
+              },
+            ],
+          },
+        });
+      }
+
+      return Promise.resolve();
+    });
+
+    mockAxios.post.mockImplementation((url, data) => {
+      if (url.includes('/channel/sign')) {
+        expect(data).toHaveProperty('deployment');
+        expect(data).toHaveProperty('channelId');
+        signBeforeQueryPayg();
+
+        return Promise.resolve({
+          data: {
+            channelId: '0x91ABB40D77FE1F340A98A57A0C5BC24B3A9B91007E345EA4795901D9698ADF4',
+            consumer: '0x0000000000000000',
+            consumerSign:
+              '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b',
+            indexer: '0x000000000000000c',
+            indexerSign:
+              '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b',
+            isFinal: false,
+            remote: '10000000000000000',
+            spent: '10000000000000000',
+          },
+        });
+      }
+
+      if (url.includes('/channel/state')) {
+        expect(data).toBeInstanceOf(Object);
+        expect(data).toHaveProperty('channelId');
+        expect(data).toHaveProperty('consumer');
+        expect(data).toHaveProperty('consumerSign');
+        expect(data).toHaveProperty('indexer');
+        expect(data).toHaveProperty('indexerSign');
+        expect((data as { indexerSign: string }).indexerSign).not.toEqual(
+          '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b'
+        );
+
+        stateAfterQueryPayg();
+      }
+
+      return Promise.resolve();
+    });
+
+    const link = deploymentHttpLink({
+      ...options,
+      deploymentId,
+      httpOptions: {
+        ...httpOptions,
+        fetch: (uri: RequestInfo | URL, options: any): Promise<Response> => {
+          if (uri.toString().includes('mock-request/payg')) {
+            const authorization = JSON.parse(options.headers.authorization);
+            expect(authorization).toHaveProperty('channelId');
+            expect(authorization).toHaveProperty('consumer');
+            expect(authorization).toHaveProperty('consumerSign');
+            // @ts-ignore
+            return Promise.resolve({
+              json: () =>
+                Promise.resolve({
+                  data: {
+                    _metadata: {
+                      indexerHealthy: true,
+                      indexerNodeVersion: '00.00',
+                    },
+                  },
+                  state: {
+                    channelId: '0x91ABB40D77FE1F340A98A57A0C5BC24B3A9B91007E345EA4795901D9698ADF4',
+                    consumer: '0x0000000',
+                    consumerSign:
+                      'e239518860984116c1bee0264c3ad1df02c574db56be715e9a74b665a160fc56782db19f7a40c354b661ad8279e1a1ca99dfed25264e9d8bfc89427a70d5c0451c',
+                    indexer: '0x11111111',
+                    indexerSign:
+                      '4db7ad2c0c4426cec02c05586b2363c23358394ea540d516dc6f7efdffd3a6967205c115fea4e3054f74aaf0f27c4b90416bee71f9775915d315644720a61d2a1b',
+                    isFinal: false,
+                    remote: '10000000000000000',
+                    spent: '10000000000000000',
+                  },
+                }),
+              text: () =>
+                Promise.resolve(
+                  JSON.stringify({
+                    data: {
+                      _metadata: {
+                        indexerHealthy: true,
+                        indexerNodeVersion: '00.00',
+                      },
+                    },
+                    state: {
+                      channelId:
+                        '0x91ABB40D77FE1F340A98A57A0C5BC24B3A9B91007E345EA4795901D9698ADF4',
+                      consumer: '0x0000000',
+                      consumerSign:
+                        'e239518860984116c1bee0264c3ad1df02c574db56be715e9a74b665a160fc56782db19f7a40c354b661ad8279e1a1ca99dfed25264e9d8bfc89427a70d5c0451c',
+                      indexer: '0x11111111',
+                      indexerSign:
+                        '4db7ad2c0c4426cec02c05586b2363c23358394ea540d516dc6f7efdffd3a6967205c115fea4e3054f74aaf0f27c4b90416bee71f9775915d315644720a61d2a1b',
+                      isFinal: false,
+                      remote: '10000000000000000',
+                      spent: '10000000000000000',
+                    },
+                  })
+                ),
+            });
+          }
+
+          return fetch(uri, options);
+        },
+      },
+    });
+    client = createApolloClient(link);
+
+    const result = await client.query({ query: metadataQuery });
+
+    expect(result.data._metadata).toBeTruthy();
+    expect(signBeforeQueryPayg).toBeCalledTimes(1);
+    expect(stateAfterQueryPayg).toBeCalledTimes(1);
+  });
+
+  it('mock: can query data with payg when one of source query failed', async () => {
+    const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
+    const { deploymentHttpLink } = await getLinks();
+    const signBeforeQueryPayg = jest.fn();
+    const stateAfterQueryPayg = jest.fn();
+    let times = 0;
+    mockAxios.get.mockImplementation((url) => {
+      if (url.includes(authUrl)) {
+        return Promise.resolve({
+          data: {
+            agreements: [],
+            plans: [
+              {
+                id: '0x091abb40d77fe1f340a98a57a0c5bc24b3a9b91007e345ea4795901d9698adf4',
+                url: 'https://mock-request/payg/QmUVXKjcsYkS6WfJQfeD7juDbnMWCuo5qKgRRo893LajE2',
+                indexer: '0x000000000000000c',
+                metadata: {
+                  chain: '137',
+                  genesisHash: '0xa9c28ce2141b56c474f1dc504bee9b01eb1bd7d1a507580d5519d4437a97de1b',
+                  indexerHealthy: true,
+                  indexerNodeVersion: '2.10.0',
+                  lastProcessedHeight: 46285057,
+                  lastProcessedTimestamp: '1691992757459',
+                  queryNodeVersion: '2.4.0',
+                  specName: 'ethereum',
+                  startHeight: 41192135,
+                  targetHeight: 46285057,
+                },
+                score: 100,
+              },
+              {
+                id: '0x091abb40d77fe1f340a98a57a0c5bc24b3a9b91007e345ea4795901d9698adf4',
+                url: 'https://mock-real-request/payg/QmUVXKjcsYkS6WfJQfeD7juDbnMWCuo5qKgRRo893LajE2',
+                indexer: '0x000000000000000c',
+                metadata: {
+                  chain: '137',
+                  genesisHash: '0xa9c28ce2141b56c474f1dc504bee9b01eb1bd7d1a507580d5519d4437a97de1b',
+                  indexerHealthy: true,
+                  indexerNodeVersion: '2.10.0',
+                  lastProcessedHeight: 46285057,
+                  lastProcessedTimestamp: '1691992757459',
+                  queryNodeVersion: '2.4.0',
+                  specName: 'ethereum',
+                  startHeight: 41192135,
+                  targetHeight: 46285057,
+                },
+                score: 100,
+              },
+            ],
+          },
+        });
+      }
+
+      return Promise.resolve();
+    });
+
+    mockAxios.post.mockImplementation((url, data) => {
+      if (url.includes('/channel/sign')) {
+        expect(data).toHaveProperty('deployment');
+        expect(data).toHaveProperty('channelId');
+        signBeforeQueryPayg();
+
+        return Promise.resolve({
+          data: {
+            channelId: '0x91ABB40D77FE1F340A98A57A0C5BC24B3A9B91007E345EA4795901D9698ADF4',
+            consumer: '0x0000000000000000',
+            consumerSign:
+              '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b',
+            indexer: '0x000000000000000c',
+            indexerSign:
+              '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b',
+            isFinal: false,
+            remote: '10000000000000000',
+            spent: '10000000000000000',
+          },
+        });
+      }
+
+      if (url.includes('/channel/state')) {
+        expect(data).toBeInstanceOf(Object);
+        expect(data).toHaveProperty('channelId');
+        expect(data).toHaveProperty('consumer');
+        expect(data).toHaveProperty('consumerSign');
+        expect(data).toHaveProperty('indexer');
+        expect(data).toHaveProperty('indexerSign');
+        expect((data as { indexerSign: string }).indexerSign).not.toEqual(
+          '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b'
+        );
+
+        stateAfterQueryPayg();
+      }
+
+      return Promise.resolve();
+    });
+
+    const link = deploymentHttpLink({
+      ...options,
+      deploymentId,
+      httpOptions: {
+        ...httpOptions,
+        fetch: (uri: RequestInfo | URL, options: any): Promise<Response> => {
+          if (uri.toString().includes('mock-request')) {
+            return Promise.reject({
+              status: 500,
+            });
+          }
+          if (uri.toString().includes('mock-real-request/payg')) {
+            if (times === 0) {
+              times = 1;
+              return Promise.reject({
+                status: 500,
+              });
+            }
+            const authorization = JSON.parse(options.headers.authorization);
+            expect(authorization).toHaveProperty('channelId');
+            expect(authorization).toHaveProperty('consumer');
+            expect(authorization).toHaveProperty('consumerSign');
+            // @ts-ignore
+            return Promise.resolve({
+              json: () =>
+                Promise.resolve({
+                  data: {
+                    _metadata: {
+                      indexerHealthy: true,
+                      indexerNodeVersion: '00.00',
+                    },
+                  },
+                  state: {
+                    channelId: '0x91ABB40D77FE1F340A98A57A0C5BC24B3A9B91007E345EA4795901D9698ADF4',
+                    consumer: '0x0000000',
+                    consumerSign:
+                      'e239518860984116c1bee0264c3ad1df02c574db56be715e9a74b665a160fc56782db19f7a40c354b661ad8279e1a1ca99dfed25264e9d8bfc89427a70d5c0451c',
+                    indexer: '0x11111111',
+                    indexerSign:
+                      '4db7ad2c0c4426cec02c05586b2363c23358394ea540d516dc6f7efdffd3a6967205c115fea4e3054f74aaf0f27c4b90416bee71f9775915d315644720a61d2a1b',
+                    isFinal: false,
+                    remote: '10000000000000000',
+                    spent: '10000000000000000',
+                  },
+                }),
+              text: () =>
+                Promise.resolve(
+                  JSON.stringify({
+                    data: {
+                      _metadata: {
+                        indexerHealthy: true,
+                        indexerNodeVersion: '00.00',
+                      },
+                    },
+                    state: {
+                      channelId:
+                        '0x91ABB40D77FE1F340A98A57A0C5BC24B3A9B91007E345EA4795901D9698ADF4',
+                      consumer: '0x0000000',
+                      consumerSign:
+                        'e239518860984116c1bee0264c3ad1df02c574db56be715e9a74b665a160fc56782db19f7a40c354b661ad8279e1a1ca99dfed25264e9d8bfc89427a70d5c0451c',
+                      indexer: '0x11111111',
+                      indexerSign:
+                        '4db7ad2c0c4426cec02c05586b2363c23358394ea540d516dc6f7efdffd3a6967205c115fea4e3054f74aaf0f27c4b90416bee71f9775915d315644720a61d2a1b',
+                      isFinal: false,
+                      remote: '10000000000000000',
+                      spent: '10000000000000000',
+                    },
+                  })
+                ),
+            });
+          }
+
+          return fetch(uri, options);
+        },
+      },
+      fallbackServiceUrl:
+        'https://mock-real-request/payg/QmUVXKjcsYkS6WfJQfeD7juDbnMWCuo5qKgRRo893LajE2',
+    });
+    client = createApolloClient(link);
+
+    const result = await client.query({ query: metadataQuery });
+
+    expect(result.data._metadata).toBeTruthy();
+    expect(signBeforeQueryPayg).toBeCalled();
+    expect(stateAfterQueryPayg).toBeCalled();
+  });
+
+  it('mock: can query data with fallback', async () => {
+    const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
+    const { deploymentHttpLink } = await getLinks();
+    const link = deploymentHttpLink({
+      ...options,
+      deploymentId,
+      httpOptions: {
+        ...httpOptions,
+        fetch: (uri: RequestInfo | URL, options: any): Promise<Response> => {
+          if (uri.toString().includes('mock-fallback-request')) {
+            // @ts-ignore
+            return Promise.resolve({
+              json: () =>
+                Promise.resolve({
+                  data: {
+                    _metadata: {
+                      indexerHealthy: true,
+                      indexerNodeVersion: '00.00',
+                    },
+                  },
+                }),
+              text: () =>
+                Promise.resolve(
+                  JSON.stringify({
+                    data: {
+                      _metadata: {
+                        indexerHealthy: true,
+                        indexerNodeVersion: '00.00',
+                      },
+                    },
+                  })
+                ),
+            });
+          }
+
+          return fetch(uri, options);
+        },
+      },
+      fallbackServiceUrl:
+        'https://mock-fallback-request/payg/QmUVXKjcsYkS6WfJQfeD7juDbnMWCuo5qKgRRo893LajE2',
+    });
+    client = createApolloClient(link);
+
+    const result = await client.query({ query: metadataQuery });
+
+    expect(result.data._metadata).toBeTruthy();
+  });
 });
