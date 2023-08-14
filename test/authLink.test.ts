@@ -1127,7 +1127,6 @@ describe('auth link with auth center', () => {
     jest.mock('../packages/apollo-links/src/core/clusterAuthLink', () =>
       jest.requireActual('../packages/apollo-links/src/core/clusterAuthLink')
     );
-    jest.resetModules();
     jest.resetAllMocks();
     jest.clearAllMocks();
   });
@@ -1185,6 +1184,18 @@ describe('auth link with auth center', () => {
     expect(mockLogger.debug).not.toHaveBeenCalledWith(expect.stringMatching(/retry:/));
   });
 
+  it('fallback url should not trigger retry', async () => {
+    const { dictHttpLink } = await getLinks();
+    const fallbackServiceUrl = 'https://api.subquery.network/wrong';
+
+    const link = dictHttpLink({ ...options, authUrl: '', logger: mockLogger, fallbackServiceUrl });
+    client = createApolloClient(link);
+
+    await expect(client.query({ query: metadataQuery })).rejects.toThrow(/Response not successful/);
+    expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
+    expect(mockLogger.debug).not.toHaveBeenCalledWith(expect.stringMatching(/retry:/));
+  }, 20000);
+
   it('should use fallback when failed to get token', async () => {
     mockGetIndexerUrlOrTokenFailed();
 
@@ -1196,6 +1207,7 @@ describe('auth link with auth center', () => {
 
     await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
     expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
+    jest.resetModules();
   });
 
   it('should fall back to fallback url after max retries (request indexer failed)', async () => {
@@ -1210,17 +1222,6 @@ describe('auth link with auth center', () => {
     await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
     expect(mockLogger.debug).toHaveBeenCalledWith(expect.stringMatching(/reach max retries:/));
     expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
+    jest.resetModules();
   });
-
-  it('fallback url should not trigger retry', async () => {
-    const { dictHttpLink } = await getLinks();
-    const fallbackServiceUrl = 'https://api.subquery.network/wrong';
-
-    const link = dictHttpLink({ ...options, authUrl: '', logger: mockLogger, fallbackServiceUrl });
-    client = createApolloClient(link);
-
-    await expect(client.query({ query: metadataQuery })).rejects.toThrow(/Response not successful/);
-    expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
-    expect(mockLogger.debug).not.toHaveBeenCalledWith(expect.stringMatching(/retry:/));
-  }, 20000);
 });
