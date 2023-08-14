@@ -282,118 +282,6 @@ describe('auth link', () => {
   it('can query with auth link', queryTest);
 });
 
-describe('auth link with auth center', () => {
-  let client: ApolloClient<unknown>;
-  const authUrl = process.env.AUTH_URL ?? 'input your local test auth url here';
-  const fallbackUrl =
-    process.env.FALLBACK_URL ?? 'https://api.subquery.network/sq/subquery/kepler-testnet';
-  const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
-  const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
-  const options = { authUrl, chainId, httpOptions, logger: mockLogger };
-  const invalidChainId = '0x1234';
-
-  afterEach(() => {
-    jest.mock('../packages/apollo-links/src/core/clusterAuthLink', () =>
-      jest.requireActual('../packages/apollo-links/src/core/clusterAuthLink')
-    );
-    jest.resetModules();
-    jest.resetAllMocks();
-    jest.clearAllMocks();
-  });
-
-  it('can query data with dictionary auth link', async () => {
-    const { dictHttpLink } = await getLinks();
-    const link = dictHttpLink(options);
-
-    client = createApolloClient(link);
-
-    const count = 3;
-    for (let i = 0; i < count; i++) {
-      await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
-    }
-  }, 30000);
-
-  it('can query data with deployment auth link', async () => {
-    const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
-    const { deploymentHttpLink } = await getLinks();
-    const link = deploymentHttpLink({ ...options, deploymentId });
-    client = createApolloClient(link);
-
-    const count = 5;
-    for (let i = 0; i < count; i++) {
-      await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
-    }
-  }, 50000);
-
-  it('use fallback url when no agreement available', async () => {
-    const fallbackServiceUrl = fallbackUrl;
-    const { dictHttpLink } = await getLinks();
-    const link = dictHttpLink({
-      ...options,
-      logger: mockLogger,
-      chainId: invalidChainId,
-      fallbackServiceUrl,
-    });
-
-    client = createApolloClient(link);
-    await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
-    expect(mockLogger.debug).toHaveBeenCalledWith(expect.stringMatching(/use fallback url:/));
-  }, 30000);
-
-  it('should not retry if no endpoint can be found', async () => {
-    const { dictHttpLink } = await getLinks();
-    const link = dictHttpLink({
-      ...options,
-      logger: mockLogger,
-      chainId: invalidChainId,
-      fallbackServiceUrl: '',
-    });
-
-    client = createApolloClient(link);
-    await expect(client.query({ query: metadataQuery })).rejects.toThrow('empty url');
-    expect(mockLogger.debug).not.toHaveBeenCalledWith(expect.stringMatching(/retry:/));
-  });
-
-  it('should use fallback when failed to get token', async () => {
-    mockGetIndexerUrlOrTokenFailed();
-
-    const { dictHttpLink } = await getLinks();
-    const fallbackServiceUrl = fallbackUrl;
-
-    const link = dictHttpLink({ ...options, logger: mockLogger, fallbackServiceUrl });
-    client = createApolloClient(link);
-
-    await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
-    expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
-  });
-
-  it('should fall back to fallback url after max retries (request indexer failed)', async () => {
-    mockIndexerRequestFailed();
-
-    const { dictHttpLink } = await getLinks();
-    const fallbackServiceUrl = fallbackUrl;
-
-    const link = dictHttpLink({ ...options, logger: mockLogger, fallbackServiceUrl });
-    client = createApolloClient(link);
-
-    await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
-    expect(mockLogger.debug).toHaveBeenCalledWith(expect.stringMatching(/reach max retries:/));
-    expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
-  });
-
-  it('fallback url should not trigger retry', async () => {
-    const { dictHttpLink } = await getLinks();
-    const fallbackServiceUrl = 'https://api.subquery.network/wrong';
-
-    const link = dictHttpLink({ ...options, authUrl: '', logger: mockLogger, fallbackServiceUrl });
-    client = createApolloClient(link);
-
-    await expect(client.query({ query: metadataQuery })).rejects.toThrow(/Response not successful/);
-    expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
-    expect(mockLogger.debug).not.toHaveBeenCalledWith(expect.stringMatching(/retry:/));
-  }, 20000);
-});
-
 describe('mock: auth link with auth center', () => {
   let client: ApolloClient<unknown>;
   const authUrl = process.env.AUTH_URL ?? 'input your local test auth url here';
@@ -1223,4 +1111,116 @@ describe('mock: auth link with auth center', () => {
     }
     // expect(result.data._metadata).toBeTruthy();
   });
+});
+
+describe('auth link with auth center', () => {
+  let client: ApolloClient<unknown>;
+  const authUrl = process.env.AUTH_URL ?? 'input your local test auth url here';
+  const fallbackUrl =
+    process.env.FALLBACK_URL ?? 'https://api.subquery.network/sq/subquery/kepler-testnet';
+  const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
+  const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
+  const options = { authUrl, chainId, httpOptions, logger: mockLogger };
+  const invalidChainId = '0x1234';
+
+  afterEach(() => {
+    jest.mock('../packages/apollo-links/src/core/clusterAuthLink', () =>
+      jest.requireActual('../packages/apollo-links/src/core/clusterAuthLink')
+    );
+    jest.resetModules();
+    jest.resetAllMocks();
+    jest.clearAllMocks();
+  });
+
+  it('can query data with dictionary auth link', async () => {
+    const { dictHttpLink } = await getLinks();
+    const link = dictHttpLink(options);
+
+    client = createApolloClient(link);
+
+    const count = 3;
+    for (let i = 0; i < count; i++) {
+      await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
+    }
+  }, 30000);
+
+  it('can query data with deployment auth link', async () => {
+    const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
+    const { deploymentHttpLink } = await getLinks();
+    const link = deploymentHttpLink({ ...options, deploymentId });
+    client = createApolloClient(link);
+
+    const count = 5;
+    for (let i = 0; i < count; i++) {
+      await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
+    }
+  }, 50000);
+
+  it('use fallback url when no agreement available', async () => {
+    const fallbackServiceUrl = fallbackUrl;
+    const { dictHttpLink } = await getLinks();
+    const link = dictHttpLink({
+      ...options,
+      logger: mockLogger,
+      chainId: invalidChainId,
+      fallbackServiceUrl,
+    });
+
+    client = createApolloClient(link);
+    await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
+    expect(mockLogger.debug).toHaveBeenCalledWith(expect.stringMatching(/use fallback url:/));
+  }, 30000);
+
+  it('should not retry if no endpoint can be found', async () => {
+    const { dictHttpLink } = await getLinks();
+    const link = dictHttpLink({
+      ...options,
+      logger: mockLogger,
+      chainId: invalidChainId,
+      fallbackServiceUrl: '',
+    });
+
+    client = createApolloClient(link);
+    await expect(client.query({ query: metadataQuery })).rejects.toThrow('empty url');
+    expect(mockLogger.debug).not.toHaveBeenCalledWith(expect.stringMatching(/retry:/));
+  });
+
+  it('should use fallback when failed to get token', async () => {
+    mockGetIndexerUrlOrTokenFailed();
+
+    const { dictHttpLink } = await getLinks();
+    const fallbackServiceUrl = fallbackUrl;
+
+    const link = dictHttpLink({ ...options, logger: mockLogger, fallbackServiceUrl });
+    client = createApolloClient(link);
+
+    await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
+    expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
+  });
+
+  it('should fall back to fallback url after max retries (request indexer failed)', async () => {
+    mockIndexerRequestFailed();
+
+    const { dictHttpLink } = await getLinks();
+    const fallbackServiceUrl = fallbackUrl;
+
+    const link = dictHttpLink({ ...options, logger: mockLogger, fallbackServiceUrl });
+    client = createApolloClient(link);
+
+    await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
+    expect(mockLogger.debug).toHaveBeenCalledWith(expect.stringMatching(/reach max retries:/));
+    expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
+  });
+
+  it('fallback url should not trigger retry', async () => {
+    const { dictHttpLink } = await getLinks();
+    const fallbackServiceUrl = 'https://api.subquery.network/wrong';
+
+    const link = dictHttpLink({ ...options, authUrl: '', logger: mockLogger, fallbackServiceUrl });
+    client = createApolloClient(link);
+
+    await expect(client.query({ query: metadataQuery })).rejects.toThrow(/Response not successful/);
+    expect(mockLogger.debug).toHaveBeenCalledWith(`use fallback url: ${fallbackServiceUrl}`);
+    expect(mockLogger.debug).not.toHaveBeenCalledWith(expect.stringMatching(/retry:/));
+  }, 20000);
 });
