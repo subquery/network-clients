@@ -23,6 +23,9 @@ import { Logger } from '../packages/apollo-links/src/utils/logger';
 
 dotenv.config();
 
+const fakeToken =
+  'eyJhbCI6IkhTMjU2IiwiYWxnIjoiSFMyNTYifQ.eyJleHAiOiIyMDk5LTA5LTA5In0.kau0kzybKIrHqVzTP8QERsD6nWlnsIjyrqqkEK5iyIA';
+
 const mockAxios = axios as jest.Mocked<typeof axios>;
 
 const mockLogger: Logger = {
@@ -110,8 +113,6 @@ describe('auth link', () => {
   };
 
   let token = '';
-  const fakeToken =
-    'eyJhbCI6IkhTMjU2IiwiYWxnIjoiSFMyNTYifQ.eyJleHAiOiIyMDk5LTA5LTA5In0.kau0kzybKIrHqVzTP8QERsD6nWlnsIjyrqqkEK5iyIA';
 
   const makeAnAuthLink = async (customFetch = fetch, customToken = token) => {
     const { AuthLink } = await getLinks();
@@ -158,10 +159,10 @@ describe('auth link', () => {
   const queryTestWithMock = async () => {
     const client = await makeAnAuthLink(
       (uri: RequestInfo | URL, options: any): Promise<Response> => {
-        if (options.headers.authorization) {
-          expect(options.headers.authorization).toContain('Bearer');
-          token = options.headers.authorization.replace('Bearer ', '');
-        }
+        expect(options.headers.authorization).toContain('Bearer');
+        expect(options.headers.authorization.length).toBeGreaterThan('Bearer '.length);
+
+        token = options.headers.authorization.replace('Bearer ', '');
 
         if (options.headers.authorization === `Bearer ${fakeToken}`) {
           // @ts-ignore
@@ -403,7 +404,6 @@ describe('mock: auth link with auth center', () => {
     jest.mock('../packages/apollo-links/src/core/clusterAuthLink', () =>
       jest.requireActual('../packages/apollo-links/src/core/clusterAuthLink')
     );
-    jest.resetModules();
     jest.resetAllMocks();
     jest.clearAllMocks();
   });
@@ -741,9 +741,161 @@ describe('mock: auth link with auth center', () => {
     expect(stateAfterQueryPayg).toBeCalled();
   });
 
+  it('mock: can query data with service agreement', async () => {
+    const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
+    const { deploymentHttpLink } = await getLinks();
+
+    mockAxios.get.mockImplementation((url) => {
+      if (url.includes(authUrl)) {
+        return Promise.resolve({
+          data: {
+            agreements: [
+              {
+                id: '655',
+                url: 'https://mock-sv/query/QmZGAZQ7e1oZgfuK4V29Fa5gveYK3G2zEwvUzTZKNvSBsm',
+                indexer: '0x0000000000000',
+                metadata: {
+                  chain: 'Polkadot',
+                  genesisHash: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+                  indexerHealthy: true,
+                  indexerNodeVersion: '2.10.0',
+                  lastProcessedHeight: 16838659,
+                  lastProcessedTimestamp: '1691999699898',
+                  queryNodeVersion: '2.4.0',
+                  specName: 'polkadot',
+                  startHeight: 1,
+                  targetHeight: 16838659,
+                },
+                score: 100,
+              },
+            ],
+            plans: [],
+          },
+        });
+      }
+
+      return Promise.resolve();
+    });
+
+    mockAxios.post.mockImplementation((url, data) => {
+      if (url.includes('/orders/token')) {
+        return Promise.resolve({
+          data: {
+            token: fakeToken,
+          },
+        });
+      }
+
+      return Promise.resolve();
+    });
+
+    const link = deploymentHttpLink({
+      ...options,
+      deploymentId,
+      httpOptions: {
+        ...httpOptions,
+        fetch: (uri: RequestInfo | URL, options: any): Promise<Response> => {
+          expect(options.headers.authorization).toContain('Bearer');
+          expect(options.headers.authorization.length).toBeGreaterThan('Bearer '.length);
+          if (uri.toString().includes('mock-sv/query')) {
+            // @ts-ignore
+            return Promise.resolve({
+              json: () =>
+                Promise.resolve({
+                  data: {
+                    _metadata: {
+                      indexerHealthy: true,
+                      indexerNodeVersion: '00.00',
+                    },
+                  },
+                }),
+              text: () =>
+                Promise.resolve(
+                  JSON.stringify({
+                    data: {
+                      _metadata: {
+                        indexerHealthy: true,
+                        indexerNodeVersion: '00.00',
+                      },
+                    },
+                  })
+                ),
+            });
+          }
+
+          return fetch(uri, options);
+        },
+      },
+    });
+    client = createApolloClient(link);
+
+    const result = await client.query({ query: metadataQuery });
+
+    expect(result.data._metadata).toBeTruthy();
+  });
+
   it('mock: can query data with fallback', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
     const { deploymentHttpLink } = await getLinks();
+    const link = deploymentHttpLink({
+      ...options,
+      deploymentId,
+      httpOptions: {
+        ...httpOptions,
+        fetch: (uri: RequestInfo | URL, options: any): Promise<Response> => {
+          if (uri.toString().includes('mock-fallback-request')) {
+            // @ts-ignore
+            return Promise.resolve({
+              json: () =>
+                Promise.resolve({
+                  data: {
+                    _metadata: {
+                      indexerHealthy: true,
+                      indexerNodeVersion: '00.00',
+                    },
+                  },
+                }),
+              text: () =>
+                Promise.resolve(
+                  JSON.stringify({
+                    data: {
+                      _metadata: {
+                        indexerHealthy: true,
+                        indexerNodeVersion: '00.00',
+                      },
+                    },
+                  })
+                ),
+            });
+          }
+
+          return fetch(uri, options);
+        },
+      },
+      fallbackServiceUrl:
+        'https://mock-fallback-request/payg/QmUVXKjcsYkS6WfJQfeD7juDbnMWCuo5qKgRRo893LajE2',
+    });
+    client = createApolloClient(link);
+
+    const result = await client.query({ query: metadataQuery });
+
+    expect(result.data._metadata).toBeTruthy();
+  });
+
+  it('mock: can query data with fallback if auth center return an error response', async () => {
+    const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
+    const { deploymentHttpLink } = await getLinks();
+
+    mockAxios.get.mockImplementation((url) => {
+      if (url.includes(authUrl)) {
+        return Promise.resolve({
+          data: '',
+        });
+      }
+
+      return Promise.resolve();
+    });
+
     const link = deploymentHttpLink({
       ...options,
       deploymentId,
