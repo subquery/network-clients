@@ -3,7 +3,6 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import dotenv from 'dotenv';
-import jwt_decode from 'jwt-decode';
 import axios from 'axios';
 
 import {
@@ -87,19 +86,6 @@ function mockGetIndexerUrlOrTokenFailed() {
 }
 
 const logger: Logger = Pino({ level: 'debug' });
-const indexerUrl = 'https://test.sqindexer.tech' as const;
-const deploymentId = 'QmQqwN439pN8WLQTnf5xig1yRr7nDu3kR6N1kJhceuryEw' as const;
-const uri = `${indexerUrl}/query/${deploymentId}`;
-const options = {
-  indexerUrl,
-  sk: process.env.SK ?? '',
-  indexer: '0xFCA0037391B3cfe28f17453D6DBc4A7618F771e1',
-  consumer: '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04',
-  chainId: 80001,
-  deploymentId,
-  agreement: '17',
-};
-
 const metadataQuery = gql`
   query Metadata {
     _metadata {
@@ -109,58 +95,45 @@ const metadataQuery = gql`
   }
 `;
 
-let token = '';
-const fakeToken =
-  'eyJhbCI6IkhTMjU2IiwiYWxnIjoiSFMyNTYifQ.eyJleHAiOiIyMDk5LTA5LTA5In0.kau0kzybKIrHqVzTP8QERsD6nWlnsIjyrqqkEK5iyIA';
-
 describe('auth link', () => {
-  let client: ApolloClient<unknown>;
+  const indexerUrl = 'https://test.sqindexer.tech' as const;
+  const deploymentId = 'QmQqwN439pN8WLQTnf5xig1yRr7nDu3kR6N1kJhceuryEw' as const;
+  const uri = `${indexerUrl}/query/${deploymentId}`;
+  const options = {
+    indexerUrl,
+    sk: process.env.SK ?? '',
+    indexer: '0xFCA0037391B3cfe28f17453D6DBc4A7618F771e1',
+    consumer: '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04',
+    chainId: 80001,
+    deploymentId,
+    agreement: '17',
+  };
 
-  beforeAll(async () => {
+  let token = '';
+  const fakeToken =
+    'eyJhbCI6IkhTMjU2IiwiYWxnIjoiSFMyNTYifQ.eyJleHAiOiIyMDk5LTA5LTA5In0.kau0kzybKIrHqVzTP8QERsD6nWlnsIjyrqqkEK5iyIA';
+
+  const makeAnAuthLink = async (customFetch = fetch, customToken = token) => {
     const { AuthLink } = await getLinks();
+    const authLink = new AuthLink(options, logger, customToken);
 
-    const authLink = new AuthLink(options, logger, token);
-    const customFetch = (uri: string, options: any) => {
-      if (options.headers.authorization) {
-        token = options.headers.authorization;
-        expect(token).toContain('Bearer');
-      }
-
-      if (token === `Bearer ${fakeToken}`) {
-        return Promise.resolve({
-          json: () =>
-            Promise.resolve({
-              data: {
-                _metadata: {
-                  indexerHealthy: true,
-                  indexerNodeVersion: '00.00',
-                },
-              },
-            }),
-          text: () =>
-            Promise.resolve(
-              JSON.stringify({
-                data: {
-                  _metadata: {
-                    indexerHealthy: true,
-                    indexerNodeVersion: '00.00',
-                  },
-                },
-              })
-            ),
-        });
-      }
-
-      return fetch(uri, options);
-    };
-    client = new ApolloClient({
+    return new ApolloClient({
       cache: new InMemoryCache({ resultCaching: true }),
       // @ts-ignore
       link: from([authLink, new HttpLink({ uri, fetch: customFetch })]),
     });
+  };
+
+  const clearAllExistData = () => {
+    token = '';
+  };
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   const queryTest = async () => {
+    const client = await makeAnAuthLink();
     try {
       const result = await client.query({ query: metadataQuery });
       expect(result.data._metadata).toBeTruthy();
@@ -183,6 +156,42 @@ describe('auth link', () => {
   };
 
   const queryTestWithMock = async () => {
+    const client = await makeAnAuthLink(
+      (uri: RequestInfo | URL, options: any): Promise<Response> => {
+        if (options.headers.authorization) {
+          expect(options.headers.authorization).toContain('Bearer');
+          token = options.headers.authorization.replace('Bearer ', '');
+        }
+
+        if (options.headers.authorization === `Bearer ${fakeToken}`) {
+          // @ts-ignore
+          return Promise.resolve({
+            json: () =>
+              Promise.resolve({
+                data: {
+                  _metadata: {
+                    indexerHealthy: true,
+                    indexerNodeVersion: '00.00',
+                  },
+                },
+              }),
+            text: () =>
+              Promise.resolve(
+                JSON.stringify({
+                  data: {
+                    _metadata: {
+                      indexerHealthy: true,
+                      indexerNodeVersion: '00.00',
+                    },
+                  },
+                })
+              ),
+          });
+        }
+
+        return fetch(uri, options);
+      }
+    );
     mockAxios.post.mockImplementation((url, data) => {
       if (url.includes('/token')) {
         expect(data).toHaveProperty('indexer', options.indexer);
@@ -212,7 +221,62 @@ describe('auth link', () => {
   // the second test case for test query with a not expired token. token set on beforeAll.
   it('can query token with mock and exist token', queryTestWithMock);
 
-  // the first test case for test fetch token.
+  it('can query when token be polluted', async () => {
+    clearAllExistData();
+
+    const newClinet = await makeAnAuthLink(
+      (uri: RequestInfo | URL, options: any): Promise<Response> => {
+        if (options.headers.authorization) {
+          token = options.headers.authorization;
+          expect(token).toContain('Bearer');
+        }
+
+        if (token === `Bearer ${fakeToken}`) {
+          // @ts-ignore
+          return Promise.resolve({
+            json: () =>
+              Promise.resolve({
+                data: {
+                  _metadata: {
+                    indexerHealthy: true,
+                    indexerNodeVersion: '00.00',
+                  },
+                },
+              }),
+            text: () =>
+              Promise.resolve(
+                JSON.stringify({
+                  data: {
+                    _metadata: {
+                      indexerHealthy: true,
+                      indexerNodeVersion: '00.00',
+                    },
+                  },
+                })
+              ),
+          });
+        }
+
+        return fetch(uri, options);
+      },
+      'error token'
+    );
+    mockAxios.post.mockImplementation((url) => {
+      if (url.includes('/token')) {
+        return Promise.resolve({
+          data: {
+            token: fakeToken,
+          },
+        });
+      }
+
+      return Promise.resolve();
+    });
+
+    const result = await newClinet.query({ query: metadataQuery, fetchPolicy: 'no-cache' });
+    expect(result.data._metadata).toBeTruthy();
+  });
+
   it('can query with auth link', queryTest);
 });
 
@@ -245,7 +309,7 @@ describe('auth link with auth center', () => {
     for (let i = 0; i < count; i++) {
       await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
     }
-  }, 20000);
+  }, 30000);
 
   it('can query data with deployment auth link', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -257,7 +321,7 @@ describe('auth link with auth center', () => {
     for (let i = 0; i < count; i++) {
       await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
     }
-  }, 30000);
+  }, 50000);
 
   it('use fallback url when no agreement available', async () => {
     const fallbackServiceUrl = fallbackUrl;
@@ -272,7 +336,7 @@ describe('auth link with auth center', () => {
     client = createApolloClient(link);
     await expect(client.query({ query: metadataQuery })).resolves.toBeTruthy();
     expect(mockLogger.debug).toHaveBeenCalledWith(expect.stringMatching(/use fallback url:/));
-  });
+  }, 30000);
 
   it('should not retry if no endpoint can be found', async () => {
     const { dictHttpLink } = await getLinks();
