@@ -20,6 +20,7 @@ import fetch from 'cross-fetch';
 import gql from 'graphql-tag';
 import Pino from 'pino';
 import { Logger } from '../packages/apollo-links/src/utils/logger';
+import { ProjectType } from '../packages/apollo-links/src/types';
 
 dotenv.config();
 
@@ -408,6 +409,98 @@ describe('mock: auth link with auth center', () => {
     jest.clearAllMocks();
   });
 
+  it('mock: can query data with dictionary auth link', async () => {
+    const { dictHttpLink } = await getLinks();
+
+    mockAxios.get.mockImplementation((url) => {
+      if (url.includes(`/orders/${ProjectType.dictionary}`)) {
+        return Promise.resolve({
+          data: {
+            agreements: [
+              {
+                id: '655',
+                url: 'https://mock-sv/query/QmZGAZQ7e1oZgfuK4V29Fa5gveYK3G2zEwvUzTZKNvSBsm',
+                indexer: '0x0000000000000',
+                metadata: {
+                  chain: 'Polkadot',
+                  genesisHash: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+                  indexerHealthy: true,
+                  indexerNodeVersion: '2.10.0',
+                  lastProcessedHeight: 16838659,
+                  lastProcessedTimestamp: '1691999699898',
+                  queryNodeVersion: '2.4.0',
+                  specName: 'polkadot',
+                  startHeight: 1,
+                  targetHeight: 16838659,
+                },
+                score: 100,
+              },
+            ],
+            plans: [],
+          },
+        });
+      }
+
+      return Promise.resolve();
+    });
+
+    mockAxios.post.mockImplementation((url) => {
+      if (url.includes('/orders/token')) {
+        return Promise.resolve({
+          data: {
+            token: fakeToken,
+          },
+        });
+      }
+
+      return Promise.resolve();
+    });
+
+    const link = dictHttpLink({
+      ...options,
+      chainId,
+      httpOptions: {
+        ...httpOptions,
+        fetch: (uri: RequestInfo | URL, options: any): Promise<Response> => {
+          expect(options.headers.authorization).toContain('Bearer');
+          expect(options.headers.authorization.length).toBeGreaterThan('Bearer '.length);
+          if (uri.toString().includes('mock-sv/query')) {
+            // @ts-ignore
+            return Promise.resolve({
+              json: () =>
+                Promise.resolve({
+                  data: {
+                    _metadata: {
+                      indexerHealthy: true,
+                      indexerNodeVersion: '00.00',
+                    },
+                  },
+                }),
+              text: () =>
+                Promise.resolve(
+                  JSON.stringify({
+                    data: {
+                      _metadata: {
+                        indexerHealthy: true,
+                        indexerNodeVersion: '00.00',
+                      },
+                    },
+                  })
+                ),
+            });
+          }
+
+          return fetch(uri, options);
+        },
+      },
+    });
+    client = createApolloClient(link);
+
+    const result = await client.query({ query: metadataQuery });
+
+    expect(result.data._metadata).toBeTruthy();
+  });
+
   it('mock: can query data with payg', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
     const { deploymentHttpLink } = await getLinks();
@@ -415,7 +508,7 @@ describe('mock: auth link with auth center', () => {
     const stateAfterQueryPayg = jest.fn();
 
     mockAxios.get.mockImplementation((url) => {
-      if (url.includes(authUrl)) {
+      if (url.includes(`/orders/${ProjectType.deployment}`)) {
         return Promise.resolve({
           data: {
             agreements: [],
@@ -566,7 +659,7 @@ describe('mock: auth link with auth center', () => {
     const stateAfterQueryPayg = jest.fn();
     let times = 0;
     mockAxios.get.mockImplementation((url) => {
-      if (url.includes(authUrl)) {
+      if (url.includes(`/orders/${ProjectType.deployment}`)) {
         return Promise.resolve({
           data: {
             agreements: [],
@@ -777,7 +870,7 @@ describe('mock: auth link with auth center', () => {
       return Promise.resolve();
     });
 
-    mockAxios.post.mockImplementation((url, data) => {
+    mockAxios.post.mockImplementation((url) => {
       if (url.includes('/orders/token')) {
         return Promise.resolve({
           data: {
@@ -939,5 +1032,195 @@ describe('mock: auth link with auth center', () => {
     const result = await client.query({ query: metadataQuery });
 
     expect(result.data._metadata).toBeTruthy();
+  });
+
+  it('mock: should not retries when fallback is wrong', async () => {
+    const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
+    const { deploymentHttpLink } = await getLinks();
+    const link = deploymentHttpLink({
+      ...options,
+      deploymentId,
+      httpOptions: {
+        ...httpOptions,
+        fetch: (uri: RequestInfo | URL, options: any): Promise<Response> => {
+          if (uri.toString().includes('mock-fallback-request')) {
+            // @ts-ignore
+            return Promise.reject({
+              status: 500,
+            });
+          }
+
+          return fetch(uri, options);
+        },
+      },
+      authUrl: '',
+      fallbackServiceUrl:
+        'https://mock-fallback-request/payg/QmUVXKjcsYkS6WfJQfeD7juDbnMWCuo5qKgRRo893LajE2',
+    });
+    client = createApolloClient(link);
+
+    try {
+      await client.query({ query: metadataQuery });
+    } catch (e) {
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        'use fallback url: https://mock-fallback-request/payg/QmUVXKjcsYkS6WfJQfeD7juDbnMWCuo5qKgRRo893LajE2'
+      );
+      expect(mockLogger.debug).not.toHaveBeenCalledWith(expect.stringMatching(/retry:/));
+    }
+  });
+
+  it('mock: log the error msg for Graphql Error', async () => {
+    const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
+    const { deploymentHttpLink } = await getLinks();
+
+    mockAxios.get.mockImplementation((url) => {
+      if (url.includes(authUrl)) {
+        return Promise.resolve({
+          data: '',
+        });
+      }
+
+      return Promise.resolve();
+    });
+
+    const debugFc = jest.fn();
+
+    const link = deploymentHttpLink({
+      ...options,
+      deploymentId,
+      logger: {
+        debug: debugFc,
+        info: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+      },
+      httpOptions: {
+        ...httpOptions,
+        fetch: (uri: RequestInfo | URL, options: any): Promise<Response> => {
+          if (uri.toString().includes('mock-fallback-request')) {
+            // @ts-ignore
+            return Promise.resolve({
+              status: 400,
+              json: () =>
+                Promise.resolve({
+                  errors: [
+                    {
+                      message:
+                        'Cannot query field "amountss" on type "EraReward". Did you mean "amount"?',
+                      extensions: {
+                        code: 'GRAPHQL_VALIDATION_FAILED',
+                        exception: {
+                          stacktrace: [
+                            'GraphQLError: Cannot query field "amountss" on type "EraReward". Did you mean "amount"?',
+                            '    at Object.Field (/usr/local/lib/node_modules/@subql/query/node_modules/graphql/validation/rules/FieldsOnCorrectTypeRule.js:48:31)',
+                            '    at Object.enter (/usr/local/lib/node_modules/@subql/query/node_modules/graphql/language/visitor.js:323:29)',
+                            '    at Object.enter (/usr/local/lib/node_modules/@subql/query/node_modules/graphql/utilities/TypeInfo.js:370:25)',
+                            '    at visit (/usr/local/lib/node_modules/@subql/query/node_modules/graphql/language/visitor.js:243:26)',
+                            '    at validate (/usr/local/lib/node_modules/@subql/query/node_modules/graphql/validation/validate.js:69:24)',
+                            '    at validate (/usr/local/lib/node_modules/@subql/query/node_modules/apollo-server-core/dist/requestPipeline.js:186:39)',
+                            '    at processGraphQLRequest (/usr/local/lib/node_modules/@subql/query/node_modules/apollo-server-core/dist/requestPipeline.js:98:34)',
+                            '    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)',
+                            '    at async processHTTPRequest (/usr/local/lib/node_modules/@subql/query/node_modules/apollo-server-core/dist/runHttpQuery.js:221:30)',
+                          ],
+                        },
+                      },
+                    },
+                  ],
+                }),
+              text: () =>
+                Promise.resolve(
+                  JSON.stringify({
+                    errors: [
+                      {
+                        message:
+                          'Cannot query field "amountss" on type "EraReward". Did you mean "amount"?',
+                        extensions: {
+                          code: 'GRAPHQL_VALIDATION_FAILED',
+                          exception: {
+                            stacktrace: [
+                              'GraphQLError: Cannot query field "amountss" on type "EraReward". Did you mean "amount"?',
+                              '    at Object.Field (/usr/local/lib/node_modules/@subql/query/node_modules/graphql/validation/rules/FieldsOnCorrectTypeRule.js:48:31)',
+                              '    at Object.enter (/usr/local/lib/node_modules/@subql/query/node_modules/graphql/language/visitor.js:323:29)',
+                              '    at Object.enter (/usr/local/lib/node_modules/@subql/query/node_modules/graphql/utilities/TypeInfo.js:370:25)',
+                              '    at visit (/usr/local/lib/node_modules/@subql/query/node_modules/graphql/language/visitor.js:243:26)',
+                              '    at validate (/usr/local/lib/node_modules/@subql/query/node_modules/graphql/validation/validate.js:69:24)',
+                              '    at validate (/usr/local/lib/node_modules/@subql/query/node_modules/apollo-server-core/dist/requestPipeline.js:186:39)',
+                              '    at processGraphQLRequest (/usr/local/lib/node_modules/@subql/query/node_modules/apollo-server-core/dist/requestPipeline.js:98:34)',
+                              '    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)',
+                              '    at async processHTTPRequest (/usr/local/lib/node_modules/@subql/query/node_modules/apollo-server-core/dist/runHttpQuery.js:221:30)',
+                            ],
+                          },
+                        },
+                      },
+                    ],
+                  })
+                ),
+            });
+          }
+
+          return fetch(uri, options);
+        },
+      },
+      fallbackServiceUrl:
+        'https://mock-fallback-request/payg/QmUVXKjcsYkS6WfJQfeD7juDbnMWCuo5qKgRRo893LajE2',
+    });
+    client = createApolloClient(link);
+
+    try {
+      await client.query({ query: metadataQuery });
+    } catch (e) {
+      expect(debugFc).toBeCalled();
+    }
+    // expect(result.data._metadata).toBeTruthy();
+  });
+
+  it('mock: log the error msg for Network Error', async () => {
+    const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
+    const { deploymentHttpLink } = await getLinks();
+
+    mockAxios.get.mockImplementation((url) => {
+      if (url.includes(authUrl)) {
+        return Promise.resolve({
+          data: '',
+        });
+      }
+
+      return Promise.resolve();
+    });
+
+    const debugFc = jest.fn();
+
+    const link = deploymentHttpLink({
+      ...options,
+      deploymentId,
+      logger: {
+        debug: debugFc,
+        info: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+      },
+      httpOptions: {
+        ...httpOptions,
+        fetch: (uri: RequestInfo | URL, options: any): Promise<Response> => {
+          if (uri.toString().includes('mock-fallback-request')) {
+            // @ts-ignore
+            return Promise.reject({
+              status: 500,
+            });
+          }
+
+          return fetch(uri, options);
+        },
+      },
+      fallbackServiceUrl: '',
+    });
+    client = createApolloClient(link);
+
+    try {
+      await client.query({ query: metadataQuery });
+    } catch (e) {
+      expect(debugFc).toBeCalled();
+    }
+    // expect(result.data._metadata).toBeTruthy();
   });
 });
