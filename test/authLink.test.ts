@@ -469,7 +469,7 @@ describe('mock: auth link with auth center', () => {
     const { deploymentHttpLink } = await getLinks();
 
     mockAxios.get.mockImplementation((url) => {
-      if (url.includes(authUrl)) {
+      if (url.includes(`/orders/${ProjectType.deployment}`)) {
         return Promise.resolve({
           data: {
             agreements: [
@@ -943,7 +943,7 @@ describe('mock: auth link with auth center', () => {
     const { deploymentHttpLink } = await getLinks();
 
     mockAxios.get.mockImplementation((url) => {
-      if (url.includes(authUrl)) {
+      if (url.includes(`/orders/${ProjectType.deployment}`)) {
         return Promise.resolve({
           data: '',
         });
@@ -1037,7 +1037,7 @@ describe('mock: auth link with auth center', () => {
     const { deploymentHttpLink } = await getLinks();
 
     mockAxios.get.mockImplementation((url) => {
-      if (url.includes(authUrl)) {
+      if (url.includes(`/orders/${ProjectType.deployment}`)) {
         return Promise.resolve({
           data: '',
         });
@@ -1142,7 +1142,7 @@ describe('mock: auth link with auth center', () => {
     const { deploymentHttpLink } = await getLinks();
 
     mockAxios.get.mockImplementation((url) => {
-      if (url.includes(authUrl)) {
+      if (url.includes(`/orders/${ProjectType.deployment}`)) {
         return Promise.resolve({
           data: '',
         });
