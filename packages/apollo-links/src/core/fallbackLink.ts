@@ -13,7 +13,6 @@ export class FallbackLink extends ApolloLink {
     if (!forward) return null;
 
     return new Observable<FetchResult>((observer) => {
-      console.warn(operation.getContext());
       if (!operation.getContext().url) {
         if (this.url) {
           this.logger?.debug(`use fallback url: ${this.url}`);

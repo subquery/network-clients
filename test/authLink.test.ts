@@ -83,29 +83,6 @@ describe('auth link', () => {
     jest.clearAllMocks();
   });
 
-  const queryTest = async () => {
-    const client = await makeAnAuthLink();
-    try {
-      const result = await client.query({ query: metadataQuery });
-      expect(result.data._metadata).toBeTruthy();
-    } catch (e) {
-      const errorStack = JSON.parse(JSON.stringify(e));
-
-      // error code 1020 is permission deny, error code is auth Header error, only those error represent auth error.
-      if (
-        errorStack?.networkError?.statusCode === 404 &&
-        (errorStack?.networkError?.result.code === 1020 ||
-          errorStack?.networkError?.result.code === 1030)
-      ) {
-        expect(1).toBe(2);
-        return;
-      }
-
-      console.warn('query auth link pass with warning');
-      expect(1).toBe(1);
-    }
-  };
-
   const queryTestWithMock = async () => {
     const client = await makeAnAuthLink(
       (uri: RequestInfo | URL, options: any): Promise<Response> => {
@@ -227,8 +204,6 @@ describe('auth link', () => {
     const result = await newClinet.query({ query: metadataQuery, fetchPolicy: 'no-cache' });
     expect(result.data._metadata).toBeTruthy();
   });
-
-  it('can query with auth link', queryTest);
 });
 
 describe('mock: auth link with auth center', () => {
