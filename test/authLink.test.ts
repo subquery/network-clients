@@ -54,7 +54,7 @@ describe('auth link', () => {
   const uri = `${indexerUrl}/query/${deploymentId}`;
   const options = {
     indexerUrl,
-    sk: process.env.SK ?? '',
+    sk: process.env.SK ?? '000000000000000000000000000000000000000000000000000000000000000f',
     indexer: '0xFCA0037391B3cfe28f17453D6DBc4A7618F771e1',
     consumer: '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04',
     chainId: 80001,
@@ -208,7 +208,7 @@ describe('auth link', () => {
 
 describe('mock: auth link with auth center', () => {
   let client: ApolloClient<unknown>;
-  const authUrl = process.env.AUTH_URL ?? 'input your local test auth url here';
+  const authUrl = process.env.AUTH_URL ?? 'https://kepler-auth.subquery.network';
   const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
   const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
   const options = { authUrl, chainId, httpOptions, logger: mockLogger };
