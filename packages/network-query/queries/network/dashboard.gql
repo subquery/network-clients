@@ -1,0 +1,97 @@
+query Dashboard {
+  eraRewards {
+    aggregates {
+      sum {
+        amount
+      }
+    }
+  }
+
+  rewardsToIndexer: eraRewards(filter: { isIndexer: { equalTo: true } }) {
+    totalCount
+    aggregates {
+      sum {
+        amount
+      }
+    }
+  }
+
+  rewardsToDelegation: eraRewards(filter: { isIndexer: { equalTo: false } }) {
+    totalCount
+    aggregates {
+      sum {
+        amount
+      }
+    }
+  }
+
+  indexerStakeSummary(id: "0x00") {
+    indexerStake
+    nextDelegatorStake
+    nextIndexerStake
+    nextTotalStake
+    totalStake
+    delegatorStake
+  }
+
+  sqtokens {
+    aggregates {
+      sum {
+        circulatingSupply
+        totalSupply
+      }
+    }
+  }
+
+  indexers {
+    totalCount
+  }
+
+  delegations {
+    totalCount
+  }
+}
+
+query RewardsByErasGroupedAggregates($eraIds: [String!]) {
+  eraRewards(filter: { eraId: { in: $eraIds } }) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+
+  indexerEraReward: eraRewards(filter: { eraId: { in: $eraIds }, isIndexer: { equalTo: true } }) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+
+  delegationEraReward: eraRewards(
+    filter: { eraId: { in: $eraIds }, isIndexer: { equalTo: false } }
+  ) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+}
+
+query StakeSummariesAggregates($eraIds: [String!]) {
+  indexerStakeSummaries(filter: { eraId: { in: $eraIds } }) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        delegatorStake
+        indexerStake
+        totalStake
+      }
+      keys
+    }
+  }
+}
