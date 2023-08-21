@@ -11,9 +11,16 @@ import {
   Operation,
 } from '@apollo/client/core';
 import { Logger } from '../utils/logger';
+import fetch from 'cross-fetch';
 
-type Options = {
-  httpOptions: HttpOptions; // http options for init `HttpLink`
+export type Options = {
+  httpOptions: {
+    /**
+     * @remarks
+     * Please confirm your `fetch` attaches headers `Content-Type` and `Content-Length`.
+     */
+    fetch?: HttpOptions['fetch'];
+  } & HttpOptions; // http options for init `HttpLink`
   logger?: Logger;
 };
 
@@ -46,6 +53,7 @@ export class DynamicHttpLink extends ApolloLink {
   private createHttpLink(url: string): HttpLink {
     return new HttpLink({
       ...this.options.httpOptions,
+      fetch: this.options.httpOptions.fetch ? this.options.httpOptions.fetch : fetch,
       uri: url,
     });
   }

@@ -1,7 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { from, ApolloLink, HttpOptions } from '@apollo/client/core';
+import { from, ApolloLink } from '@apollo/client/core';
 
 import OrderMananger from './utils/orderManager';
 import { Logger, silentLogger } from './utils/logger';
@@ -13,6 +13,7 @@ import {
   ResponseLink,
   creatErrorLink,
   ClusterAuthLink,
+  Options,
 } from './core';
 
 interface DictAuthOptions extends BaseAuthOptions {
@@ -29,7 +30,7 @@ interface AuthOptions extends DeploymentAuthOptions {
 
 interface BaseAuthOptions {
   authUrl: string; // auth service url
-  httpOptions: HttpOptions; // http options for init `HttpLink`
+  httpOptions: Options['httpOptions']; // http options for init `HttpLink`
   logger?: Logger; // logger for `AuthLink`
   fallbackServiceUrl?: string; // fall back service url for `AuthLink`
 }
