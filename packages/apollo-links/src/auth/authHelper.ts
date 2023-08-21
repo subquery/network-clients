@@ -38,13 +38,8 @@ export async function requestAuthToken(
   sk: string,
   chainId: number
 ): Promise<string> {
-  if (!sk) return '';
-
-  const signature = signTypedData({
-    privateKey: Buffer.from(sk, 'hex'),
-    data: buildTypedMessage(msg, chainId),
-    version: SignTypedDataVersion.V4,
-  });
+  const signature = signMessage(msg, sk, chainId);
+  if (!signature) return '';
 
   const body = createAuthRequestBody(msg, signature, chainId);
   const res = await POST<{ token: string }>(authUrl, body);

@@ -19,11 +19,11 @@ export class AuthLink extends ApolloLink {
   private _logger: Logger;
   private _token: string;
 
-  constructor(options: AuthOptions, logger: Logger) {
+  constructor(options: AuthOptions, logger: Logger, token = '') {
     super();
     this._options = options;
     this._logger = logger;
-    this._token = '';
+    this._token = token;
   }
 
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
