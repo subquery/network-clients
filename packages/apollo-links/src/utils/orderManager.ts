@@ -24,6 +24,7 @@ class OrderManager {
   private projectType: ProjectType;
   private logger: Logger;
   private cache: CacheTool;
+  private timer: NodeJS.Timeout | undefined;
 
   private authUrl: string;
   private projectId: string;
@@ -40,7 +41,7 @@ class OrderManager {
     this.cache = cache;
 
     this._init = this.refreshAgreements();
-    setInterval(this.refreshAgreements, this.interval);
+    this.timer = setInterval(this.refreshAgreements, this.interval);
   }
 
   private async refreshAgreements() {
@@ -114,6 +115,12 @@ class OrderManager {
     if (index === -1) return;
 
     this.agreements[index].token = token;
+  }
+
+  public cleanup() {
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
   }
 }
 

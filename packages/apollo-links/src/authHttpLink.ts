@@ -36,16 +36,21 @@ interface BaseAuthOptions {
   fallbackServiceUrl?: string; // fall back service url for `AuthLink`
 }
 
-export function dictHttpLink(options: DictAuthOptions): ApolloLink {
+interface AuthHttpLink {
+  link: ApolloLink;
+  cleanup: () => void;
+}
+
+export function dictHttpLink(options: DictAuthOptions): AuthHttpLink {
   const { chainId } = options;
   return authHttpLink({ ...options, deploymentId: chainId, projectType: ProjectType.dictionary });
 }
 
-export function deploymentHttpLink(options: DeploymentAuthOptions): ApolloLink {
+export function deploymentHttpLink(options: DeploymentAuthOptions): AuthHttpLink {
   return authHttpLink({ ...options, projectType: ProjectType.deployment });
 }
 
-function authHttpLink(options: AuthOptions): ApolloLink {
+function authHttpLink(options: AuthOptions): AuthHttpLink {
   const {
     deploymentId,
     httpOptions,
@@ -78,10 +83,17 @@ function authHttpLink(options: AuthOptions): ApolloLink {
     orderMananger,
   });
 
+  const cleanup = () => {
+    // add more cleanup logic here if needed
+    orderMananger.cleanup();
+  };
+
   // 1. errorLink: This link helps in handling and logging any GraphQL or network errors that may occur down the chain.
   //    Placing it at the beginning ensures that it catches any errors that may occur in any of the other links.
   // 2. retryLink: This comes after the errorLink to allow it to handle network errors and retry requests if necessary.
   // 3. authLink: The authLink comes next. It is responsible for adding authentication credentials to every request.
   // 4. httpLink: This should always be at the end of the link chain. This link is responsible for sending the request to the server.
-  return from([errorLink, retryLink, authLink, fallbackLink, responseLink, httpLink]);
+  const link = from([errorLink, retryLink, authLink, fallbackLink, responseLink, httpLink]);
+
+  return { link, cleanup };
 }
