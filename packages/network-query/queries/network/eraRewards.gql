@@ -1,0 +1,71 @@
+query GetEraRewards($eraIds: [String!]) {
+  eraRewards(filter: { eraId: { in: $eraIds } }) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+
+  indexerEraReward: eraRewards(filter: { eraId: { in: $eraIds }, isIndexer: { equalTo: true } }) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+
+  delegationEraReward: eraRewards(
+    filter: { eraId: { in: $eraIds }, isIndexer: { equalTo: false } }
+  ) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+}
+
+query GetEraRewardsByIndexer($indexerId: String!, $eraIds: [String!]) {
+  eraRewards(filter: { eraId: { in: $eraIds }, indexerId: { equalTo: $indexerId } }) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+
+  indexerEraReward: eraRewards(
+    filter: {
+      eraId: { in: $eraIds }
+      isIndexer: { equalTo: true }
+      indexerId: { equalTo: $indexerId }
+    }
+  ) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+
+  delegationEraReward: eraRewards(
+    filter: {
+      eraId: { in: $eraIds }
+      isIndexer: { equalTo: false }
+      indexerId: { equalTo: $indexerId }
+    }
+  ) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+}
