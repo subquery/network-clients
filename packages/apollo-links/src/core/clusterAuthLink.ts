@@ -42,13 +42,14 @@ export class ClusterAuthLink extends ApolloLink {
       let sub: Subscription;
       this.getRequestParams()
         .then((data) => {
-          if (data) {
+          if (data && data.url && data.authorization) {
             const { authorization, url, type } = data;
             const headers = { authorization };
             operation.setContext({ url, headers, type });
+            sub = forward(operation).subscribe(observer);
+          } else {
+            throw new Error('empty request params');
           }
-
-          sub = forward(operation).subscribe(observer);
         })
         .catch((error) => {
           this.logger.warn(`Failed to get token: ${error.message}`);
