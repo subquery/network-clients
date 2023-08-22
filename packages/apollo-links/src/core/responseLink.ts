@@ -23,15 +23,6 @@ export class ResponseLink extends ApolloLink {
     return this.options.logger;
   }
 
-  tokenToStateChannel(authToken: string): ChannelState | undefined {
-    try {
-      const token = JSON.parse(authToken) as ChannelState;
-      return token;
-    } catch (e) {
-      this.logger?.debug(`invalid token: ${authToken} ${e}`);
-    }
-  }
-
   async syncChannelState(state: ChannelState): Promise<void> {
     try {
       const stateUrl = new URL('/channel/state', this.options.authUrl);

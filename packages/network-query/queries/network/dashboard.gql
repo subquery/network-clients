@@ -1,0 +1,53 @@
+query GetDashboard {
+  eraRewards {
+    aggregates {
+      sum {
+        amount
+      }
+    }
+  }
+
+  rewardsToIndexer: eraRewards(filter: { isIndexer: { equalTo: true } }) {
+    totalCount
+    aggregates {
+      sum {
+        amount
+      }
+    }
+  }
+
+  rewardsToDelegation: eraRewards(filter: { isIndexer: { equalTo: false } }) {
+    totalCount
+    aggregates {
+      sum {
+        amount
+      }
+    }
+  }
+
+  indexerStakeSummary(id: "0x00") {
+    indexerStake
+    nextDelegatorStake
+    nextIndexerStake
+    nextTotalStake
+    totalStake
+    delegatorStake
+  }
+
+  sqtokens {
+    aggregates {
+      sum {
+        circulatingSupply
+        totalSupply
+      }
+    }
+  }
+
+  indexers {
+    totalCount
+  }
+
+  delegations {
+    totalCount
+  }
+}

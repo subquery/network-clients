@@ -54,6 +54,7 @@ class OrderManager {
       this.plans = plans;
       this.healthy = true;
     } catch (e) {
+      // it seems cannot reach this code, fetchOrders already handle the errors.
       this.logger.error(`fetch orders failed: ${String(e)}`);
       this.healthy = false;
     }

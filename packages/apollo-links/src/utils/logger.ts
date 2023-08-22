@@ -16,8 +16,7 @@ export type Logger = {
 };
 
 export function silentLogger(): Logger {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const logfn = () => {};
+  const logfn = (): void => undefined;
   return {
     debug: logfn,
     info: logfn,

@@ -1,0 +1,25 @@
+query GetIndexerStakesByIndexer($indexerId: String!) {
+  indexerStakes(filter: { id: { includes: $indexerId } }) {
+    groupedAggregates(groupBy: ERA_ID) {
+      keys
+      sum {
+        delegatorStake
+        indexerStake
+        totalStake
+      }
+    }
+  }
+}
+
+query GetIndexerStakesByEras($eraIds: [String!]) {
+  indexerStakes(filter: { id: { in: $eraIds } }) {
+    groupedAggregates(groupBy: ERA_ID) {
+      keys
+      sum {
+        delegatorStake
+        indexerStake
+        totalStake
+      }
+    }
+  }
+}

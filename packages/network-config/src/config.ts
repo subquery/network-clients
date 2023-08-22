@@ -18,6 +18,9 @@ export interface NetworkConfig {
 export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig> = {
   [SQNetworks.MAINNET]: {
     defaultEndpoint: RPC_ENDPOINTS.mainnet,
+    // TODO: FIXME
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     sdkOptions: { network: 'mainnet', deploymentDetails: mainnetDeploymentDetails },
     gql: gqlEndpoints(SQNetworks.MAINNET),
   },
