@@ -1,4 +1,4 @@
-query Dashboard {
+query GetDashboard {
   eraRewards {
     aggregates {
       sum {
@@ -49,49 +49,5 @@ query Dashboard {
 
   delegations {
     totalCount
-  }
-}
-
-query RewardsByErasGroupedAggregates($eraIds: [String!]) {
-  eraRewards(filter: { eraId: { in: $eraIds } }) {
-    groupedAggregates(groupBy: ERA_ID) {
-      sum {
-        amount
-      }
-      keys
-    }
-  }
-
-  indexerEraReward: eraRewards(filter: { eraId: { in: $eraIds }, isIndexer: { equalTo: true } }) {
-    groupedAggregates(groupBy: ERA_ID) {
-      sum {
-        amount
-      }
-      keys
-    }
-  }
-
-  delegationEraReward: eraRewards(
-    filter: { eraId: { in: $eraIds }, isIndexer: { equalTo: false } }
-  ) {
-    groupedAggregates(groupBy: ERA_ID) {
-      sum {
-        amount
-      }
-      keys
-    }
-  }
-}
-
-query StakeSummariesAggregates($eraIds: [String!]) {
-  indexerStakeSummaries(filter: { eraId: { in: $eraIds } }) {
-    groupedAggregates(groupBy: ERA_ID) {
-      sum {
-        delegatorStake
-        indexerStake
-        totalStake
-      }
-      keys
-    }
   }
 }
