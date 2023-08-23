@@ -41,8 +41,9 @@ import {
   GetDashboard,
   GetIndexerStakesByIndexer,
   GetIndexerStakesByEras,
-  GetEraRewards,
-  GetEraRewardsByIndexer,
+  GetAggregatesEraRewards,
+  GetAggregatesEraRewardsByIndexer,
+  GetEraRewardsByIndexerAndPage,
 } from '../packages/network-query';
 
 function deepAssert(obj: any) {
@@ -441,9 +442,9 @@ describe('query client', () => {
     expect(result.data.indexerStakes.groupedAggregates[0].keys).toBeTruthy();
   });
 
-  it('can query era rewards', async () => {
+  it('can query aggregates era rewards', async () => {
     const result = await client.query({
-      query: GetEraRewards,
+      query: GetAggregatesEraRewards,
       variables: {
         eraIds: ['0x01', '0x02', '0x03'],
       },
@@ -452,9 +453,9 @@ describe('query client', () => {
     expect(result.data.eraRewards.groupedAggregates).toBeTruthy();
   });
 
-  it('can query era rewards by indexers', async () => {
+  it('can query aggregates era rewards by indexers', async () => {
     const result = await client.query({
-      query: GetEraRewardsByIndexer,
+      query: GetAggregatesEraRewardsByIndexer,
       variables: {
         eraIds: ['0x01', '0x02', '0x03'],
         indexerId: address1,
@@ -462,5 +463,16 @@ describe('query client', () => {
     });
 
     expect(result.data.eraRewards.groupedAggregates).toBeTruthy();
+  });
+
+  it('can query era rewards by indexers and page', async () => {
+    const result = await client.query({
+      query: GetEraRewardsByIndexerAndPage,
+      variables: {
+        indexerId: address1,
+      },
+    });
+
+    expect(result.data.eraRewards.nodes).toBeTruthy();
   });
 });
