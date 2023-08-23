@@ -1,6 +1,6 @@
-# Subquery Network - Client SDK
+# Subquery Network - Client SDKs
 
-Subql Network Client SDK provides various tools to make build subql services and dapps more easier.
+SubQuery Network Client SDKs provides various tools to allow you to connect your dApps and services to the SubQuery network easier.
 
 ## Components
 
