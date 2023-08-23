@@ -50,6 +50,27 @@ const metadataQuery = gql`
   }
 `;
 
+describe.only('Auth http link with real data', () => {
+  let client: ApolloClient<unknown>;
+  const authUrl = process.env.AUTH_URL ?? 'https://kepler-auth.subquery.network';
+  const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
+  const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
+  const options = { authUrl, chainId, httpOptions, logger: mockLogger, cacheEnabled: true };
+
+  beforeEach(async () => {
+    const { dictHttpLink } = await getLinks();
+    const { link } = dictHttpLink(options);
+    client = createApolloClient(link);
+  });
+
+  it('can query data with dictionary auth link', async () => {
+    for (let i = 0; i < 10; i++) {
+      const result = await client.query({ query: metadataQuery });
+      expect(result.data._metadata).toBeTruthy();
+    }
+  });
+});
+
 describe('auth link', () => {
   const indexerUrl = 'https://test.sqindexer.tech' as const;
   const deploymentId = 'QmQqwN439pN8WLQTnf5xig1yRr7nDu3kR6N1kJhceuryEw' as const;
