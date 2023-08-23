@@ -72,7 +72,7 @@ export class LRUCache implements ICache {
   }
 }
 
-export function initCache(options: Options): ICache {
+export function createCache(options: Options): ICache {
   if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
     return new LocalStorageCache(options);
   }

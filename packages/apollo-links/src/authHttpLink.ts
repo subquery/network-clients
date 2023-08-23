@@ -12,9 +12,18 @@ import {
   createRetryLink,
 } from './core';
 import { ProjectType } from './types';
-import { CacheTool, MemoryCache } from './utils/cache';
+import { createCache } from './utils/cache';
 import { Logger, silentLogger } from './utils/logger';
 import OrderMananger from './utils/orderManager';
+
+interface BaseAuthOptions {
+  authUrl: string; // auth service url
+  httpOptions: HttpOptions; // http options for init `HttpLink`
+  logger?: Logger; // logger for `AuthLink`
+  fallbackServiceUrl?: string; // fall back service url for `AuthLink`
+  cacheEnabled?: boolean; // enable cache for `AuthLink`
+  ttl?: number; // ttl for cache, milliseconds, 1 day by default
+}
 
 interface DictAuthOptions extends BaseAuthOptions {
   chainId: string; // chain id for the requested dictionary
@@ -26,14 +35,6 @@ interface DeploymentAuthOptions extends BaseAuthOptions {
 
 interface AuthOptions extends DeploymentAuthOptions {
   projectType: ProjectType; // order type
-}
-
-interface BaseAuthOptions {
-  authUrl: string; // auth service url
-  httpOptions: HttpOptions; // http options for init `HttpLink`
-  logger?: Logger; // logger for `AuthLink`
-  cache?: CacheTool; // cache for `OrderMananger`
-  fallbackServiceUrl?: string; // fall back service url for `AuthLink`
 }
 
 interface AuthHttpLink {
@@ -56,13 +57,14 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
     httpOptions,
     fallbackServiceUrl,
     authUrl,
-    logger: _logger,
-    cache: _cache,
     projectType,
+    logger: _logger,
+    cacheEnabled,
+    ttl,
   } = options;
 
   const logger = _logger ?? silentLogger();
-  const cache = _cache ?? new MemoryCache();
+  const cache = cacheEnabled !== false ? createCache({ ttl: ttl ?? 86_400_000 }) : undefined;
   const orderMananger = new OrderMananger({
     authUrl,
     projectId: deploymentId,

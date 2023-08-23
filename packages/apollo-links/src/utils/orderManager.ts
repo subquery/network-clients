@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Agreement, OrderType, Plan, ProjectType } from '../types';
-import { CacheTool } from './cache';
+import { ICache } from './cache';
 import { Logger } from './logger';
 import { fetchOrders } from './query';
 
@@ -11,7 +11,7 @@ type Options = {
   authUrl: string;
   projectId: string;
   projectType: ProjectType;
-  cache: CacheTool;
+  cache?: ICache;
 };
 
 class OrderManager {
@@ -23,12 +23,13 @@ class OrderManager {
 
   private projectType: ProjectType;
   private logger: Logger;
-  private cache: CacheTool;
+  private cache: ICache | undefined;
   private timer: NodeJS.Timeout | undefined;
 
   private authUrl: string;
   private projectId: string;
   private interval = 300_000;
+  private minScore = 0;
   private healthy = true;
   private _init: Promise<void>;
 
@@ -51,7 +52,7 @@ class OrderManager {
         this.projectId,
         this.projectType
       );
-      this.agreements = agreements;
+      this.agreements = this.filterAgreementsByScore(agreements);
       this.plans = plans;
       this.healthy = true;
     } catch (e) {
@@ -63,6 +64,25 @@ class OrderManager {
 
   private getRandomStartIndex(n: number) {
     return Math.floor(Math.random() * n);
+  }
+
+  private getCacheKey(indexer: string): string {
+    return `$query-score-${indexer}-${this.projectId}`;
+  }
+
+  private getIndexerScore(indexer: string) {
+    const key = this.getCacheKey(indexer);
+    return this.cache?.get<number>(key) || 100;
+  }
+
+  private isIndexerSelectable(indexer: string) {
+    const score = this.getIndexerScore(indexer);
+    return score > this.minScore;
+  }
+
+  private filterAgreementsByScore(agreements: Agreement[]) {
+    if (!this.cache) return agreements;
+    return agreements.filter(({ indexer }) => this.isIndexerSelectable(indexer));
   }
 
   private getNextOrderIndex(total: number, currentIndex: number) {
@@ -115,6 +135,20 @@ class OrderManager {
     if (index === -1) return;
 
     this.agreements[index].token = token;
+  }
+
+  public updateIndexerScore(indexer: string, errorType: 'graphql' | 'network') {
+    if (!this.cache) return;
+
+    const key = this.getCacheKey(indexer);
+    const score = this.cache.get<number>(key) || 100;
+    let newScore = score;
+    if (errorType === 'graphql') {
+      newScore -= 10; // Deduct score by 10 for a GraphQL error
+    } else if (errorType === 'network') {
+      newScore -= 20; // Deduct score more for a network error
+    }
+    this.cache.set(key, newScore);
   }
 
   public cleanup() {
