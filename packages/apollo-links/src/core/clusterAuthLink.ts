@@ -17,7 +17,7 @@ export type AuthOptions = {
   logger: Logger; // logger for logging
 };
 
-type RequestParams = {
+type ParamsResponse = {
   data?: {
     url: string;
     authorization: string;
@@ -74,7 +74,7 @@ export class ClusterAuthLink extends ApolloLink {
     return { authorization: `Bearer ${token}` };
   }
 
-  private async getRequestParams(): Promise<RequestParams | undefined> {
+  private async getRequestParams(): Promise<ParamsResponse | undefined> {
     const orderType = await this.orderManager.getNextOrderType();
     if (!orderType) return undefined;
     switch (orderType) {
@@ -87,7 +87,7 @@ export class ClusterAuthLink extends ApolloLink {
     }
   }
 
-  private async getAgreementRequestParams(): Promise<RequestParams | undefined> {
+  private async getAgreementRequestParams(): Promise<ParamsResponse | undefined> {
     const nextAgreement = await this.orderManager.getNextAgreement();
     if (!nextAgreement) return undefined;
 
@@ -113,7 +113,7 @@ export class ClusterAuthLink extends ApolloLink {
     }
   }
 
-  private async getPlanRequestParams(): Promise<RequestParams | undefined> {
+  private async getPlanRequestParams(): Promise<ParamsResponse | undefined> {
     const nextPlan = await this.orderManager.getNextPlan();
     if (!nextPlan) return undefined;
 
