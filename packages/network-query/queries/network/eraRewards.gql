@@ -1,4 +1,4 @@
-query GetEraRewards($eraIds: [String!]) {
+query GetAggregatesEraRewards($eraIds: [String!]) {
   eraRewards(filter: { eraId: { in: $eraIds } }) {
     groupedAggregates(groupBy: ERA_ID) {
       sum {
@@ -29,7 +29,7 @@ query GetEraRewards($eraIds: [String!]) {
   }
 }
 
-query GetEraRewardsByIndexer($indexerId: String!, $eraIds: [String!]) {
+query GetAggregatesEraRewardsByIndexer($indexerId: String!, $eraIds: [String!]) {
   eraRewards(filter: { eraId: { in: $eraIds }, indexerId: { equalTo: $indexerId } }) {
     groupedAggregates(groupBy: ERA_ID) {
       sum {
@@ -66,6 +66,28 @@ query GetEraRewardsByIndexer($indexerId: String!, $eraIds: [String!]) {
         amount
       }
       keys
+    }
+  }
+}
+
+query GetEraRewardsByIndexerAndPage(
+  $indexerId: String!
+  $offset: Int = 0
+  $pageSize: Int = 10
+  $orderBy: [EraRewardsOrderBy!] = CREATED_TIMESTAMP_DESC
+) {
+  eraRewards(
+    offset: $offset
+    first: $pageSize
+    filter: { indexerId: { equalTo: $indexerId } }
+    orderBy: $orderBy
+  ) {
+    nodes {
+      createdTimestamp
+      amount
+      claimed
+      eraId
+      indexerId
     }
   }
 }
