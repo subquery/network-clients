@@ -473,6 +473,6 @@ describe('query client', () => {
       },
     });
 
-    expect(result.data.eraRewards.nodes).toBeTruthy();
+    expect(result.data.eraRewards.totalCount).toBeGreaterThanOrEqual(0);
   });
 });
