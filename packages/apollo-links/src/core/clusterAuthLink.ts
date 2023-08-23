@@ -13,26 +13,32 @@ import { POST } from '../utils/query';
 export type AuthOptions = {
   authUrl: string; // the url for geting token
   projectId: string; // chainId or deploymentId for the project
-  orderMananger: OrderMananger; // agreement manager for managing agreements
+  orderManager: OrderMananger; // agreement manager for managing agreements
   logger: Logger; // logger for logging
 };
 
 type RequestParams = {
-  url: string;
-  authorization: string;
-  type: OrderType;
+  data?: {
+    url: string;
+    authorization: string;
+    type: OrderType;
+  };
+  error?: {
+    indexer: string;
+    message: string;
+  };
 };
 
 export class ClusterAuthLink extends ApolloLink {
   private options: AuthOptions;
   private logger: Logger;
-  private orderMananger: OrderMananger;
+  private orderManager: OrderMananger;
 
   constructor(options: AuthOptions) {
     super();
     this.options = options;
     this.logger = options.logger;
-    this.orderMananger = options.orderMananger;
+    this.orderManager = options.orderManager;
   }
 
   override request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null {
@@ -41,18 +47,22 @@ export class ClusterAuthLink extends ApolloLink {
     return new Observable<FetchResult>((observer) => {
       let sub: Subscription;
       this.getRequestParams()
-        .then((data) => {
-          if (data && data.url && data.authorization) {
-            const { authorization, url, type } = data;
+        .then((params) => {
+          if (params?.data) {
+            const { authorization, url, type } = params.data;
             const headers = { authorization };
             operation.setContext({ url, headers, type });
             sub = forward(operation).subscribe(observer);
-          } else {
-            throw new Error('empty request params');
+          } else if (params?.error) {
+            const { indexer, message } = params.error;
+            operation.setContext({ indexer });
+
+            this.logger.warn(`Failed to get token: ${message}`);
+            observer.error(new Error('failed to get indexer request params'));
           }
         })
         .catch((error) => {
-          this.logger.warn(`Failed to get token: ${error.message}`);
+          this.logger.warn(`Failed to get order request params: ${error.message}`);
           observer.error(new Error('failed to get indexer url and token'));
         });
 
@@ -65,7 +75,7 @@ export class ClusterAuthLink extends ApolloLink {
   }
 
   private async getRequestParams(): Promise<RequestParams | undefined> {
-    const orderType = await this.orderMananger.getNextOrderType();
+    const orderType = await this.orderManager.getNextOrderType();
     if (!orderType) return undefined;
     switch (orderType) {
       case OrderType.agreement:
@@ -78,48 +88,55 @@ export class ClusterAuthLink extends ApolloLink {
   }
 
   private async getAgreementRequestParams(): Promise<RequestParams | undefined> {
-    const nextAgreement = await this.orderMananger.getNextAgreement();
+    const nextAgreement = await this.orderManager.getNextAgreement();
     if (!nextAgreement) return undefined;
 
     const type = OrderType.agreement;
     const { token, id, url, indexer } = nextAgreement;
-    if (!isTokenExpired(token)) return { url, type, ...this.tokenToAuthHeader(token) };
+    if (!isTokenExpired(token)) return { data: { url, type, ...this.tokenToAuthHeader(token) } };
 
-    this.logger.debug(`request new token for indexer ${indexer}`);
+    try {
+      this.logger.debug(`request new token for indexer ${indexer}`);
+      const { projectId, authUrl } = this.options;
+      const tokenUrl = new URL('/orders/token', authUrl);
+      const res = await POST<{ token: string }>(tokenUrl.toString(), {
+        projectId,
+        indexer,
+        agreementId: id,
+      });
 
-    const { projectId, authUrl } = this.options;
-    const tokenUrl = new URL('/orders/token', authUrl);
-    const res = await POST<{ token: string }>(tokenUrl.toString(), {
-      projectId,
-      indexer,
-      agreementId: id,
-    });
-
-    this.orderMananger.updateTokenById(id, res.token);
-    this.logger.debug(`request new token for indexer ${indexer} success`);
-    return { url, type, ...this.tokenToAuthHeader(res.token) };
+      this.orderManager.updateTokenById(id, res.token);
+      this.logger.debug(`request new token for indexer ${indexer} success`);
+      return { data: { url, type, ...this.tokenToAuthHeader(res.token) } };
+    } catch (error) {
+      return { error: { indexer: nextAgreement.indexer, message: (error as Error).message } };
+    }
   }
 
   private async getPlanRequestParams(): Promise<RequestParams | undefined> {
-    const nextPlan = await this.orderMananger.getNextPlan();
+    const nextPlan = await this.orderManager.getNextPlan();
     if (!nextPlan) return undefined;
 
     const type = OrderType.flexPlan;
     const { id: channelId, url, indexer } = nextPlan;
 
-    this.logger.debug(`request new signature for indexer ${indexer}`);
-    const { projectId: deployment, authUrl } = this.options;
+    try {
+      this.logger.debug(`request new signature for indexer ${indexer}`);
+      const { projectId: deployment, authUrl } = this.options;
 
-    const tokenUrl = new URL('/channel/sign', authUrl);
-    const signedState = await POST<ChannelState>(tokenUrl.toString(), {
-      deployment,
-      channelId,
-    });
+      const tokenUrl = new URL('/channel/sign', authUrl);
+      const signedState = await POST<ChannelState>(tokenUrl.toString(), {
+        deployment,
+        channelId,
+      });
 
-    this.logger.debug(`state signature: ${signedState}`);
-    const authorization = JSON.stringify(signedState);
-    this.logger.debug(`request new state signature for indexer ${indexer} success`);
+      this.logger.debug(`state signature: ${signedState}`);
+      const authorization = JSON.stringify(signedState);
+      this.logger.debug(`request new state signature for indexer ${indexer} success`);
 
-    return { authorization, url, type };
+      return { data: { authorization, url, type } };
+    } catch (error) {
+      return { error: { indexer: nextPlan.indexer, message: (error as Error).message } };
+    }
   }
 }

@@ -142,12 +142,14 @@ class OrderManager {
 
     const key = this.getCacheKey(indexer);
     const score = this.cache.get<number>(key) || 100;
+
     let newScore = score;
     if (errorType === 'graphql') {
-      newScore -= 10; // Deduct score by 10 for a GraphQL error
+      newScore -= 5;
     } else if (errorType === 'network') {
-      newScore -= 20; // Deduct score more for a network error
+      newScore -= 20;
     }
+
     this.cache.set(key, newScore);
   }
 

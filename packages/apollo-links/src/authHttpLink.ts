@@ -65,7 +65,7 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
 
   const logger = _logger ?? silentLogger();
   const cache = cacheEnabled !== false ? createCache({ ttl: ttl ?? 86_400_000 }) : undefined;
-  const orderMananger = new OrderMananger({
+  const orderManager = new OrderMananger({
     authUrl,
     projectId: deploymentId,
     projectType,
@@ -76,18 +76,18 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
   const retryLink = createRetryLink(logger);
   const fallbackLink = new FallbackLink(fallbackServiceUrl, logger);
   const httpLink = new DynamicHttpLink({ httpOptions, logger });
-  const responseLink = new ResponseLink({ logger, authUrl });
-  const errorLink = creatErrorLink({ logger, fallbackLink, httpLink });
+  const responseLink = new ResponseLink({ authUrl, logger });
+  const errorLink = creatErrorLink({ orderManager, fallbackLink, httpLink, logger });
   const authLink = new ClusterAuthLink({
     authUrl,
     projectId: deploymentId,
     logger,
-    orderMananger,
+    orderManager,
   });
 
   const cleanup = () => {
     // add more cleanup logic here if needed
-    orderMananger.cleanup();
+    orderManager.cleanup();
   };
 
   // 1. errorLink: This link helps in handling and logging any GraphQL or network errors that may occur down the chain.
