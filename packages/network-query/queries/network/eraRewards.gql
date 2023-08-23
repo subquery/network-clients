@@ -89,5 +89,6 @@ query GetEraRewardsByIndexerAndPage(
       eraId
       indexerId
     }
+    totalCount
   }
 }
