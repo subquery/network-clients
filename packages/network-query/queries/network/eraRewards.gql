@@ -90,5 +90,11 @@ query GetEraRewardsByIndexerAndPage(
       indexerId
     }
     totalCount
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      endCursor
+      startCursor
+    }
   }
 }
