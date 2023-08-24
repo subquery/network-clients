@@ -1,7 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Agreement, OrderType, Plan, ProjectType } from '../types';
+import { Agreement, Order, OrderType, Plan, ProjectType } from '../types';
 import { ICache } from './cache';
 import { Logger } from './logger';
 import { fetchOrders } from './query';
@@ -47,13 +47,9 @@ class OrderManager {
 
   private async refreshAgreements() {
     try {
-      const { agreements, plans } = await fetchOrders(
-        this.authUrl,
-        this.projectId,
-        this.projectType
-      );
-      this.agreements = this.filterAgreementsByScore(agreements);
-      this.plans = plans;
+      const orders = await fetchOrders(this.authUrl, this.projectId, this.projectType);
+      this.agreements = this.filterOrdersByScore(orders.agreements) as Agreement[];
+      this.plans = this.filterOrdersByScore(orders.plans);
       this.healthy = true;
     } catch (e) {
       // it seems cannot reach this code, fetchOrders already handle the errors.
@@ -80,9 +76,9 @@ class OrderManager {
     return score > this.minScore;
   }
 
-  private filterAgreementsByScore(agreements: Agreement[]) {
-    if (!this.cache) return agreements;
-    return agreements.filter(({ indexer }) => this.isIndexerSelectable(indexer));
+  private filterOrdersByScore(orders: Order[]) {
+    if (!this.cache) return orders;
+    return orders.filter(({ indexer }) => this.isIndexerSelectable(indexer));
   }
 
   private getNextOrderIndex(total: number, currentIndex: number) {
