@@ -2999,6 +2999,7 @@ __metadata:
     buffer: ^6.0.3
     ethers: ^5.6.8
     jwt-decode: ^3.1.2
+    lru-cache: ^10.0.1
     pino: ^8.14.1
     typescript: ^4.6.4
   peerDependencies:
@@ -9271,6 +9272,13 @@ __metadata:
   dependencies:
     tslib: ^2.0.3
   checksum: 83a0a5f159ad7614bee8bf976b96275f3954335a84fad2696927f609ddae902802c4f3312d86668722e668bef41400254807e1d3a7f2e8c3eede79691aa1f010
+  languageName: node
+  linkType: hard
+
+"lru-cache@npm:^10.0.1":
+  version: 10.0.1
+  resolution: "lru-cache@npm:10.0.1"
+  checksum: 06f8d0e1ceabd76bb6f644a26dbb0b4c471b79c7b514c13c6856113879b3bf369eb7b497dad4ff2b7e2636db202412394865b33c332100876d838ad1372f0181
   languageName: node
   linkType: hard
 

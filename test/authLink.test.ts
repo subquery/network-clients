@@ -2,22 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import dotenv from 'dotenv';
 import axios from 'axios';
+
+const mockAxios = axios as jest.Mocked<typeof axios>;
+
+import dotenv from 'dotenv';
 
 import { ApolloClient, ApolloLink, from, HttpLink, InMemoryCache } from '@apollo/client/core';
 import fetch from 'cross-fetch';
 import gql from 'graphql-tag';
 import Pino from 'pino';
-import { Logger } from '../packages/apollo-links/src/utils/logger';
 import { ProjectType } from '../packages/apollo-links/src/types';
+import { Logger } from '../packages/apollo-links/src/utils/logger';
 
 dotenv.config();
 
 const fakeToken =
   'eyJhbCI6IkhTMjU2IiwiYWxnIjoiSFMyNTYifQ.eyJleHAiOiIyMDk5LTA5LTA5In0.kau0kzybKIrHqVzTP8QERsD6nWlnsIjyrqqkEK5iyIA';
-
-const mockAxios = axios as jest.Mocked<typeof axios>;
+const indexerSign =
+  '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b';
 
 const mockLogger: Logger = {
   debug: jest.fn(console.log),
@@ -268,7 +271,7 @@ describe('mock: auth link with auth center', () => {
       return Promise.resolve();
     });
 
-    const link = dictHttpLink({
+    const { link } = dictHttpLink({
       ...options,
       chainId,
       httpOptions: {
@@ -361,11 +364,9 @@ describe('mock: auth link with auth center', () => {
           data: {
             channelId: '0x91ABB40D77FE1F340A98A57A0C5BC24B3A9B91007E345EA4795901D9698ADF4',
             consumer: '0x0000000000000000',
-            consumerSign:
-              '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b',
+            consumerSign: indexerSign,
             indexer: '0x000000000000000c',
-            indexerSign:
-              '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b',
+            indexerSign,
             isFinal: false,
             remote: '10000000000000000',
             spent: '10000000000000000',
@@ -380,9 +381,7 @@ describe('mock: auth link with auth center', () => {
         expect(data).toHaveProperty('consumerSign');
         expect(data).toHaveProperty('indexer');
         expect(data).toHaveProperty('indexerSign');
-        expect((data as { indexerSign: string }).indexerSign).not.toEqual(
-          '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b'
-        );
+        expect((data as { indexerSign: string }).indexerSign).not.toEqual(indexerSign);
 
         stateAfterQueryPayg();
       }
@@ -390,7 +389,7 @@ describe('mock: auth link with auth center', () => {
       return Promise.resolve();
     });
 
-    const link = deploymentHttpLink({
+    const { link } = deploymentHttpLink({
       ...options,
       deploymentId,
       httpOptions: {
@@ -512,7 +511,7 @@ describe('mock: auth link with auth center', () => {
       return Promise.resolve();
     });
 
-    const link = deploymentHttpLink({
+    const { link } = deploymentHttpLink({
       ...options,
       deploymentId,
       httpOptions: {
@@ -623,11 +622,9 @@ describe('mock: auth link with auth center', () => {
           data: {
             channelId: '0x91ABB40D77FE1F340A98A57A0C5BC24B3A9B91007E345EA4795901D9698ADF4',
             consumer: '0x0000000000000000',
-            consumerSign:
-              '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b',
+            consumerSign: indexerSign,
             indexer: '0x000000000000000c',
-            indexerSign:
-              '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b',
+            indexerSign,
             isFinal: false,
             remote: '10000000000000000',
             spent: '10000000000000000',
@@ -642,17 +639,14 @@ describe('mock: auth link with auth center', () => {
         expect(data).toHaveProperty('consumerSign');
         expect(data).toHaveProperty('indexer');
         expect(data).toHaveProperty('indexerSign');
-        expect((data as { indexerSign: string }).indexerSign).not.toEqual(
-          '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b'
-        );
-
+        expect((data as { indexerSign: string }).indexerSign).not.toEqual(indexerSign);
         stateAfterQueryPayg();
       }
 
       return Promise.resolve();
     });
 
-    const link = deploymentHttpLink({
+    const { link } = deploymentHttpLink({
       ...options,
       deploymentId,
       httpOptions: {
@@ -786,11 +780,9 @@ describe('mock: auth link with auth center', () => {
           data: {
             channelId: '0x91ABB40D77FE1F340A98A57A0C5BC24B3A9B91007E345EA4795901D9698ADF4',
             consumer: '0x0000000000000000',
-            consumerSign:
-              '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b',
+            consumerSign: indexerSign,
             indexer: '0x000000000000000c',
-            indexerSign:
-              '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b',
+            indexerSign,
             isFinal: false,
             remote: '10000000000000000',
             spent: '10000000000000000',
@@ -805,9 +797,7 @@ describe('mock: auth link with auth center', () => {
         expect(data).toHaveProperty('consumerSign');
         expect(data).toHaveProperty('indexer');
         expect(data).toHaveProperty('indexerSign');
-        expect((data as { indexerSign: string }).indexerSign).not.toEqual(
-          '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b'
-        );
+        expect((data as { indexerSign: string }).indexerSign).not.toEqual(indexerSign);
 
         stateAfterQueryPayg();
       }
@@ -815,7 +805,7 @@ describe('mock: auth link with auth center', () => {
       return Promise.resolve();
     });
 
-    const link = deploymentHttpLink({
+    const { link } = deploymentHttpLink({
       ...options,
       deploymentId,
       httpOptions: {
@@ -893,7 +883,7 @@ describe('mock: auth link with auth center', () => {
   it('mock: can query data with fallback when no orders', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
     const { deploymentHttpLink } = await getLinks();
-    const link = deploymentHttpLink({
+    const { link } = deploymentHttpLink({
       ...options,
       deploymentId,
       httpOptions: {
@@ -952,7 +942,7 @@ describe('mock: auth link with auth center', () => {
       return Promise.resolve();
     });
 
-    const link = deploymentHttpLink({
+    const { link } = deploymentHttpLink({
       ...options,
       deploymentId,
       httpOptions: {
@@ -1000,7 +990,7 @@ describe('mock: auth link with auth center', () => {
   it('mock: should not retries when fallback is wrong', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
     const { deploymentHttpLink } = await getLinks();
-    const link = deploymentHttpLink({
+    const { link } = deploymentHttpLink({
       ...options,
       deploymentId,
       httpOptions: {
@@ -1048,7 +1038,7 @@ describe('mock: auth link with auth center', () => {
 
     const debugFc = jest.fn();
 
-    const link = deploymentHttpLink({
+    const { link } = deploymentHttpLink({
       ...options,
       deploymentId,
       logger: {
@@ -1153,7 +1143,7 @@ describe('mock: auth link with auth center', () => {
 
     const debugFc = jest.fn();
 
-    const link = deploymentHttpLink({
+    const { link } = deploymentHttpLink({
       ...options,
       deploymentId,
       logger: {
@@ -1185,5 +1175,30 @@ describe('mock: auth link with auth center', () => {
       expect(debugFc).toBeCalled();
     }
     // expect(result.data._metadata).toBeTruthy();
+  });
+});
+
+describe.only('Auth http link with real data', () => {
+  let client: ApolloClient<unknown>;
+  const authUrl = process.env.AUTH_URL ?? 'https://kepler-auth.subquery.network';
+  const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
+  const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
+  const options = { authUrl, chainId, httpOptions, logger: mockLogger, cacheEnabled: true };
+
+  beforeEach(async () => {
+    const { dictHttpLink } = await getLinks();
+    const actualAxios = jest.requireActual('axios');
+
+    mockAxios.get.mockImplementation(actualAxios.get);
+    mockAxios.post.mockImplementation(actualAxios.post);
+    const { link } = dictHttpLink(options);
+    client = createApolloClient(link);
+  });
+
+  it('can query data with dictionary auth link', async () => {
+    for (let i = 0; i < 10; i++) {
+      const result = await client.query({ query: metadataQuery });
+      expect(result.data._metadata).toBeTruthy();
+    }
   });
 });
