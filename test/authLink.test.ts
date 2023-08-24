@@ -3,6 +3,9 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import axios from 'axios';
+
+const mockAxios = axios as jest.Mocked<typeof axios>;
+
 import dotenv from 'dotenv';
 
 import { ApolloClient, ApolloLink, from, HttpLink, InMemoryCache } from '@apollo/client/core';
@@ -18,8 +21,6 @@ const fakeToken =
   'eyJhbCI6IkhTMjU2IiwiYWxnIjoiSFMyNTYifQ.eyJleHAiOiIyMDk5LTA5LTA5In0.kau0kzybKIrHqVzTP8QERsD6nWlnsIjyrqqkEK5iyIA';
 const indexerSign =
   '000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b';
-
-const mockAxios = axios as jest.Mocked<typeof axios>;
 
 const mockLogger: Logger = {
   debug: jest.fn(console.log),
@@ -49,27 +50,6 @@ const metadataQuery = gql`
     }
   }
 `;
-
-describe.only('Auth http link with real data', () => {
-  let client: ApolloClient<unknown>;
-  const authUrl = process.env.AUTH_URL ?? 'https://kepler-auth.subquery.network';
-  const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
-  const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
-  const options = { authUrl, chainId, httpOptions, logger: mockLogger, cacheEnabled: true };
-
-  beforeEach(async () => {
-    const { dictHttpLink } = await getLinks();
-    const { link } = dictHttpLink(options);
-    client = createApolloClient(link);
-  });
-
-  it('can query data with dictionary auth link', async () => {
-    for (let i = 0; i < 10; i++) {
-      const result = await client.query({ query: metadataQuery });
-      expect(result.data._metadata).toBeTruthy();
-    }
-  });
-});
 
 describe('auth link', () => {
   const indexerUrl = 'https://test.sqindexer.tech' as const;
@@ -1007,7 +987,7 @@ describe('mock: auth link with auth center', () => {
     expect(result.data._metadata).toBeTruthy();
   });
 
-  it.skip('mock: should not retries when fallback is wrong', async () => {
+  it('mock: should not retries when fallback is wrong', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
     const { deploymentHttpLink } = await getLinks();
     const { link } = deploymentHttpLink({
@@ -1195,5 +1175,30 @@ describe('mock: auth link with auth center', () => {
       expect(debugFc).toBeCalled();
     }
     // expect(result.data._metadata).toBeTruthy();
+  });
+});
+
+describe('Auth http link with real data', () => {
+  let client: ApolloClient<unknown>;
+  const authUrl = process.env.AUTH_URL ?? 'https://kepler-auth.subquery.network';
+  const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
+  const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
+  const options = { authUrl, chainId, httpOptions, logger: mockLogger, cacheEnabled: true };
+
+  beforeEach(async () => {
+    const { dictHttpLink } = await getLinks();
+    const actualAxios = jest.requireActual('axios');
+
+    mockAxios.get.mockImplementation(actualAxios.get);
+    mockAxios.post.mockImplementation(actualAxios.post);
+    const { link } = dictHttpLink(options);
+    client = createApolloClient(link);
+  });
+
+  it('can query data with dictionary auth link', async () => {
+    for (let i = 0; i < 10; i++) {
+      const result = await client.query({ query: metadataQuery });
+      expect(result.data._metadata).toBeTruthy();
+    }
   });
 });
