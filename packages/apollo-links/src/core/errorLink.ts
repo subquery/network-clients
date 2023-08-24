@@ -20,7 +20,7 @@ export const creatErrorLink = ({ fallbackLink, httpLink, orderManager, logger }:
     if (graphQLErrors)
       graphQLErrors.forEach(({ message, locations, path }) => {
         orderManager.updateIndexerScore(indexer, 'graphql');
-        logger?.debug(
+        logger?.info(
           `[GraphQL error]: Message: ${message}, Location: ${JSON.stringify(
             locations
           )}, Path: ${path}`
@@ -36,6 +36,6 @@ export const creatErrorLink = ({ fallbackLink, httpLink, orderManager, logger }:
           httpLink.request.bind(httpLink) as NextLink
         ) as Observable<FetchResult>;
       }
-      logger?.debug(`[Network error]: ${networkError}`);
+      logger?.info(`[Network error]: ${networkError}`);
     }
   });

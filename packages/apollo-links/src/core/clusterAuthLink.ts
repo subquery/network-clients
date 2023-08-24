@@ -46,6 +46,7 @@ export class ClusterAuthLink extends ApolloLink {
 
     return new Observable<FetchResult>((observer) => {
       let sub: Subscription;
+
       this.getRequestParams()
         .then((params) => {
           if (params?.data) {
@@ -109,6 +110,7 @@ export class ClusterAuthLink extends ApolloLink {
       this.logger.debug(`request new token for indexer ${indexer} success`);
       return { data: { url, type, ...this.tokenToAuthHeader(res.token) } };
     } catch (error) {
+      this.logger.debug(`request new token for indexer ${indexer} failed`);
       return { error: { indexer: nextAgreement.indexer, message: (error as Error).message } };
     }
   }
@@ -136,6 +138,7 @@ export class ClusterAuthLink extends ApolloLink {
 
       return { data: { authorization, url, type } };
     } catch (error) {
+      this.logger.debug(`request new state signature for indexer ${indexer} failed`);
       return { error: { indexer: nextPlan.indexer, message: (error as Error).message } };
     }
   }
