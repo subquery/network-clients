@@ -1,14 +1,15 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ApolloLink, HttpOptions, from } from '@apollo/client/core';
+import { ApolloLink, from } from '@apollo/client/core';
 
 import {
-  ClusterAuthLink,
   DynamicHttpLink,
   FallbackLink,
   ResponseLink,
   creatErrorLink,
+  ClusterAuthLink,
+  Options,
   createRetryLink,
 } from './core';
 import { ProjectType } from './types';
@@ -18,7 +19,7 @@ import OrderMananger from './utils/orderManager';
 
 interface BaseAuthOptions {
   authUrl: string; // auth service url
-  httpOptions: HttpOptions; // http options for init `HttpLink`
+  httpOptions: Options['httpOptions']; // http options for init `HttpLink`
   logger?: Logger; // logger for `AuthLink`
   fallbackServiceUrl?: string; // fall back service url for `AuthLink`
   cacheEnabled?: boolean; // enable cache for `AuthLink`
