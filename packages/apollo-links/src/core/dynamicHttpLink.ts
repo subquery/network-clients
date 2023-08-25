@@ -50,11 +50,11 @@ export class DynamicHttpLink extends ApolloLink {
     return httpLink.request(operation, forward);
   }
 
-  private createHttpLink(url: string): HttpLink {
+  private createHttpLink(uri: string): HttpLink {
     return new HttpLink({
       ...this.options.httpOptions,
       fetch: this.options.httpOptions.fetch ? this.options.httpOptions.fetch : fetch,
-      uri: url,
+      uri,
     });
   }
 }

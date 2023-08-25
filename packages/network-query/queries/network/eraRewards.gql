@@ -1,0 +1,112 @@
+query GetAggregatesEraRewards($eraIds: [String!]) {
+  eraRewards(filter: { eraId: { in: $eraIds } }) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+
+  indexerEraReward: eraRewards(filter: { eraId: { in: $eraIds }, isIndexer: { equalTo: true } }) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+
+  delegationEraReward: eraRewards(
+    filter: { eraId: { in: $eraIds }, isIndexer: { equalTo: false } }
+  ) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+}
+
+query GetAggregatesEraRewardsByIndexer($indexerId: String!, $eraIds: [String!]) {
+  eraRewards(filter: { eraId: { in: $eraIds }, indexerId: { equalTo: $indexerId } }) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+
+  indexerEraReward: eraRewards(
+    filter: {
+      eraId: { in: $eraIds }
+      isIndexer: { equalTo: true }
+      indexerId: { equalTo: $indexerId }
+    }
+  ) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+
+  delegationEraReward: eraRewards(
+    filter: {
+      eraId: { in: $eraIds }
+      isIndexer: { equalTo: false }
+      indexerId: { equalTo: $indexerId }
+    }
+  ) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+}
+
+query GetEraRewardsByIndexerAndPage(
+  $indexerId: String!
+  $offset: Int = 0
+  $pageSize: Int = 10
+  $orderBy: [EraRewardsOrderBy!] = CREATED_TIMESTAMP_DESC
+) {
+  eraRewards(
+    offset: $offset
+    first: $pageSize
+    filter: { indexerId: { equalTo: $indexerId }, isIndexer: { equalTo: true } }
+    orderBy: $orderBy
+  ) {
+    nodes {
+      createdTimestamp
+      amount
+      claimed
+      eraId
+      indexerId
+      isCommission
+      isIndexer
+    }
+    totalCount
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      endCursor
+      startCursor
+    }
+  }
+
+  unclaimedEraRewards: eraRewards(
+    filter: {
+      indexerId: { equalTo: $indexerId }
+      isIndexer: { equalTo: true }
+      claimed: { equalTo: false }
+    }
+  ) {
+    totalCount
+  }
+}

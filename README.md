@@ -1,6 +1,6 @@
-# Subquery Network - Client SDK
+# Subquery Network - Client SDKs
 
-Subql Network Client SDK provides various tools to make build subql services and dapps more easier.
+SubQuery Network Client SDKs provides various tools to allow you to connect your dApps and services to the SubQuery network easier.
 
 ## Components
 
@@ -9,10 +9,13 @@ Subql Network Client SDK provides various tools to make build subql services and
 * [`@subql/network-query`](packages/network-query)
 * [`@subql/react-hooks`](packages/react-hooks)
 
-## Developer Guild
+## Developer Guide
+
 ### Update Changelog
+
 * Use https://github.com/geut/chan
 * Go into the package folder first, than use `chan` to add changes
 
 ### Release Version Bump
+
 * use `yarn version [minor|patch|major]`

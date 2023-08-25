@@ -1,7 +1,8 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Agreement, OrderType, Plan, ProjectType } from '../types';
+import { Agreement, Order, OrderType, Plan, ProjectType } from '../types';
+import { ICache } from './cache';
 import { Logger } from './logger';
 import { fetchOrders } from './query';
 
@@ -10,6 +11,7 @@ type Options = {
   authUrl: string;
   projectId: string;
   projectType: ProjectType;
+  cache?: ICache;
 };
 
 class OrderManager {
@@ -21,35 +23,36 @@ class OrderManager {
 
   private projectType: ProjectType;
   private logger: Logger;
+  private cache: ICache | undefined;
+  private timer: NodeJS.Timeout | undefined;
 
   private authUrl: string;
   private projectId: string;
   private interval = 300_000;
+  private minScore = 0;
   private healthy = true;
   private _init: Promise<void>;
 
   constructor(options: Options) {
-    const { authUrl, projectId, logger, projectType } = options;
+    const { authUrl, projectId, logger, projectType, cache } = options;
     this.authUrl = authUrl;
     this.projectId = projectId;
     this.projectType = projectType;
     this.logger = logger;
+    this.cache = cache;
 
     this._init = this.refreshAgreements();
-    setInterval(this.refreshAgreements, this.interval);
+    this.timer = setInterval(this.refreshAgreements, this.interval);
   }
 
   private async refreshAgreements() {
     try {
-      const { agreements, plans } = await fetchOrders(
-        this.authUrl,
-        this.projectId,
-        this.projectType
-      );
-      this.agreements = agreements;
-      this.plans = plans;
+      const orders = await fetchOrders(this.authUrl, this.projectId, this.projectType);
+      this.agreements = this.filterOrdersByScore(orders.agreements) as Agreement[];
+      this.plans = this.filterOrdersByScore(orders.plans);
       this.healthy = true;
     } catch (e) {
+      // it seems cannot reach this code, fetchOrders already handle the errors.
       this.logger.error(`fetch orders failed: ${String(e)}`);
       this.healthy = false;
     }
@@ -57,6 +60,25 @@ class OrderManager {
 
   private getRandomStartIndex(n: number) {
     return Math.floor(Math.random() * n);
+  }
+
+  private getCacheKey(indexer: string): string {
+    return `$query-score-${indexer}-${this.projectId}`;
+  }
+
+  private getIndexerScore(indexer: string) {
+    const key = this.getCacheKey(indexer);
+    return this.cache?.get<number>(key) || 100;
+  }
+
+  private isIndexerSelectable(indexer: string) {
+    const score = this.getIndexerScore(indexer);
+    return score > this.minScore;
+  }
+
+  private filterOrdersByScore(orders: Order[]) {
+    if (!this.cache) return orders;
+    return orders.filter(({ indexer }) => this.isIndexerSelectable(indexer));
   }
 
   private getNextOrderIndex(total: number, currentIndex: number) {
@@ -109,6 +131,28 @@ class OrderManager {
     if (index === -1) return;
 
     this.agreements[index].token = token;
+  }
+
+  public updateIndexerScore(indexer: string, errorType: 'graphql' | 'network') {
+    if (!this.cache) return;
+
+    const key = this.getCacheKey(indexer);
+    const score = this.cache.get<number>(key) || 100;
+
+    let newScore = score;
+    if (errorType === 'graphql') {
+      newScore -= 5;
+    } else if (errorType === 'network') {
+      newScore -= 20;
+    }
+
+    this.cache.set(key, newScore);
+  }
+
+  public cleanup() {
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
   }
 }
 

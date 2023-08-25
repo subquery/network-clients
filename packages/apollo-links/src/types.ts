@@ -11,18 +11,17 @@ export enum OrderType {
   flexPlan = 'flexPlan',
 }
 
-export type Agreement = {
-  id: string; // agreement id
+export type Order = {
+  id: string;
   indexer: string;
   url: string;
+};
+
+export type Agreement = Order & {
   token: string;
 };
 
-export type Plan = {
-  id: string; // state channel id
-  indexer: string;
-  url: string;
-};
+export type Plan = Order;
 
 export type ChannelState = {
   channelId: string;
