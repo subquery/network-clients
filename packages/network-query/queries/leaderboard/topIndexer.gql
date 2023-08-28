@@ -12,6 +12,7 @@ fragment indexerProgramsFields on IndexerProgram {
   totalPoints
   currICR
   nextICR
+  rank
 }
 
 query GetTopIndexers {
