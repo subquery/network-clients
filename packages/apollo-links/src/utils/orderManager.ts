@@ -146,6 +146,7 @@ class OrderManager {
       newScore -= 20;
     }
 
+    console.log(`indexer ${indexer} score: ${score} -> ${newScore}`);
     this.cache.set(key, newScore);
   }
 
