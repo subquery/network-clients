@@ -53,6 +53,8 @@ export class ClusterAuthLink extends ApolloLink {
             const { authorization, url, type } = params.data;
             const headers = { authorization };
             operation.setContext({ url, headers, type });
+
+            sub = forward(operation).subscribe(observer);
           } else if (params?.error) {
             const { indexer, message } = params.error;
             operation.setContext({ indexer });
@@ -60,7 +62,6 @@ export class ClusterAuthLink extends ApolloLink {
             this.logger.warn(`Failed to get token: ${message}`);
             observer.error(new Error('failed to get indexer request params'));
           }
-          sub = forward(operation).subscribe(observer);
         })
         .catch((error) => {
           this.logger.warn(`Failed to get order request params: ${error.message}`);
@@ -110,7 +111,9 @@ export class ClusterAuthLink extends ApolloLink {
       this.logger.debug(`request new token for indexer ${indexer} success`);
       return { data: { url, type, ...this.tokenToAuthHeader(res.token) } };
     } catch (error) {
-      this.logger.debug(`request new token for indexer ${indexer} failed`);
+      this.logger.debug(
+        `request new token for indexer ${indexer} and url: ${nextAgreement.url} failed`
+      );
       return { error: { indexer: nextAgreement.indexer, message: (error as Error).message } };
     }
   }

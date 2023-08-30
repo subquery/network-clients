@@ -28,7 +28,6 @@ export const creatErrorLink = ({ fallbackLink, httpLink, orderManager, logger }:
       });
 
     if (networkError) {
-      orderManager.updateIndexerScore(indexer, 'network');
       if (!operation.getContext().fallback) {
         operation.setContext({ url: undefined });
         return fallbackLink.request(

@@ -4,12 +4,12 @@
 import { ApolloLink, from } from '@apollo/client/core';
 
 import {
+  ClusterAuthLink,
   DynamicHttpLink,
   FallbackLink,
+  Options,
   ResponseLink,
   creatErrorLink,
-  ClusterAuthLink,
-  Options,
   createRetryLink,
 } from './core';
 import { ProjectType } from './types';
@@ -96,7 +96,7 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
   // 2. retryLink: This comes after the errorLink to allow it to handle network errors and retry requests if necessary.
   // 3. authLink: The authLink comes next. It is responsible for adding authentication credentials to every request.
   // 4. httpLink: This should always be at the end of the link chain. This link is responsible for sending the request to the server.
-  const link = from([errorLink, retryLink, authLink, fallbackLink, responseLink, httpLink]);
+  const link = from([retryLink, errorLink, authLink, fallbackLink, responseLink, httpLink]);
 
   return { link, cleanup };
 }
