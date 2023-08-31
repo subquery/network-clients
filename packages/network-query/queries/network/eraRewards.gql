@@ -79,7 +79,9 @@ query GetEraRewardsByIndexerAndPage(
   eraRewards(
     offset: $offset
     first: $pageSize
-    filter: { indexerId: { equalTo: $indexerId }, isIndexer: { equalTo: true } }
+    filter: {
+      or: [{ indexerId: { equalTo: $indexerId } }, { delegatorId: { equalTo: $indexerId } }]
+    }
     orderBy: $orderBy
   ) {
     nodes {
@@ -88,6 +90,7 @@ query GetEraRewardsByIndexerAndPage(
       claimed
       eraId
       indexerId
+      delegatorId
       isCommission
       isIndexer
     }
@@ -99,11 +102,9 @@ query GetEraRewardsByIndexerAndPage(
       startCursor
     }
   }
-
   unclaimedEraRewards: eraRewards(
     filter: {
-      indexerId: { equalTo: $indexerId }
-      isIndexer: { equalTo: true }
+      or: [{ indexerId: { equalTo: $indexerId } }, { delegatorId: { equalTo: $indexerId } }]
       claimed: { equalTo: false }
     }
   ) {
