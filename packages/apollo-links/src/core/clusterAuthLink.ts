@@ -59,12 +59,12 @@ export class ClusterAuthLink extends ApolloLink {
             const { indexer, message } = params.error;
             operation.setContext({ indexer });
 
-            this.logger.warn(`Failed to get token: ${message}`);
+            this.logger?.warn(`Failed to get token: ${message}`);
             observer.error(new Error('failed to get indexer request params'));
           }
         })
         .catch((error) => {
-          this.logger.warn(`Failed to get order request params: ${error.message}`);
+          this.logger?.warn(`Failed to get order request params: ${error.message}`);
           observer.error(new Error('failed to get indexer url and token'));
         });
 
@@ -98,7 +98,7 @@ export class ClusterAuthLink extends ApolloLink {
     if (!isTokenExpired(token)) return { data: { url, type, ...this.tokenToAuthHeader(token) } };
 
     try {
-      this.logger.debug(`request new token for indexer ${indexer}`);
+      this.logger?.debug(`request new token for indexer ${indexer}`);
       const { projectId, authUrl } = this.options;
       const tokenUrl = new URL('/orders/token', authUrl);
       const res = await POST<{ token: string }>(tokenUrl.toString(), {
@@ -108,10 +108,10 @@ export class ClusterAuthLink extends ApolloLink {
       });
 
       this.orderManager.updateTokenById(id, res.token);
-      this.logger.debug(`request new token for indexer ${indexer} success`);
+      this.logger?.debug(`request new token for indexer ${indexer} success`);
       return { data: { url, type, ...this.tokenToAuthHeader(res.token) } };
     } catch (error) {
-      this.logger.debug(
+      this.logger?.debug(
         `request new token for indexer ${indexer} and url: ${nextAgreement.url} failed`
       );
       return { error: { indexer: nextAgreement.indexer, message: (error as Error).message } };
@@ -126,7 +126,7 @@ export class ClusterAuthLink extends ApolloLink {
     const { id: channelId, url, indexer } = nextPlan;
 
     try {
-      this.logger.debug(`request new signature for indexer ${indexer}`);
+      this.logger?.debug(`request new signature for indexer ${indexer}`);
       const { projectId: deployment, authUrl } = this.options;
 
       const tokenUrl = new URL('/channel/sign', authUrl);
@@ -135,13 +135,13 @@ export class ClusterAuthLink extends ApolloLink {
         channelId,
       });
 
-      this.logger.debug(`state signature: ${signedState}`);
+      this.logger?.debug(`state signature: ${signedState}`);
       const authorization = JSON.stringify(signedState);
-      this.logger.debug(`request new state signature for indexer ${indexer} success`);
+      this.logger?.debug(`request new state signature for indexer ${indexer} success`);
 
       return { data: { authorization, url, type } };
     } catch (error) {
-      this.logger.debug(`request new state signature for indexer ${indexer} failed`);
+      this.logger?.debug(`request new state signature for indexer ${indexer} failed`);
       return { error: { indexer: nextPlan.indexer, message: (error as Error).message } };
     }
   }

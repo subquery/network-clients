@@ -68,7 +68,7 @@ class OrderManager {
 
   private getIndexerScore(indexer: string) {
     const key = this.getCacheKey(indexer);
-    return this.cache?.get<number>(key) || 100;
+    return this.cache?.get<number>(key) ?? 100;
   }
 
   private isIndexerSelectable(indexer: string) {
@@ -98,6 +98,8 @@ class OrderManager {
     if (!this.agreements) return;
 
     const agreements = this.filterOrdersByScore(this.agreements) as Agreement[];
+    this.logger?.debug(`available agreements count: ${agreements.length}`);
+
     if (!this.healthy || !agreements.length) return;
 
     if (this.nextAgreementIndex === undefined) {
@@ -106,6 +108,8 @@ class OrderManager {
 
     const agreement = agreements[this.nextAgreementIndex];
     this.nextAgreementIndex = this.getNextOrderIndex(agreements.length, this.nextAgreementIndex);
+
+    this.logger?.debug(`next agreement: ${JSON.stringify(agreement.indexer)}`);
 
     return agreement;
   }
@@ -140,16 +144,11 @@ class OrderManager {
     if (!this.cache) return;
 
     const key = this.getCacheKey(indexer);
-    const score = this.cache.get<number>(key) || 100;
+    const score = this.cache.get<number>(key) ?? 100;
 
-    let newScore = score;
-    if (errorType === 'graphql') {
-      newScore -= 5;
-    } else if (errorType === 'network') {
-      newScore -= 100;
-    }
+    const delta = errorType === 'graphql' ? 10 : 50;
+    const newScore = Math.max(score - delta, 0);
 
-    console.log(`indexer ${indexer} score: ${score} -> ${newScore}`);
     this.cache.set(key, newScore);
   }
 
