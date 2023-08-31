@@ -48,12 +48,12 @@ class OrderManager {
   private async refreshAgreements() {
     try {
       const orders = await fetchOrders(this.authUrl, this.projectId, this.projectType);
-      this.agreements = this.filterOrdersByScore(orders.agreements) as Agreement[];
-      this.plans = this.filterOrdersByScore(orders.plans);
+      this.agreements = orders.agreements;
+      this.plans = orders.plans;
       this.healthy = true;
     } catch (e) {
       // it seems cannot reach this code, fetchOrders already handle the errors.
-      this.logger.error(`fetch orders failed: ${String(e)}`);
+      this.logger?.error(`fetch orders failed: ${String(e)}`);
       this.healthy = false;
     }
   }
@@ -95,17 +95,17 @@ class OrderManager {
   public async getNextAgreement(): Promise<Agreement | undefined> {
     await this._init;
 
-    if (!this.healthy || !this.agreements?.length) return;
+    if (!this.agreements) return;
+
+    const agreements = this.filterOrdersByScore(this.agreements) as Agreement[];
+    if (!this.healthy || !agreements.length) return;
 
     if (this.nextAgreementIndex === undefined) {
-      this.nextAgreementIndex = this.getRandomStartIndex(this.agreements.length);
+      this.nextAgreementIndex = this.getRandomStartIndex(agreements.length);
     }
 
-    const agreement = this.agreements[this.nextAgreementIndex];
-    this.nextAgreementIndex = this.getNextOrderIndex(
-      this.agreements.length,
-      this.nextAgreementIndex
-    );
+    const agreement = agreements[this.nextAgreementIndex];
+    this.nextAgreementIndex = this.getNextOrderIndex(agreements.length, this.nextAgreementIndex);
 
     return agreement;
   }
@@ -113,14 +113,17 @@ class OrderManager {
   public async getNextPlan(): Promise<Plan | undefined> {
     await this._init;
 
-    if (!this.healthy || !this.plans?.length) return;
+    if (!this.plans) return;
+
+    const plans = this.filterOrdersByScore(this.plans) as Plan[];
+    if (!this.healthy || !plans?.length) return;
 
     if (this.nextPlanIndex === undefined) {
-      this.nextPlanIndex = this.getRandomStartIndex(this.plans.length);
+      this.nextPlanIndex = this.getRandomStartIndex(plans.length);
     }
 
-    const plan = this.plans[this.nextPlanIndex];
-    this.nextPlanIndex = this.getNextOrderIndex(this.plans.length, this.nextPlanIndex);
+    const plan = plans[this.nextPlanIndex];
+    this.nextPlanIndex = this.getNextOrderIndex(plans.length, this.nextPlanIndex);
 
     return plan;
   }
@@ -143,7 +146,7 @@ class OrderManager {
     if (errorType === 'graphql') {
       newScore -= 5;
     } else if (errorType === 'network') {
-      newScore -= 20;
+      newScore -= 100;
     }
 
     console.log(`indexer ${indexer} score: ${score} -> ${newScore}`);

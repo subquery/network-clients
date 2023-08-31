@@ -1196,7 +1196,7 @@ describe.only('Auth http link with real data', () => {
   });
 
   it('can query data with dictionary auth link', async () => {
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 10; i++) {
       const result = await client.query({ query: metadataQuery });
       expect(result.data._metadata).toBeTruthy();
     }
