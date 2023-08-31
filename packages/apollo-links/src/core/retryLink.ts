@@ -12,14 +12,16 @@ export type RetryLinkOption = {
   logger?: Logger;
 };
 
-export const createRetryLink = ({ orderManager, maxRetries = 3, logger }: RetryLinkOption) =>
+export const createRetryLink = ({ orderManager, maxRetries = 5, logger }: RetryLinkOption) =>
   new RetryLink({
     attempts: function (count: number, operation: Operation, error: any) {
       if (count <= maxRetries) {
         const { indexer } = operation.getContext();
         orderManager.updateIndexerScore(indexer, 'network');
 
-        if (['empty url'].includes(error?.message) || operation.getContext().fallback) {
+        const isEmptyUrlError = error?.message?.includes('empty url');
+        const isFallback = operation.getContext().fallback;
+        if (!indexer && (isEmptyUrlError || isFallback)) {
           return false;
         }
         logger?.debug(`retry: ${count}/${maxRetries}`);
