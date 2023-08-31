@@ -12,7 +12,7 @@ export type RetryLinkOption = {
   logger?: Logger;
 };
 
-export const createRetryLink = ({ orderManager, maxRetries = 5, logger }: RetryLinkOption) =>
+export const createRetryLink = ({ orderManager, maxRetries = 8, logger }: RetryLinkOption) =>
   new RetryLink({
     attempts: function (count: number, operation: Operation, error: any) {
       if (count <= maxRetries) {
