@@ -1178,7 +1178,7 @@ describe('mock: auth link with auth center', () => {
   });
 });
 
-describe.only('Auth http link with real data', () => {
+describe('Auth http link with real data', () => {
   const authUrl = process.env.AUTH_URL ?? 'https://kepler-auth.subquery.network';
   const defaultFallbackUrl = 'https://api.subquery.network/sq/subquery/karura-dictionary';
   const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
