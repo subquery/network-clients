@@ -71,7 +71,7 @@ query GetAggregatesEraRewardsByIndexer($indexerId: String!, $eraIds: [String!]) 
 }
 
 query GetEraRewardsByIndexerAndPage(
-  $indexerId: String!
+  $delegatorId: String!
   $offset: Int = 0
   $pageSize: Int = 10
   $orderBy: [EraRewardsOrderBy!] = CREATED_TIMESTAMP_DESC
@@ -79,9 +79,7 @@ query GetEraRewardsByIndexerAndPage(
   eraRewards(
     offset: $offset
     first: $pageSize
-    filter: {
-      or: [{ indexerId: { equalTo: $indexerId } }, { delegatorId: { equalTo: $indexerId } }]
-    }
+    filter: { delegatorId: { equalTo: $delegatorId } }
     orderBy: $orderBy
   ) {
     nodes {
@@ -103,10 +101,7 @@ query GetEraRewardsByIndexerAndPage(
     }
   }
   unclaimedEraRewards: eraRewards(
-    filter: {
-      or: [{ indexerId: { equalTo: $indexerId } }, { delegatorId: { equalTo: $indexerId } }]
-      claimed: { equalTo: false }
-    }
+    filter: { delegatorId: { equalTo: $delegatorId }, claimed: { equalTo: false } }
   ) {
     totalCount
   }
