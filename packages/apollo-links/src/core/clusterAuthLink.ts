@@ -61,6 +61,9 @@ export class ClusterAuthLink extends ApolloLink {
 
             this.logger?.debug(`Failed to get token: ${message}`);
             observer.error(new Error('failed to get indexer request params'));
+          } else {
+            this.logger?.debug('no available orders');
+            sub = forward(operation).subscribe(observer);
           }
         })
         .catch((error) => {

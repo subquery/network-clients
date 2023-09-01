@@ -314,7 +314,7 @@ describe('mock: auth link with auth center', () => {
     const result = await client.query({ query: metadataQuery });
 
     expect(result.data._metadata).toBeTruthy();
-  });
+  }, 5000);
 
   it('mock: can query data with payg', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -461,7 +461,7 @@ describe('mock: auth link with auth center', () => {
     expect(result.data._metadata).toBeTruthy();
     expect(signBeforeQueryPayg).toBeCalledTimes(1);
     expect(stateAfterQueryPayg).toBeCalledTimes(1);
-  });
+  }, 5000);
 
   it('mock: can query data with service agreement', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -554,7 +554,7 @@ describe('mock: auth link with auth center', () => {
     const result = await client.query({ query: metadataQuery });
 
     expect(result.data._metadata).toBeTruthy();
-  });
+  }, 5000);
 
   it('mock: can query data with payg when one of source query failed or the good one failed by chance', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -731,7 +731,7 @@ describe('mock: auth link with auth center', () => {
     expect(result.data._metadata).toBeTruthy();
     expect(signBeforeQueryPayg).toBeCalled();
     expect(stateAfterQueryPayg).toBeCalled();
-  });
+  }, 5000);
 
   it('mock: can query data with fallback when all orders failed', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -926,7 +926,7 @@ describe('mock: auth link with auth center', () => {
     const result = await client.query({ query: metadataQuery });
 
     expect(result.data._metadata).toBeTruthy();
-  });
+  }, 5000);
 
   it('mock: can query data with fallback if auth center return an error response', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -985,7 +985,7 @@ describe('mock: auth link with auth center', () => {
     const result = await client.query({ query: metadataQuery });
 
     expect(result.data._metadata).toBeTruthy();
-  });
+  }, 5000);
 
   it('mock: should not retries when fallback is wrong', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -1020,7 +1020,7 @@ describe('mock: auth link with auth center', () => {
       );
       expect(mockLogger.debug).not.toHaveBeenCalledWith(expect.stringMatching(/retry:/));
     }
-  });
+  }, 5000);
 
   it('mock: log the error msg for Graphql Error', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -1125,7 +1125,7 @@ describe('mock: auth link with auth center', () => {
       expect(debugFc).toBeCalled();
     }
     // expect(result.data._metadata).toBeTruthy();
-  });
+  }, 5000);
 
   it('mock: log the error msg for query Network Error', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -1175,28 +1175,47 @@ describe('mock: auth link with auth center', () => {
       expect(debugFc).toBeCalled();
     }
     // expect(result.data._metadata).toBeTruthy();
-  });
+  }, 5000);
 });
 
-describe.only('Auth http link with real data', () => {
-  let client: ApolloClient<unknown>;
+describe('Auth http link with real data', () => {
   const authUrl = process.env.AUTH_URL ?? 'https://kepler-auth.subquery.network';
+  const defaultFallbackUrl = 'https://api.subquery.network/sq/subquery/karura-dictionary';
   const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
+  const unavailableChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c4';
   const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
-  const options = { authUrl, chainId, httpOptions, logger: mockLogger, cacheEnabled: true };
+
+  const createClient = async (chainId: string, fallbackServiceUrl: string) => {
+    const options = {
+      authUrl,
+      chainId,
+      httpOptions,
+      logger: mockLogger,
+      cacheEnabled: true,
+      fallbackServiceUrl,
+    };
+    const { dictHttpLink } = await getLinks();
+    const { link } = dictHttpLink(options);
+    return createApolloClient(link);
+  };
 
   beforeEach(async () => {
-    const { dictHttpLink } = await getLinks();
     const actualAxios = jest.requireActual('axios');
-
     mockAxios.get.mockImplementation(actualAxios.get);
     mockAxios.post.mockImplementation(actualAxios.post);
-    const { link } = dictHttpLink(options);
-    client = createApolloClient(link);
   });
 
-  it('can query data with dictionary auth link', async () => {
+  it('can query data with dictionary auth link without fallback service url', async () => {
+    const client = await createClient(chainId, '');
     for (let i = 0; i < 20; i++) {
+      const result = await client.query({ query: metadataQuery });
+      expect(result.data._metadata).toBeTruthy();
+    }
+  });
+
+  it('can query data with dictionary auth link without orders', async () => {
+    const client = await createClient(unavailableChainId, defaultFallbackUrl);
+    for (let i = 0; i < 10; i++) {
       const result = await client.query({ query: metadataQuery });
       expect(result.data._metadata).toBeTruthy();
     }

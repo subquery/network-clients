@@ -3,7 +3,7 @@
 
 import axios from 'axios';
 
-import { Agreement, ProjectType, Plan } from '../types';
+import { Agreement, Plan, ProjectType } from '../types';
 
 export async function POST<T>(
   url: string,
