@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.4] - 2023-09-01
+
 ## [1.0.2] - 2023-08-31
 
 - Increase default max retry to `8`
@@ -72,7 +74,8 @@ Breaking change for `dictHttpLink` and `deploymentHttpLink`, use `const { link }
 
 - Add Authlink for Apollo client
 
-[unreleased]: https://github.com/subquery/network-clients/compare/v1.0.2...HEAD
+[unreleased]: https://github.com/subquery/network-clients/compare/v1.0.4...HEAD
+[1.0.4]: https://github.com/subquery/network-clients/compare/v1.0.2...v1.0.4
 [1.0.2]: https://github.com/subquery/network-clients/compare/v1.0.0...v1.0.2
 [1.0.0]: https://github.com/subquery/network-clients/compare/v0.5.7...v1.0.0
 [0.5.7]: https://github.com/subquery/network-clients/compare/v0.5.5...v0.5.7
