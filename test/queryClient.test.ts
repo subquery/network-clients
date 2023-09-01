@@ -469,7 +469,7 @@ describe('query client', () => {
     const result = await client.query({
       query: GetEraRewardsByIndexerAndPage,
       variables: {
-        indexerId: address1,
+        delegatorId: address1,
       },
     });
 

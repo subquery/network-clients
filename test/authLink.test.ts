@@ -314,7 +314,7 @@ describe('mock: auth link with auth center', () => {
     const result = await client.query({ query: metadataQuery });
 
     expect(result.data._metadata).toBeTruthy();
-  });
+  }, 5000);
 
   it('mock: can query data with payg', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -461,7 +461,7 @@ describe('mock: auth link with auth center', () => {
     expect(result.data._metadata).toBeTruthy();
     expect(signBeforeQueryPayg).toBeCalledTimes(1);
     expect(stateAfterQueryPayg).toBeCalledTimes(1);
-  });
+  }, 5000);
 
   it('mock: can query data with service agreement', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -554,7 +554,7 @@ describe('mock: auth link with auth center', () => {
     const result = await client.query({ query: metadataQuery });
 
     expect(result.data._metadata).toBeTruthy();
-  });
+  }, 5000);
 
   it('mock: can query data with payg when one of source query failed or the good one failed by chance', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -731,7 +731,7 @@ describe('mock: auth link with auth center', () => {
     expect(result.data._metadata).toBeTruthy();
     expect(signBeforeQueryPayg).toBeCalled();
     expect(stateAfterQueryPayg).toBeCalled();
-  });
+  }, 5000);
 
   it('mock: can query data with fallback when all orders failed', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -926,7 +926,7 @@ describe('mock: auth link with auth center', () => {
     const result = await client.query({ query: metadataQuery });
 
     expect(result.data._metadata).toBeTruthy();
-  });
+  }, 5000);
 
   it('mock: can query data with fallback if auth center return an error response', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -985,7 +985,7 @@ describe('mock: auth link with auth center', () => {
     const result = await client.query({ query: metadataQuery });
 
     expect(result.data._metadata).toBeTruthy();
-  });
+  }, 5000);
 
   it('mock: should not retries when fallback is wrong', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -1020,7 +1020,7 @@ describe('mock: auth link with auth center', () => {
       );
       expect(mockLogger.debug).not.toHaveBeenCalledWith(expect.stringMatching(/retry:/));
     }
-  });
+  }, 5000);
 
   it('mock: log the error msg for Graphql Error', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -1125,7 +1125,7 @@ describe('mock: auth link with auth center', () => {
       expect(debugFc).toBeCalled();
     }
     // expect(result.data._metadata).toBeTruthy();
-  });
+  }, 5000);
 
   it('mock: log the error msg for query Network Error', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -1175,7 +1175,7 @@ describe('mock: auth link with auth center', () => {
       expect(debugFc).toBeCalled();
     }
     // expect(result.data._metadata).toBeTruthy();
-  });
+  }, 5000);
 });
 
 describe('Auth http link with real data', () => {
