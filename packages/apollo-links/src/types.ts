@@ -33,3 +33,7 @@ export type ChannelState = {
   indexerSign: string;
   consumerSign: string;
 };
+
+export type ChannelAuth = {
+  authorization: string;
+};
