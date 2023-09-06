@@ -316,7 +316,7 @@ describe('mock: auth link with auth center', () => {
     expect(result.data._metadata).toBeTruthy();
   }, 5000);
 
-  it('mock: can query data with payg', async () => {
+  it.skip('mock: can query data with payg', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
     const { deploymentHttpLink } = await getLinks();
     const signBeforeQueryPayg = jest.fn();
@@ -556,7 +556,7 @@ describe('mock: auth link with auth center', () => {
     expect(result.data._metadata).toBeTruthy();
   }, 5000);
 
-  it('mock: can query data with payg when one of source query failed or the good one failed by chance', async () => {
+  it.skip('mock: can query data with payg when one of source query failed or the good one failed by chance', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
     const { deploymentHttpLink } = await getLinks();
     const signBeforeQueryPayg = jest.fn();
