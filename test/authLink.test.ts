@@ -1178,26 +1178,44 @@ describe('mock: auth link with auth center', () => {
   }, 5000);
 });
 
+/// real data test
+const authUrl = process.env.AUTH_URL ?? 'https://kepler-auth.subquery.network';
+const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
+
+const createDictionaryClient = async (chainId: string, fallbackServiceUrl: string) => {
+  const options = {
+    authUrl,
+    chainId,
+    httpOptions,
+    logger: mockLogger,
+    cacheEnabled: true,
+    fallbackServiceUrl,
+  };
+  const { dictHttpLink } = await getLinks();
+  const { link } = dictHttpLink(options);
+  return createApolloClient(link);
+};
+
+const createDeploymentClient = async (deploymentId: string, fallbackServiceUrl?: string) => {
+  const options = {
+    authUrl,
+    deploymentId,
+    httpOptions,
+    logger: mockLogger,
+    cacheEnabled: true,
+    fallbackServiceUrl,
+  };
+  const { deploymentHttpLink } = await getLinks();
+  const { link } = deploymentHttpLink(options);
+  return createApolloClient(link);
+};
+
 describe('Auth http link with real data', () => {
-  const authUrl = process.env.AUTH_URL ?? 'https://kepler-auth.subquery.network';
   const defaultFallbackUrl = 'https://api.subquery.network/sq/subquery/karura-dictionary';
   const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
+  // TODO: need to update this one to network deploymentId
+  const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
   const unavailableChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c4';
-  const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
-
-  const createClient = async (chainId: string, fallbackServiceUrl: string) => {
-    const options = {
-      authUrl,
-      chainId,
-      httpOptions,
-      logger: mockLogger,
-      cacheEnabled: true,
-      fallbackServiceUrl,
-    };
-    const { dictHttpLink } = await getLinks();
-    const { link } = dictHttpLink(options);
-    return createApolloClient(link);
-  };
 
   beforeEach(async () => {
     const actualAxios = jest.requireActual('axios');
@@ -1206,7 +1224,7 @@ describe('Auth http link with real data', () => {
   });
 
   it('can query data with dictionary auth link without fallback service url', async () => {
-    const client = await createClient(chainId, '');
+    const client = await createDictionaryClient(chainId, '');
     for (let i = 0; i < 20; i++) {
       const result = await client.query({ query: metadataQuery });
       expect(result.data._metadata).toBeTruthy();
@@ -1214,7 +1232,15 @@ describe('Auth http link with real data', () => {
   });
 
   it('can query data with dictionary auth link without orders', async () => {
-    const client = await createClient(unavailableChainId, defaultFallbackUrl);
+    const client = await createDictionaryClient(unavailableChainId, defaultFallbackUrl);
+    for (let i = 0; i < 10; i++) {
+      const result = await client.query({ query: metadataQuery });
+      expect(result.data._metadata).toBeTruthy();
+    }
+  });
+
+  it('can query data with deployment auth link for payg', async () => {
+    const client = await createDeploymentClient(deploymentId);
     for (let i = 0; i < 10; i++) {
       const result = await client.query({ query: metadataQuery });
       expect(result.data._metadata).toBeTruthy();
