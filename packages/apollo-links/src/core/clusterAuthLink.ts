@@ -5,7 +5,7 @@ import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apoll
 import { Subscription } from 'zen-observable-ts';
 
 import { isTokenExpired } from '../auth/authHelper';
-import { ChannelState, OrderType } from '../types';
+import { ChannelAuth, OrderType } from '../types';
 import { Logger } from '../utils/logger';
 import OrderMananger from '../utils/orderManager';
 import { POST } from '../utils/query';
@@ -133,15 +133,13 @@ export class ClusterAuthLink extends ApolloLink {
       const { projectId: deployment, authUrl } = this.options;
 
       const tokenUrl = new URL('/channel/sign', authUrl);
-      const signedState = await POST<ChannelState>(tokenUrl.toString(), {
+      const signedState = await POST<ChannelAuth>(tokenUrl.toString(), {
         deployment,
         channelId,
       });
 
-      this.logger?.debug(`state signature: ${signedState}`);
-      const authorization = JSON.stringify(signedState);
       this.logger?.debug(`request new state signature for indexer ${indexer} success`);
-
+      const { authorization } = signedState;
       return { data: { authorization, url, type } };
     } catch (error) {
       this.logger?.debug(`request new state signature for indexer ${indexer} failed`);
