@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.6] - 2023-09-07
+## [1.0.8] - 2023-09-07
 
 - Enable base64 encoding for payg signature
 
@@ -78,8 +78,8 @@ Breaking change for `dictHttpLink` and `deploymentHttpLink`, use `const { link }
 
 - Add Authlink for Apollo client
 
-[unreleased]: https://github.com/subquery/network-clients/compare/v1.0.6...HEAD
-[1.0.6]: https://github.com/subquery/network-clients/compare/v1.0.4...v1.0.6
+[unreleased]: https://github.com/subquery/network-clients/compare/v1.0.8...HEAD
+[1.0.8]: https://github.com/subquery/network-clients/compare/v1.0.4...v1.0.8
 [1.0.4]: https://github.com/subquery/network-clients/compare/v1.0.2...v1.0.4
 [1.0.2]: https://github.com/subquery/network-clients/compare/v1.0.0...v1.0.2
 [1.0.0]: https://github.com/subquery/network-clients/compare/v0.5.7...v1.0.0
