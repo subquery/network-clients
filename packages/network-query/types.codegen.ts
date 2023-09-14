@@ -5,12 +5,8 @@ import { CodegenConfig } from '@graphql-codegen/cli';
 import { NETWORK_CONFIGS } from '@subql/network-config';
 
 const config: CodegenConfig = {
-  schema: [
-    `${NETWORK_CONFIGS.testnet.gql.network}`,
-    `${NETWORK_CONFIGS.kepler.gql.exchange}`,
-    `${NETWORK_CONFIGS.kepler.gql.leaderboard}`,
-  ],
-  documents: ['./queries/exchange/*.gql', './queries/network/*.gql', './queries/leaderboard/*.gql'],
+  schema: [`${NETWORK_CONFIGS.testnet.gql.network}`, `${NETWORK_CONFIGS.kepler.gql.leaderboard}`],
+  documents: ['./queries/network/*.gql', './queries/leaderboard/*.gql'],
   config: {
     preResolveTypes: true,
     namingConvention: 'keep',

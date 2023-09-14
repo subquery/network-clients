@@ -44,6 +44,7 @@ import {
   GetAggregatesEraRewards,
   GetAggregatesEraRewardsByIndexer,
   GetEraRewardsByIndexerAndPage,
+  GetOrders,
 } from '../packages/network-query';
 
 function deepAssert(obj: any) {
@@ -474,5 +475,17 @@ describe('query client', () => {
     });
 
     expect(result.data.eraRewards.totalCount).toBeGreaterThanOrEqual(0);
+  });
+
+  it('can query orders', async () => {
+    const result = await client.query({
+      query: GetOrders,
+      variables: {
+        swapFrom: '0x0000',
+        now: new Date(),
+      },
+    });
+
+    expect(result.data.orders.totalCount).toBeGreaterThanOrEqual(0);
   });
 });

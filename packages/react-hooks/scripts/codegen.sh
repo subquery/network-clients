@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# exchange
-graphql-codegen --require dotenv/config --config exchange.codegen.ts
 
 # network
 graphql-codegen --require dotenv/config --config network.codegen.ts
