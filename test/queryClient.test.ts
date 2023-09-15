@@ -45,6 +45,8 @@ import {
   GetAggregatesEraRewardsByIndexer,
   GetEraRewardsByIndexerAndPage,
   GetOrders,
+  GetAirdrops,
+  GetAirdropsByAccount,
 } from '../packages/network-query';
 
 function deepAssert(obj: any) {
@@ -487,5 +489,35 @@ describe('query client', () => {
     });
 
     expect(result.data.orders.totalCount).toBeGreaterThanOrEqual(0);
+  });
+
+  it('can query airdrops', async () => {
+    const result = await client.query({
+      query: GetAirdrops,
+    });
+
+    expect(result.data.airdrops.totalCount).toBeGreaterThanOrEqual(0);
+  });
+
+  it('can query airdrops by account', async () => {
+    const result = await client.query({
+      query: GetAirdropsByAccount,
+      variables: {
+        account: '0x000000',
+      },
+    });
+
+    expect(result.data.airdropUsers.totalCount).toBeGreaterThanOrEqual(0);
+  });
+
+  it('can query airdrops by account', async () => {
+    const result = await client.query({
+      query: GetAirdropsByAccount,
+      variables: {
+        account: '0x000000',
+      },
+    });
+
+    expect(result.data.airdropUsers.totalCount).toBeGreaterThanOrEqual(0);
   });
 });
