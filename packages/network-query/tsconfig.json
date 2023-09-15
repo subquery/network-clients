@@ -5,7 +5,7 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "rootDir": "./src",
-    "outDir": "./src"
+    "outDir": "./dist"
   },
   "include": ["src/**/*", "test/**/*"]
 }
