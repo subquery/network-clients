@@ -9,8 +9,6 @@ export enum SQNetworks {
 
 export enum GQLEndpoint {
   Network = 'network',
-  Exchange = 'exchange',
-  Airdrop = 'airdrop',
   Leaderboard = 'leaderboard',
 }
 
@@ -31,18 +29,6 @@ export const NETWORK_SUBQL_ENDPOINTS = {
   testnet: 'https://api.subquery.network/sq/subquery/kepler-testnet',
 };
 
-export const AIRDROP_SUBQL_ENDPOINTS = {
-  mainnet: 'https://api.subquery.network/sq/subquery/kepler-network-airdrop',
-  kepler: 'https://api.subquery.network/sq/subquery/kepler-network-airdrop',
-  testnet: 'https://api.subquery.network/sq/subquery/kepler-testnet-airdrop',
-};
-
-export const EXCHANGE_SUBQL_ENDPOINTS = {
-  mainnet: 'https://api.subquery.network/sq/subquery/kepler-network-exchange',
-  kepler: 'https://api.subquery.network/sq/subquery/kepler-network-exchange',
-  testnet: 'https://api.subquery.network/sq/subquery/kepler-testnet-exchange',
-};
-
 export const LEADERBOARD_SUBQL_ENDPOINTS = {
   mainnet: 'https://leaderboard-api.subquery.network/graphql',
   kepler: 'https://leaderboard-api.subquery.network/graphql',
@@ -52,8 +38,6 @@ export const LEADERBOARD_SUBQL_ENDPOINTS = {
 export function gqlEndpoints(network: SQNetworks) {
   return {
     [GQLEndpoint.Network]: NETWORK_SUBQL_ENDPOINTS[network],
-    [GQLEndpoint.Airdrop]: AIRDROP_SUBQL_ENDPOINTS[network],
-    [GQLEndpoint.Exchange]: EXCHANGE_SUBQL_ENDPOINTS[network],
     [GQLEndpoint.Leaderboard]: LEADERBOARD_SUBQL_ENDPOINTS[network],
   };
 }
