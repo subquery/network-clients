@@ -1,0 +1,38 @@
+query GetAirdrops {
+  airdrops {
+    totalCount
+    nodes {
+      id
+      tokenAddress
+      startTime
+      endTime
+    }
+  }
+}
+
+query GetAirdropsByAccount($account: String!) {
+  airdropUsers(filter: { userId: { equalTo: $account } }) {
+    totalCount
+    nodes {
+      id
+      user {
+        id
+      }
+      airdrop {
+        id
+        tokenAddress
+        startTime
+        endTime
+      }
+      amount
+      status
+    }
+  }
+}
+
+query GetAirdropClaims($account: String!) {
+  airdropAmount(id: $account) {
+    totalAirdropAmount
+    claimedAmount
+  }
+}
