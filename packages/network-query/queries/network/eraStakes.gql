@@ -1,0 +1,10 @@
+query GetEraQuery($account: String!) {
+  eraStakes(filter: { delegatorId: { equalTo: $account }, indexerId: { notEqualTo: $account } }) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        stake
+      }
+      keys
+    }
+  }
+}

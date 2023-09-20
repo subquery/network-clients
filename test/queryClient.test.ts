@@ -47,6 +47,7 @@ import {
   GetOrders,
   GetAirdrops,
   GetAirdropsByAccount,
+  GetEraQuery,
 } from '../packages/network-query';
 
 function deepAssert(obj: any) {
@@ -519,5 +520,16 @@ describe('query client', () => {
     });
 
     expect(result.data.airdropUsers.totalCount).toBeGreaterThanOrEqual(0);
+  });
+
+  it('can query era stakes by account', async () => {
+    const result = await client.query({
+      query: GetEraQuery,
+      variables: {
+        account: '0x000000',
+      },
+    });
+
+    expect(result.data.eraStakes.groupedAggregates.length).toBeGreaterThanOrEqual(0);
   });
 });
