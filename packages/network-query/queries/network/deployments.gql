@@ -5,7 +5,6 @@ fragment DeploymentIndexerFields on DeploymentIndexer {
   id
   indexerId
   deploymentId
-  blockHeight
   timestamp
   status
   indexer {
