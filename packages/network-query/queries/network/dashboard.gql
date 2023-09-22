@@ -32,6 +32,8 @@ query GetDashboard {
     nextTotalStake
     totalStake
     delegatorStake
+    eraIdx
+    eraId
   }
 
   sqtokens {
@@ -43,11 +45,15 @@ query GetDashboard {
     }
   }
 
-  indexers {
+  indexers(filter: { active: { equalTo: true } }) {
     totalCount
   }
 
   delegations {
-    totalCount
+    aggregates {
+      distinctCount {
+        delegatorId
+      }
+    }
   }
 }
