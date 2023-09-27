@@ -18,6 +18,9 @@ fragment ServiceAgreementFields on ServiceAgreement {
       metadata
     }
   }
+  planTemplate {
+    priceToken
+  }
 }
 
 query GetIndexerServiceAgreementsCount($address: String!) {

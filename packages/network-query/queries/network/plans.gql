@@ -8,6 +8,7 @@ fragment PlanTemplateFields on PlanTemplate {
   rateLimit
   metadata
   active
+  priceToken
 }
 
 fragment PlanFields on Plan {
@@ -31,6 +32,7 @@ fragment PlansNodeFields on Plan {
     rateLimit
     metadata
     active
+    priceToken
   }
 }
 
