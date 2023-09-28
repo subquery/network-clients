@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.16] - 2023-09-28
 
+Upgrade @subql/contracts
+
 ## [0.3.14] - 2023-08-18
 
 ## [0.3.13] - 2023-07-04
