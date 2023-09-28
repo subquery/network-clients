@@ -45,7 +45,7 @@ import { deploymentHttpLink } from '@subql/apollo-links';
 import gql from 'graphql-tag';
 
 const options = {
-  authUrl: 'https://auth.subquery.network',
+  authUrl: 'https://kepler-auth.subquery.network',
   deploymentId: 'your_deployment_id_here',
   httpOptions: { fetchOptions: { timeout: 5000 } },
   // ... other optional configurations
@@ -80,7 +80,7 @@ import fetch from 'cross-fetch';
 import gql from 'graphql-tag';
 
 const options = {
-  authUrl: 'https://auth.subquery.network',
+  authUrl: 'https://kepler-auth.subquery.network',
   chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3', // polkadot
   httpOptions: { fetch, fetchOptions: { timeout: 5000 } },
   // optional configurations
