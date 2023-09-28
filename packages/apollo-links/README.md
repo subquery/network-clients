@@ -60,9 +60,9 @@ Tailored for deployment-based queries, leveraging the deployment's ID for optimi
 import { deploymentHttpLink } from '@subql/apollo-links';
 
 const options = {
-  authUrl: 'http://example-url.com/token',
+  authUrl: 'https://auth.subquery.network',
   deploymentId: 'your_deployment_id_here',
-  httpOptions: {/* your http options here */},
+  httpOptions: { fetch, fetchOptions: { timeout: 5000 } },
   // ... other optional configurations
 };
 
@@ -77,9 +77,10 @@ After setting up the authHttpLink, it's simple to integrate with your Apollo Cli
 import { ApolloClient, from, HttpLink, InMemoryCache } from '@apollo/client/core';
 import fetch from 'cross-fetch';  // doesn't need to be this fetch library
 
+const { link, cleanup } = deploymentHttpLink(options);
 const client = new ApolloClient({
   cache: new InMemoryCache({ resultCaching: true }),
-  link: from([link, new HttpLink({ uri: 'your_graphql_endpoint_here', fetch })]),
+  link,
 });
 
 // You can then make your GraphQL queries seamlessly:
