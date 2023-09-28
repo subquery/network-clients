@@ -8,10 +8,10 @@ The `@subql/apollo-links` package provides a set of tailored Apollo links to han
 
 ```bash
 # yarn
-yarn add @subql/apollo-links
+yarn add @subql/apollo-links @apollo/client graphql
 
 # npm
-npm install @subql/apollo-links
+npm install @subql/apollo-links @apollo/client graphql
 ```
 
 ## Features
@@ -24,19 +24,60 @@ npm install @subql/apollo-links
 - **ErrorLink**: Provides a robust error handling mechanism for any GraphQL or network errors.
 - **Caching**: Integrated caching ensures data is fetched efficiently with reduced costs.
 
-## Usage
+## Usage - external authorization mode
+### What scenario work best with external authorization mode
+This is the recommended way to use `@subql/apollo-links`. With an auth-server to handle cryptography stuff that consumer needed to interact with indexer.
+Client side doesn't need to expose anything to reveal the identity of consumer.
+Auth-server will also provide some extra benefits like indexer progress monitoring and filtering.
+We provide an implementation of auth-service that everyone can fork and run on their end. https://github.com/subquery/network-auth-service
 
 ### Initializing `authHttpLink`
 
-The `authHttpLink` offers two main methods for setup based on your needs:
+The `authHttpLink` offers two main methods for setup based on your needs, one instance of authHttpLink can not be reused across different deployment.
 
-#### 1. dictHttpLink
+#### 1. `deploymentHttpLink`
 
-Optimized for dictionary-based queries. Utilizes the dictionary's chain ID for authentication.
+Tailored for deployment-based queries, which works for most scenario, `@subql/apollo-links` will grab all available approaches of querying indexer from auth service and smartly route requests for you.
 
 ```TS
+import { ApolloClient, InMemoryCache } from '@apollo/client/core';
+import { deploymentHttpLink } from '@subql/apollo-links';
+import gql from 'graphql-tag';
+
+const options = {
+  authUrl: 'https://auth.subquery.network',
+  deploymentId: 'your_deployment_id_here',
+  httpOptions: { fetchOptions: { timeout: 5000 } },
+  // ... other optional configurations
+  // fallbackUrl:
+};
+
+const { link, cleanup } = deploymentHttpLink(options);
+const client = new ApolloClient({
+  cache: new InMemoryCache({ resultCaching: true }),
+  link,
+});
+
+const metadataQuery = gql`
+    query Metadata {
+        _metadata {
+        indexerHealthy
+        indexerNodeVersion
+        }
+    }
+`
+const result = await client.query({ query: metadataQuery });
+```
+
+#### 2. `dictHttpLink`
+
+Optimized for dictionary-based queries. The difference from deploymentHttpLink is `dictHttpLink` only asks for chainId, it is genesisHash for substrate chains and numeric chainId for ethereum like chains.
+
+```TS
+import { ApolloClient, InMemoryCache } from '@apollo/client/core';
 import { dictHttpLink } from '@subql/apollo-links';
 import fetch from 'cross-fetch';
+import gql from 'graphql-tag';
 
 const options = {
   authUrl: 'https://auth.subquery.network',
@@ -52,53 +93,26 @@ const options = {
 const { link, cleanup } = dictHttpLink(options);
 ```
 
-#### 2. deploymentHttpLink
+## Usage - local authorization mode
+Need to put consumer controller's private key with client so it can sign and authorise every requests sent to indexer.
 
-Tailored for deployment-based queries, leveraging the deployment's ID for optimized querying.
-
-```TS
-import { deploymentHttpLink } from '@subql/apollo-links';
-
+```ts
 const options = {
-  authUrl: 'https://auth.subquery.network',
-  deploymentId: 'your_deployment_id_here',
-  httpOptions: { fetch, fetchOptions: { timeout: 5000 } },
-  // ... other optional configurations
-};
-
-const { link, cleanup } = deploymentHttpLink(options);
+    sk: '<private key>',
+    // don't put authUrl
+}
 ```
 
-### Integrating with Apollo Client
+## Other options
 
-After setting up the authHttpLink, it's simple to integrate with your Apollo Client:
+| params | usage                                                            |
+|--------|------------------------------------------------------------------|
+| logger | apollo link will write logs to it, by default no logs will print |
+|        |                                                                  |
 
-```TS
-import { ApolloClient, from, HttpLink, InMemoryCache } from '@apollo/client/core';
-import fetch from 'cross-fetch';  // doesn't need to be this fetch library
 
-const { link, cleanup } = deploymentHttpLink(options);
-const client = new ApolloClient({
-  cache: new InMemoryCache({ resultCaching: true }),
-  link,
-});
-
-// You can then make your GraphQL queries seamlessly:
-const metadataQuery = gql`
-  query Metadata {
-    _metadata {
-      indexerHealthy
-      indexerNodeVersion
-    }
-  }
-`
-
-await client.query({ query: metadataQuery });
-```
-
-### Cleanup
-
-For optimal performance and resource management, call the cleanup function when you want to destroy the link:
+## Cleanup
+Because of the extra state management logic in it, call `cleanup()` to completely destroy the link and release resources.
 
 ```TS
 cleanup();
