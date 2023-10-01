@@ -23,6 +23,7 @@ interface BaseAuthOptions {
   logger?: Logger; // logger for `AuthLink`
   fallbackServiceUrl?: string; // fall back service url for `AuthLink`
   scoreStore?: IStore; // pass store in, so it doesn't get lost between page refresh
+  maxRetries?: number;
 }
 
 interface DictAuthOptions extends BaseAuthOptions {
@@ -58,6 +59,7 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
     fallbackServiceUrl,
     authUrl,
     projectType,
+    maxRetries,
     logger: _logger,
   } = options;
 
@@ -69,7 +71,7 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
     logger,
   });
 
-  const retryLink = createRetryLink({ orderManager, logger });
+  const retryLink = createRetryLink({ orderManager, logger, maxRetries });
   const fallbackLink = new FallbackLink(fallbackServiceUrl, logger);
   const httpLink = new DynamicHttpLink({ httpOptions, logger });
   const responseLink = new ResponseLink({ authUrl, logger });
