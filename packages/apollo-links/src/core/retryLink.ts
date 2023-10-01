@@ -4,7 +4,7 @@
 import type { Operation } from '@apollo/client/core';
 import { RetryLink } from '@apollo/client/link/retry';
 import { Logger } from '../utils/logger';
-import OrderManager from '../utils/orderManager';
+import { OrderManager } from './orderManager';
 
 export type RetryLinkOption = {
   orderManager: OrderManager;

@@ -4,16 +4,16 @@
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
 import { Subscription } from 'zen-observable-ts';
 
-import { isTokenExpired } from '../auth/authHelper';
+import { OrderManager } from './orderManager';
+import { isTokenExpired } from '../auth';
 import { ChannelAuth, OrderType } from '../types';
 import { Logger } from '../utils/logger';
-import OrderMananger from '../utils/orderManager';
 import { POST } from '../utils/query';
 
 export type AuthOptions = {
   authUrl: string; // the url for geting token
   projectId: string; // chainId or deploymentId for the project
-  orderManager: OrderMananger; // agreement manager for managing agreements
+  orderManager: OrderManager; // agreement manager for managing agreements
   logger: Logger; // logger for logging
 };
 
@@ -32,7 +32,7 @@ type ParamsResponse = {
 export class ClusterAuthLink extends ApolloLink {
   private options: AuthOptions;
   private logger: Logger;
-  private orderManager: OrderMananger;
+  private orderManager: OrderManager;
 
   constructor(options: AuthOptions) {
     super();

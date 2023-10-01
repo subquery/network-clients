@@ -2,19 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Agreement, Order, OrderType, Plan, ProjectType } from '../types';
-import { ICache } from './cache';
-import { Logger } from './logger';
-import { fetchOrders } from './query';
+import { createStore, IStore } from '../utils/store';
+import { Logger } from '../utils/logger';
+import { fetchOrders } from '../utils/query';
 
 type Options = {
   logger: Logger;
   authUrl: string;
   projectId: string;
   projectType: ProjectType;
-  cache?: ICache;
+  scoreStore?: IStore;
 };
 
-class OrderManager {
+export class OrderManager {
   private nextAgreementIndex: number | undefined;
   private agreements: Agreement[] | undefined;
 
@@ -23,7 +23,7 @@ class OrderManager {
 
   private projectType: ProjectType;
   private logger: Logger;
-  private cache: ICache | undefined;
+  private scoreStore: IStore;
   private timer: NodeJS.Timeout | undefined;
 
   private authUrl: string;
@@ -34,12 +34,12 @@ class OrderManager {
   private _init: Promise<void>;
 
   constructor(options: Options) {
-    const { authUrl, projectId, logger, projectType, cache } = options;
+    const { authUrl, projectId, logger, projectType, scoreStore } = options;
     this.authUrl = authUrl;
     this.projectId = projectId;
     this.projectType = projectType;
     this.logger = logger;
-    this.cache = cache;
+    this.scoreStore = scoreStore ?? createStore({ ttl: 86_400_000 });
 
     this._init = this.refreshAgreements();
     this.timer = setInterval(this.refreshAgreements, this.interval);
@@ -68,17 +68,16 @@ class OrderManager {
 
   private getIndexerScore(indexer: string) {
     const key = this.getCacheKey(indexer);
-    return this.cache?.get<number>(key) ?? 100;
-  }
-
-  private isIndexerSelectable(indexer: string) {
-    const score = this.getIndexerScore(indexer);
-    return score > this.minScore;
+    let score = this.scoreStore.get<number>(key);
+    if (score === undefined) {
+      score = 100;
+      this.scoreStore.set(key, score);
+    }
+    return score;
   }
 
   private filterOrdersByScore(orders: Order[]) {
-    if (!this.cache) return orders;
-    return orders.filter(({ indexer }) => this.isIndexerSelectable(indexer));
+    return orders.filter(({ indexer }) => this.getIndexerScore(indexer) > this.minScore);
   }
 
   private getNextOrderIndex(total: number, currentIndex: number) {
@@ -141,15 +140,13 @@ class OrderManager {
   }
 
   public updateIndexerScore(indexer: string, errorType: 'graphql' | 'network') {
-    if (!this.cache) return;
-
     const key = this.getCacheKey(indexer);
-    const score = this.cache.get<number>(key) ?? 100;
+    const score = this.scoreStore.get<number>(key) ?? 100;
 
     const delta = errorType === 'graphql' ? 10 : 50;
     const newScore = Math.max(score - delta, 0);
 
-    this.cache.set(key, newScore);
+    this.scoreStore.set(key, newScore);
   }
 
   public cleanup() {
@@ -158,5 +155,3 @@ class OrderManager {
     }
   }
 }
-
-export default OrderManager;
