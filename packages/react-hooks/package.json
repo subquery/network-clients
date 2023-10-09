@@ -17,7 +17,8 @@
     "ahooks": "^3.7.8",
     "bignumber.js": "^9.1.2",
     "class-transformer": "^0.5.1",
-    "class-validator": "^0.14.0"
+    "class-validator": "^0.14.0",
+    "ethereum-checksum-address": "^0.0.8"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^2.13.1",
@@ -27,6 +28,7 @@
     "@graphql-codegen/typescript-operations": "^2.5.3",
     "@graphql-codegen/typescript-react-apollo": "^3.3.3",
     "@subql/network-config": "workspace:*",
+    "@types/ethereum-checksum-address": "^0.0.0",
     "create-ts-index": "^1.14.0",
     "ctix": "^1.5.4",
     "prettier": "^2.7.1",

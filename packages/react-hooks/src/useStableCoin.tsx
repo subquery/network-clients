@@ -14,6 +14,8 @@ import {
   STABLE_COIN_SYMBOLS,
   TOKEN_SYMBOLS,
 } from '@subql/network-config';
+import { toChecksumAddress } from 'ethereum-checksum-address';
+
 import { formatEther, formatSQT } from './utils';
 
 export const useStableCoin = (contracts: ContractSDK | undefined, network: SQNetworks) => {
@@ -33,19 +35,19 @@ export const useStableCoin = (contracts: ContractSDK | undefined, network: SQNet
   const coinsAddressDict = useMemo<{ [key: string]: 'USDC' | 'kSQT' | 'SQT' }>(() => {
     if (!contracts?.sqToken)
       return {
-        [STABLE_COIN_ADDRESS]: STABLE_TOKEN,
+        [toChecksumAddress(STABLE_COIN_ADDRESS)]: STABLE_TOKEN,
       };
     return {
-      [STABLE_COIN_ADDRESS]: STABLE_TOKEN,
-      [contracts.sqToken.address]: TOKEN,
+      [toChecksumAddress(STABLE_COIN_ADDRESS)]: STABLE_TOKEN,
+      [toChecksumAddress(contracts.sqToken.address)]: TOKEN,
     };
   }, [contracts]);
 
   const getPriceOracle = async () => {
     if (!contracts) return;
     const assetPrice = await contracts.priceOracle.convertPrice(
-      STABLE_COIN_ADDRESS,
-      contracts.sqToken.address,
+      toChecksumAddress(STABLE_COIN_ADDRESS),
+      toChecksumAddress(contracts.sqToken.address),
       10 ** STABLE_COIN_DECIMAL
     );
 
@@ -60,31 +62,26 @@ export const useStableCoin = (contracts: ContractSDK | undefined, network: SQNet
   };
 
   const transPrice = (fromAddress: string | undefined, price: string | number | bigint) => {
-    const sortedPrice =
-      fromAddress === contracts?.sqToken.address
-        ? formatSQT(price.toString())
-        : formatUnits(price, STABLE_COIN_DECIMAL);
+    const isSQT =
+      toChecksumAddress(fromAddress || '') === toChecksumAddress(contracts?.sqToken.address || '');
+    const sortedPrice = isSQT
+      ? formatSQT(price.toString())
+      : formatUnits(price, STABLE_COIN_DECIMAL);
 
     const resultCalc = BigNumber(sortedPrice).multipliedBy(
-      fromAddress === contracts?.sqToken.address ? rates.sqtToUsdc : rates.usdcToSqt
+      isSQT ? rates.sqtToUsdc : rates.usdcToSqt
     );
     return {
-      usdcPrice: (fromAddress === contracts?.sqToken.address
-        ? resultCalc.toFixed()
-        : sortedPrice
-      ).toString(),
-      sqtPrice: (fromAddress === contracts?.sqToken.address
-        ? sortedPrice
-        : resultCalc.toFixed()
-      ).toString(),
+      usdcPrice: (isSQT ? resultCalc.toFixed() : sortedPrice).toString(),
+      sqtPrice: (isSQT ? sortedPrice : resultCalc.toFixed()).toString(),
     };
   };
 
   const pricePreview = (fromAddress: string | undefined, price: string | number | bigint) => {
-    const sqtTokenAddress = contracts?.sqToken.address;
-    const prices = transPrice(fromAddress, price);
+    const sqtTokenAddress = toChecksumAddress(contracts?.sqToken.address || '');
+    const prices = transPrice(toChecksumAddress(fromAddress || ''), price);
 
-    if (sqtTokenAddress === fromAddress) {
+    if (sqtTokenAddress === toChecksumAddress(fromAddress || '')) {
       return (
         <span
           style={{
