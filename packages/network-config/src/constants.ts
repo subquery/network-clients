@@ -18,22 +18,43 @@ export const IPFS_URLS = {
 };
 
 export const RPC_ENDPOINTS = {
-  mainnet: 'https://polygon-rpc.com/',
-  kepler: 'https://polygon-rpc.com/',
-  testnet: 'https://polygon-mumbai.infura.io/v3/4458cf4d1689497b9a38b1d6bbf05e78',
+  [SQNetworks.MAINNET]: 'https://polygon-rpc.com/',
+  [SQNetworks.KEPLER]: 'https://polygon-rpc.com/',
+  [SQNetworks.TESTNET]: 'https://polygon-mumbai.infura.io/v3/4458cf4d1689497b9a38b1d6bbf05e78',
 };
 
 export const NETWORK_SUBQL_ENDPOINTS = {
-  mainnet: 'https://api.subquery.network/sq/subquery/kepler-network',
-  kepler: 'https://api.subquery.network/sq/subquery/kepler-network',
-  testnet: 'https://api.subquery.network/sq/subquery/kepler-testnet',
+  [SQNetworks.MAINNET]: 'https://api.subquery.network/sq/subquery/kepler-network',
+  [SQNetworks.KEPLER]: 'https://api.subquery.network/sq/subquery/kepler-network',
+  [SQNetworks.TESTNET]: 'https://api.subquery.network/sq/subquery/kepler-testnet',
 };
 
 export const LEADERBOARD_SUBQL_ENDPOINTS = {
-  mainnet: 'https://leaderboard-api.subquery.network/graphql',
-  kepler: 'https://leaderboard-api.subquery.network/graphql',
-  testnet: 'https://leaderboard-api.thechaindata.com/graphql',
+  [SQNetworks.MAINNET]: 'https://leaderboard-api.subquery.network/graphql',
+  [SQNetworks.KEPLER]: 'https://leaderboard-api.subquery.network/graphql',
+  [SQNetworks.TESTNET]: 'https://leaderboard-api.thechaindata.com/graphql',
 };
+
+export const STABLE_COIN_ADDRESSES = {
+  [SQNetworks.MAINNET]: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+  [SQNetworks.KEPLER]: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+  [SQNetworks.TESTNET]: '0x7E65A71046170A5b1AaB5C5cC64242EDF95CaBEA',
+} as const;
+
+export const STABLE_COIN_SYMBOLS = {
+  [SQNetworks.MAINNET]: 'USDC',
+  [SQNetworks.KEPLER]: 'USDC',
+  [SQNetworks.TESTNET]: 'USDC',
+} as const;
+
+export const TOKEN_SYMBOLS = {
+  [SQNetworks.MAINNET]: 'SQT',
+  [SQNetworks.KEPLER]: 'kSQT',
+  [SQNetworks.TESTNET]: 'kSQT',
+} as const;
+
+export const STABLE_COIN_DECIMAL = 6;
+export const SQT_DECIMAL = 18;
 
 export function gqlEndpoints(network: SQNetworks) {
   return {
