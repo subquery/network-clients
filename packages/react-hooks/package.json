@@ -2,7 +2,7 @@
   "name": "@subql/react-hooks",
   "version": "0.3.16-15",
   "description": "SubQuery client sdk for react hooks",
-  "main": "dist/index.js",
+  "main": "src/index.ts",
   "author": "SubQuery Pte Limited",
   "license": "Apache-2.0",
   "scripts": {
@@ -14,6 +14,8 @@
     "@graphql-tools/graphql-tag-pluck": "^7.3.6",
     "@graphql-tools/load": "^7.7.7",
     "@subql/network-query": "workspace:*",
+    "ahooks": "^3.7.8",
+    "bignumber.js": "^9.1.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0"
   },
@@ -31,8 +33,9 @@
     "typescript": "^4.6.4"
   },
   "peerDependencies": {
+    "@subql/contract-sdk": "^0.16.2",
     "graphql": "^16.5.0",
-    "react": "^17"
+    "react": "^18"
   },
   "stableVersion": "0.3.16-14"
 }

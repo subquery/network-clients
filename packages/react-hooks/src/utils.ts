@@ -3,6 +3,9 @@
 
 import { ReactElement } from 'react';
 import { AsyncData } from './types';
+import BigNumberJs from 'bignumber.js';
+import { SQT_DECIMAL } from '@subql/network-config';
+import { BigNumberish, BigNumber, utils } from 'ethers';
 
 export function mergeAsync<T1, T2, T3, T4>(
   v1: AsyncData<T1>,
@@ -43,3 +46,25 @@ export type HandlersArray<T extends any[]> = {
   data: (data: T, asyncData: AsyncData<T>) => RenderResult;
   empty: () => RenderResult;
 };
+
+export const formatSQT = (val: string | bigint) => {
+  const transVal = typeof val === 'bigint' ? val.toString() : val;
+  return BigNumberJs(transVal)
+    .div(10 ** SQT_DECIMAL)
+    .toString();
+};
+
+export function truncFormatEtherStr(value: string, decimalPlaces = 4): string {
+  const [wholeNumberStr, decimalPlacesStr] = value.split('.');
+  if (!decimalPlacesStr) return wholeNumberStr;
+
+  const subStrLength =
+    decimalPlacesStr.length > decimalPlaces ? decimalPlaces : decimalPlacesStr.length;
+  const sortedDecimalPlaceStr = decimalPlacesStr.substring(0, subStrLength);
+  return wholeNumberStr.concat('.', sortedDecimalPlaceStr);
+}
+
+export function formatEther(value: BigNumberish | bigint | undefined, toFixed?: number): string {
+  const formattedEther = utils.formatEther(BigNumber.from(value ?? 0).toString());
+  return toFixed ? truncFormatEtherStr(formattedEther, toFixed) : formattedEther;
+}
