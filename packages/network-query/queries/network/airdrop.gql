@@ -11,13 +11,11 @@ query GetAirdrops {
 }
 
 query GetAirdropsByAccount($account: String!) {
-  airdropUsers(filter: { userId: { equalTo: $account } }) {
+  airdropUsers(filter: { user: { equalTo: $account } }) {
     totalCount
     nodes {
       id
-      user {
-        id
-      }
+      user
       airdrop {
         id
         tokenAddress
