@@ -62,26 +62,66 @@ export const useStableCoin = (contracts: ContractSDK | undefined, network: SQNet
   };
 
   const transPrice = (fromAddress: string | undefined, price: string | number | bigint) => {
-    const isSQT =
-      toChecksumAddress(fromAddress || '') === toChecksumAddress(contracts?.sqToken.address || '');
-    const sortedPrice = isSQT
-      ? formatSQT(price.toString())
-      : formatUnits(price, STABLE_COIN_DECIMAL);
+    if (!contracts?.sqToken.address || !fromAddress)
+      return {
+        usdcPrice: '0',
+        sqtPrice: '0',
+      };
 
-    const resultCalc = BigNumber(sortedPrice).multipliedBy(
-      isSQT ? rates.sqtToUsdc : rates.usdcToSqt
-    );
-    return {
-      usdcPrice: (isSQT ? resultCalc.toFixed() : sortedPrice).toString(),
-      sqtPrice: (isSQT ? sortedPrice : resultCalc.toFixed()).toString(),
-    };
+    try {
+      const isSQT =
+        toChecksumAddress(fromAddress) === toChecksumAddress(contracts?.sqToken.address);
+      const isUSDC = toChecksumAddress(fromAddress) === toChecksumAddress(STABLE_COIN_ADDRESS);
+
+      if (!isSQT && !isUSDC) {
+        return {
+          usdcPrice: '0',
+          sqtPrice: '0',
+        };
+      }
+      const sortedPrice = isSQT
+        ? formatSQT(price.toString())
+        : formatUnits(price, STABLE_COIN_DECIMAL);
+
+      const resultCalc = BigNumber(sortedPrice).multipliedBy(
+        isSQT ? rates.sqtToUsdc : rates.usdcToSqt
+      );
+      return {
+        usdcPrice: (isSQT ? resultCalc.toFixed() : sortedPrice).toString(),
+        sqtPrice: (isSQT ? sortedPrice : resultCalc.toFixed()).toString(),
+      };
+    } catch (e) {
+      console.error(e);
+      return {
+        usdcPrice: '0',
+        sqtPrice: '0',
+      };
+    }
   };
 
   const pricePreview = (fromAddress: string | undefined, price: string | number | bigint) => {
-    const sqtTokenAddress = toChecksumAddress(contracts?.sqToken.address || '');
-    const prices = transPrice(toChecksumAddress(fromAddress || ''), price);
+    if (!contracts?.sqToken.address || !fromAddress) return <span>Error: address is invalid</span>;
 
-    if (sqtTokenAddress === toChecksumAddress(fromAddress || '')) {
+    try {
+      const sqtTokenAddress = toChecksumAddress(contracts?.sqToken.address);
+      const prices = transPrice(toChecksumAddress(fromAddress), price);
+
+      if (sqtTokenAddress === toChecksumAddress(fromAddress)) {
+        return (
+          <span
+            style={{
+              color: 'var(--gray-900, #1A202C)',
+              fontSize: '14px',
+              fontFamily: 'var(--sq-font-family)',
+            }}
+            role="sqtPrice"
+            aria-label="sqtPrice"
+          >
+            {prices.sqtPrice} {TOKEN}
+          </span>
+        );
+      }
+
       return (
         <span
           style={{
@@ -89,32 +129,27 @@ export const useStableCoin = (contracts: ContractSDK | undefined, network: SQNet
             fontSize: '14px',
             fontFamily: 'var(--sq-font-family)',
           }}
+          role="usdcPrice"
+          aria-label="usdcPrice"
         >
-          {prices.sqtPrice} {TOKEN}
+          {prices.usdcPrice} {STABLE_TOKEN} <br></br>
+          <span
+            style={{
+              color: 'var(--gray-600, #637381)',
+              fontSize: '12px',
+              fontFamily: 'var(--sq-font-family)',
+            }}
+            role="usdcToSqtPrice"
+            aria-label="usdcToSqtPrice"
+          >
+            = {prices.sqtPrice} {TOKEN} | {now?.format('HH:mm:ss A')}
+          </span>
         </span>
       );
+    } catch (e) {
+      console.error(e);
+      return <span>Error: address is invalid</span>;
     }
-
-    return (
-      <span
-        style={{
-          color: 'var(--gray-900, #1A202C)',
-          fontSize: '14px',
-          fontFamily: 'var(--sq-font-family)',
-        }}
-      >
-        {prices.usdcPrice} {STABLE_TOKEN} <br></br>
-        <span
-          style={{
-            color: 'var(--gray-600, #637381)',
-            fontSize: '12px',
-            fontFamily: 'var(--sq-font-family)',
-          }}
-        >
-          = {prices.sqtPrice} {TOKEN} | {now?.format('HH:mm:ss A')}
-        </span>
-      </span>
-    );
   };
 
   useInterval(
