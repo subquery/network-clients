@@ -5,6 +5,7 @@ import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apoll
 import { Logger } from '../utils/logger';
 import { POST } from '../utils/query';
 import { ChannelState, OrderType } from '../types';
+import { Base64 } from 'js-base64';
 
 export type ResponseLinkOptions = {
   authUrl: string;
@@ -42,7 +43,13 @@ export class ResponseLink extends ApolloLink {
       const subscription = forward(operation).subscribe({
         next: (response: FetchResult<Record<string, any>> & { state: ChannelState }) => {
           if (!response.errors && type === OrderType.flexPlan) {
-            void this.syncChannelState(response.state);
+            const responseHeaders = operation.getContext().response.headers;
+            const channelState = responseHeaders.get('X-Channel-State')
+              ? (JSON.parse(
+                  Base64.decode(responseHeaders.get('X-Channel-State')).toString()
+                ) as ChannelState)
+              : response.state;
+            void this.syncChannelState(channelState);
           }
 
           observer.next(response);
