@@ -9,11 +9,12 @@ const mockAxios = axios as jest.Mocked<typeof axios>;
 import dotenv from 'dotenv';
 
 import { ApolloClient, ApolloLink, from, HttpLink, InMemoryCache } from '@apollo/client/core';
-import fetch from 'cross-fetch';
+import fetch, { Headers } from 'cross-fetch';
 import gql from 'graphql-tag';
 import Pino from 'pino';
 import { ProjectType } from '../packages/apollo-links/src/types';
 import { Logger } from '../packages/apollo-links/src/utils/logger';
+import { Base64 } from 'js-base64';
 
 dotenv.config();
 
@@ -316,7 +317,7 @@ describe('mock: auth link with auth center', () => {
     expect(result.data._metadata).toBeTruthy();
   }, 5000);
 
-  it.skip('mock: can query data with payg', async () => {
+  it('mock: can query data with payg', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
     const { deploymentHttpLink } = await getLinks();
     const signBeforeQueryPayg = jest.fn();
@@ -362,14 +363,18 @@ describe('mock: auth link with auth center', () => {
 
         return Promise.resolve({
           data: {
-            channelId: '0x91ABB40D77FE1F340A98A57A0C5BC24B3A9B91007E345EA4795901D9698ADF4',
-            consumer: '0x0000000000000000',
-            consumerSign: indexerSign,
-            indexer: '0x000000000000000c',
-            indexerSign,
-            isFinal: false,
-            remote: '10000000000000000',
-            spent: '10000000000000000',
+            authorization: Base64.encode(
+              JSON.stringify({
+                channelId: '0x91ABB40D77FE1F340A98A57A0C5BC24B3A9B91007E345EA4795901D9698ADF4',
+                consumer: '0x0000000000000000',
+                consumerSign: indexerSign,
+                indexer: '0x000000000000000c',
+                indexerSign,
+                isFinal: false,
+                remote: '10000000000000000',
+                spent: '10000000000000000',
+              })
+            ),
           },
         });
       }
@@ -384,6 +389,12 @@ describe('mock: auth link with auth center', () => {
         expect((data as { indexerSign: string }).indexerSign).not.toEqual(indexerSign);
 
         stateAfterQueryPayg();
+
+        return Promise.resolve({
+          data: {
+            consumerSign: indexerSign,
+          },
+        });
       }
 
       return Promise.resolve();
@@ -396,21 +407,18 @@ describe('mock: auth link with auth center', () => {
         ...httpOptions,
         fetch: (uri: RequestInfo | URL, options: any): Promise<Response> => {
           if (uri.toString().includes('mock-request/payg')) {
-            const authorization = JSON.parse(options.headers.authorization);
+            const authorization = JSON.parse(Base64.decode(options.headers.authorization));
             expect(authorization).toHaveProperty('channelId');
             expect(authorization).toHaveProperty('consumer');
             expect(authorization).toHaveProperty('consumerSign');
+
             // @ts-ignore
             return Promise.resolve({
-              json: () =>
-                Promise.resolve({
-                  data: {
-                    _metadata: {
-                      indexerHealthy: true,
-                      indexerNodeVersion: '00.00',
-                    },
-                  },
-                  state: {
+              headers: new Headers({
+                ...options.headers,
+                'Access-Control-Expose-Headers': '*',
+                'X-Channel-State': Base64.encode(
+                  JSON.stringify({
                     channelId: '0x91ABB40D77FE1F340A98A57A0C5BC24B3A9B91007E345EA4795901D9698ADF4',
                     consumer: '0x0000000',
                     consumerSign:
@@ -421,6 +429,16 @@ describe('mock: auth link with auth center', () => {
                     isFinal: false,
                     remote: '10000000000000000',
                     spent: '10000000000000000',
+                  })
+                ),
+              }),
+              json: () =>
+                Promise.resolve({
+                  data: {
+                    _metadata: {
+                      indexerHealthy: true,
+                      indexerNodeVersion: '00.00',
+                    },
                   },
                 }),
               text: () =>
@@ -431,19 +449,6 @@ describe('mock: auth link with auth center', () => {
                         indexerHealthy: true,
                         indexerNodeVersion: '00.00',
                       },
-                    },
-                    state: {
-                      channelId:
-                        '0x91ABB40D77FE1F340A98A57A0C5BC24B3A9B91007E345EA4795901D9698ADF4',
-                      consumer: '0x0000000',
-                      consumerSign:
-                        'e239518860984116c1bee0264c3ad1df02c574db56be715e9a74b665a160fc56782db19f7a40c354b661ad8279e1a1ca99dfed25264e9d8bfc89427a70d5c0451c',
-                      indexer: '0x11111111',
-                      indexerSign:
-                        '4db7ad2c0c4426cec02c05586b2363c23358394ea540d516dc6f7efdffd3a6967205c115fea4e3054f74aaf0f27c4b90416bee71f9775915d315644720a61d2a1b',
-                      isFinal: false,
-                      remote: '10000000000000000',
-                      spent: '10000000000000000',
                     },
                   })
                 ),
@@ -461,7 +466,7 @@ describe('mock: auth link with auth center', () => {
     expect(result.data._metadata).toBeTruthy();
     expect(signBeforeQueryPayg).toBeCalledTimes(1);
     expect(stateAfterQueryPayg).toBeCalledTimes(1);
-  }, 5000);
+  }, 25000);
 
   it('mock: can query data with service agreement', async () => {
     const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
@@ -1179,12 +1184,12 @@ describe('mock: auth link with auth center', () => {
 });
 
 /// real data test
-const authUrl = process.env.AUTH_URL ?? 'https://kepler-auth.subquery.network';
+const authUrl = process.env.AUTH_URL ?? 'https://kepler-auth.thechaindata.com';
 const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
 
 const createDictionaryClient = async (chainId: string, fallbackServiceUrl: string) => {
   const options = {
-    authUrl,
+    authUrl: process.env.AUTH_URL ?? 'https://kepler-auth.subquery.network',
     chainId,
     httpOptions,
     logger: mockLogger,
@@ -1211,10 +1216,10 @@ const createDeploymentClient = async (deploymentId: string, fallbackServiceUrl?:
 };
 
 describe('Auth http link with real data', () => {
-  const defaultFallbackUrl = 'https://api.subquery.network/sq/subquery/karura-dictionary';
+  const defaultFallbackUrl = 'https://api.subquery.network/sq/subquery/aleph-zero-dictionary';
   const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
   // TODO: need to update this one to network deploymentId
-  const deploymentId = 'QmV6sbiPyTDUjcQNJs2eGcAQp2SMXL2BU6qdv5aKrRr7Hg';
+  const deploymentId = 'QmStgQRJVMGxj1LdzNirEcppPf7t8Zm4pgDkCqChqvrDKG';
   const unavailableChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c4';
 
   beforeEach(async () => {

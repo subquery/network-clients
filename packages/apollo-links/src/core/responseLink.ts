@@ -27,8 +27,13 @@ export class ResponseLink extends ApolloLink {
   async syncChannelState(state: ChannelState): Promise<void> {
     try {
       const stateUrl = new URL('/channel/state', this.options.authUrl);
-      await POST(stateUrl.toString(), state);
-      this.logger?.debug(`syncChannelState succeed`);
+      const res = await POST<{ consumerSign: string }>(stateUrl.toString(), state);
+
+      if (res.consumerSign) {
+        this.logger?.debug(`syncChannelState succeed`);
+      } else {
+        this.logger?.debug(`syncChannelState failed: ${JSON.stringify(res)}`);
+      }
     } catch (e) {
       this.logger?.debug(`syncChannelState failed: ${e}`);
     }
