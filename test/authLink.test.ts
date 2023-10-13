@@ -1184,7 +1184,6 @@ describe('mock: auth link with auth center', () => {
 });
 
 /// real data test
-const authUrl = process.env.AUTH_URL ?? 'https://kepler-auth.thechaindata.com';
 const httpOptions = { fetch, fetchOptions: { timeout: 5000 } };
 
 const createDictionaryClient = async (chainId: string, fallbackServiceUrl: string) => {
@@ -1203,7 +1202,7 @@ const createDictionaryClient = async (chainId: string, fallbackServiceUrl: strin
 
 const createDeploymentClient = async (deploymentId: string, fallbackServiceUrl?: string) => {
   const options = {
-    authUrl,
+    authUrl: 'https://kepler-auth.thechaindata.com',
     deploymentId,
     httpOptions,
     logger: mockLogger,
