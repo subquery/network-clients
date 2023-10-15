@@ -5,3 +5,4 @@ export * from './useAsyncMemo';
 export * from './renderAsync';
 export * from './types';
 export * from './__hooks__';
+export * from './useStableCoin';

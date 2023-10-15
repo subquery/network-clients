@@ -22,7 +22,7 @@ export default {
   },
 
   // An array of file extensions your modules use
-  moduleFileExtensions: ['js', 'ts', 'json'],
+  moduleFileExtensions: ['js', 'ts', 'json', 'tsx'],
 
   // The paths to modules that run some code to configure or set up the testing environment before each test
   setupFiles: ['./test/jest-setup.ts'],

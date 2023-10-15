@@ -1,6 +1,6 @@
 {
   "name": "@subql/network-config",
-  "version": "0.3.16",
+  "version": "0.3.17-1",
   "main": "dist/index.js",
   "description": "SubQuery package containing network configuration",
   "author": "SubQuery Pte Limited",
@@ -15,5 +15,5 @@
     "@subql/contract-sdk": "^0.16.2",
     "ipfs-http-client": "^53.0.1"
   },
-  "stableVersion": "0.3.14"
+  "stableVersion": "0.3.17-0"
 }
