@@ -86,8 +86,6 @@ const options = {
   // optional configurations
   fallbackUrl: 'https://api.subquery.network/sq/your_deployment_id_here', // fall back service url for `AuthLink`
   logger: console, // or any other custom logger
-  cacheEnabled: true, // default is true
-  ttl: 43200000, // default is 1 day
 };
 
 const { link, cleanup } = dictHttpLink(options);
