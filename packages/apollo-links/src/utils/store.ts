@@ -3,7 +3,7 @@
 
 import { LRUCache as LRU } from 'lru-cache';
 
-export interface ICache {
+export interface IStore {
   get<T>(key: string): T | undefined;
   set<T>(key: string, value: T): void; // ttl in milliseconds
   remove(key: string): void;
@@ -13,7 +13,7 @@ interface Options {
   ttl: number;
 }
 
-export class LocalStorageCache implements ICache {
+export class LocalStorageCache implements IStore {
   private ttl: number;
 
   constructor(options: Options) {
@@ -50,7 +50,7 @@ export class LocalStorageCache implements ICache {
   }
 }
 
-export class LRUCache implements ICache {
+export class LRUCache implements IStore {
   private cache: LRU<string, any>;
 
   constructor(options: Options) {
@@ -72,10 +72,18 @@ export class LRUCache implements ICache {
   }
 }
 
-export function createCache(options: Options): ICache {
+export function createStore(options: Options): IStore {
   if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
     return new LocalStorageCache(options);
   }
 
   return new LRUCache(options);
+}
+
+export function createLocalStorageStore(options: Options): IStore {
+  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    return new LocalStorageCache(options);
+  }
+
+  throw new Error('localstorage is not available.');
 }

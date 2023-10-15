@@ -103,6 +103,22 @@ const options = {
 }
 ```
 
+## Score Store
+We have an internal store for indexer scores so bad performed, bad progressed or unreachable indexers will be punished and not getting new requests.
+
+For browser side usage, after page refresh, the score will lose though. To solve that, you can instantiate a LocalStorageStore and pass in when constructing the link object.
+```ts
+const store = createLocalStorageStore({ttl: 86_400_000});
+
+const { link, cleanup } = deploymentHttpLink({
+    authUrl: 'https://kepler-auth.subquery.network',
+    deploymentId: 'your_deployment_id_here',
+    httpOptions: { fetchOptions: { timeout: 5000 } },
+    scoreStore: store,
+});
+
+```
+
 ## Other options
 
 | params | usage                                                            |

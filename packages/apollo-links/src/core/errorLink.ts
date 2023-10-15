@@ -4,7 +4,7 @@
 import { ApolloLink, FetchResult, NextLink, Observable } from '@apollo/client/core';
 import { onError } from '@apollo/client/link/error';
 import { Logger } from '../utils/logger';
-import OrderManager from '../utils/orderManager';
+import { OrderManager } from './orderManager';
 
 export type ErrorLinkOption = {
   orderManager: OrderManager;
