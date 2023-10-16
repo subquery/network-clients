@@ -1200,10 +1200,15 @@ const createDictionaryClient = async (chainId: string, fallbackServiceUrl: strin
   return createApolloClient(link);
 };
 
-const createDeploymentClient = async (deploymentId: string, fallbackServiceUrl?: string) => {
+const createDeploymentClient = async (
+  deploymentId: string,
+  fallbackServiceUrl?: string,
+  indexers?: string[]
+) => {
   const options = {
     authUrl: 'https://kepler-auth.thechaindata.com',
     deploymentId,
+    indexers,
     httpOptions,
     logger: mockLogger,
     cacheEnabled: true,
@@ -1245,6 +1250,17 @@ describe('Auth http link with real data', () => {
 
   it('can query data with deployment auth link for payg', async () => {
     const client = await createDeploymentClient(deploymentId);
+    for (let i = 0; i < 10; i++) {
+      const result = await client.query({ query: metadataQuery });
+      expect(result.data._metadata).toBeTruthy();
+    }
+  });
+
+  it('can query data with deployment auth link for payg with specific indexers', async () => {
+    const client = await createDeploymentClient(deploymentId, undefined, [
+      '0x7601D5876dC1f95a2d897B9C603B84F866FEeA18',
+      '0xceC71d3620773e6669223f0e4e5A5C27712560d5',
+    ]);
     for (let i = 0; i < 10; i++) {
       const result = await client.query({ query: metadataQuery });
       expect(result.data._metadata).toBeTruthy();

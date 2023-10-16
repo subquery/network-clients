@@ -11,6 +11,7 @@ type Options = {
   authUrl: string;
   projectId: string;
   projectType: ProjectType;
+  indexers: string[];
   scoreStore?: IStore;
 };
 
@@ -23,6 +24,7 @@ export class OrderManager {
 
   private projectType: ProjectType;
   private logger: Logger;
+  private indexers: string[] | undefined;
   private scoreStore: IStore;
   private timer: NodeJS.Timeout | undefined;
 
@@ -39,6 +41,7 @@ export class OrderManager {
     this.projectId = projectId;
     this.projectType = projectType;
     this.logger = logger;
+    this.indexers = options.indexers;
     this.scoreStore = scoreStore ?? createStore({ ttl: 86_400_000 });
 
     this._init = this.refreshAgreements();
@@ -48,14 +51,28 @@ export class OrderManager {
   private async refreshAgreements() {
     try {
       const orders = await fetchOrders(this.authUrl, this.projectId, this.projectType);
-      this.agreements = orders.agreements;
-      this.plans = orders.plans;
+      this.agreements = this.reorderOrdersByIndexers(orders.agreements);
+      this.plans = this.reorderOrdersByIndexers(orders.plans);
       this.healthy = true;
     } catch (e) {
       // it seems cannot reach this code, fetchOrders already handle the errors.
       this.logger?.error(`fetch orders failed: ${String(e)}`);
       this.healthy = false;
     }
+  }
+
+  private reorderOrdersByIndexers<T extends Order>(orders: T[]): T[] {
+    const { indexers } = this;
+    if (indexers === undefined || indexers.length == 0) return orders;
+
+    const orderedOrders: T[] = [];
+    indexers.forEach((indexer) => {
+      indexer = indexer.toLowerCase();
+      const order = orders.find((o) => o.indexer.toLowerCase() == indexer);
+      if (order) orderedOrders.push(order);
+    });
+
+    return orderedOrders;
   }
 
   private getRandomStartIndex(n: number) {
