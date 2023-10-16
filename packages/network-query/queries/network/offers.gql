@@ -15,6 +15,7 @@ fragment OfferFields on Offer {
     id
     period
     dailyReqCap
+    active
     rateLimit
   }
   deposit

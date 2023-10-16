@@ -1,7 +1,6 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ReactElement } from 'react';
 import { AsyncData } from './types';
 import BigNumberJs from 'bignumber.js';
 import { SQT_DECIMAL } from '@subql/network-config';
@@ -32,7 +31,7 @@ export function mapAsync<O, T>(scope: (t: T) => O, data: AsyncData<T>): AsyncDat
   return { ...data, data: data.data ? scope(data.data) : undefined };
 }
 
-export type RenderResult = ReactElement | null;
+export type RenderResult = React.ReactNode;
 
 export type Handlers<T> = {
   loading: () => RenderResult;
