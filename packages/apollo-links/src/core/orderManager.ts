@@ -51,8 +51,8 @@ export class OrderManager {
   private async refreshAgreements() {
     try {
       const orders = await fetchOrders(this.authUrl, this.projectId, this.projectType);
-      this.agreements = this.reorderOrdersByIndexers(orders.agreements);
-      this.plans = this.reorderOrdersByIndexers(orders.plans);
+      this.agreements = this.filterByIndexers(orders.agreements);
+      this.plans = this.filterByIndexers(orders.plans);
       this.healthy = true;
     } catch (e) {
       // it seems cannot reach this code, fetchOrders already handle the errors.
@@ -61,18 +61,11 @@ export class OrderManager {
     }
   }
 
-  private reorderOrdersByIndexers<T extends Order>(orders: T[]): T[] {
-    const { indexers } = this;
+  private filterByIndexers<T extends Order>(orders: T[]): T[] {
+    let { indexers } = this;
     if (indexers === undefined || indexers.length == 0) return orders;
-
-    const orderedOrders: T[] = [];
-    indexers.forEach((indexer) => {
-      indexer = indexer.toLowerCase();
-      const order = orders.find((o) => o.indexer.toLowerCase() == indexer);
-      if (order) orderedOrders.push(order);
-    });
-
-    return orderedOrders;
+    indexers = indexers.map((indexer) => indexer.toLowerCase());
+    return orders.filter(({ indexer }) => indexers?.includes(indexer.toLowerCase()));
   }
 
   private getRandomStartIndex(n: number) {
