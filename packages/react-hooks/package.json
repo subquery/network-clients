@@ -2,7 +2,7 @@
   "name": "@subql/react-hooks",
   "version": "0.3.16-19",
   "description": "SubQuery client sdk for react hooks",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "author": "SubQuery Pte Limited",
   "license": "Apache-2.0",
   "scripts": {
