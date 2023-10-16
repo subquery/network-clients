@@ -5,6 +5,7 @@ import { AsyncData } from './types';
 import BigNumberJs from 'bignumber.js';
 import { SQT_DECIMAL } from '@subql/network-config';
 import { BigNumberish, BigNumber, utils } from 'ethers';
+import { ReactElement } from 'react';
 
 export function mergeAsync<T1, T2, T3, T4>(
   v1: AsyncData<T1>,
@@ -31,7 +32,7 @@ export function mapAsync<O, T>(scope: (t: T) => O, data: AsyncData<T>): AsyncDat
   return { ...data, data: data.data ? scope(data.data) : undefined };
 }
 
-export type RenderResult = React.ReactNode;
+export type RenderResult = ReactElement | null;
 
 export type Handlers<T> = {
   loading: () => RenderResult;
