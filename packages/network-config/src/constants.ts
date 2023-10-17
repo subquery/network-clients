@@ -62,3 +62,42 @@ export function gqlEndpoints(network: SQNetworks) {
     [GQLEndpoint.Leaderboard]: LEADERBOARD_SUBQL_ENDPOINTS[network],
   };
 }
+
+export const NETWORKS_CONFIG_INFO = {
+  [SQNetworks.TESTNET]: {
+    chainId: '0x13881',
+    chainName: 'Mumbai',
+    rpcUrls: ['https://rpc.ankr.com/polygon_mumbai'],
+    iconUrls: ['https://icons.llamao.fi/icons/chains/rsz_polygon.jpg'],
+    blockExplorerUrls: ['https://mumbai.polygonscan.com/'],
+    nativeCurrency: {
+      name: 'Matic Token',
+      symbol: 'MATIC',
+      decimals: 18,
+    },
+  },
+  [SQNetworks.KEPLER]: {
+    chainId: '0x89',
+    chainName: 'Polygon',
+    rpcUrls: ['https://polygon-rpc.com'],
+    iconUrls: ['https://icons.llamao.fi/icons/chains/rsz_polygon.jpg'],
+    blockExplorerUrls: ['https://polygonscan.com/'],
+    nativeCurrency: {
+      name: 'Matic Token',
+      symbol: 'MATIC',
+      decimals: 18,
+    },
+  },
+  [SQNetworks.MAINNET]: {
+    chainId: '0x89',
+    chainName: 'Polygon',
+    rpcUrls: ['https://polygon-rpc.com/'],
+    iconUrls: ['https://icons.llamao.fi/icons/chains/rsz_polygon.jpg'],
+    blockExplorerUrls: ['https://polygonscan.com/'],
+    nativeCurrency: {
+      name: 'Matic Token',
+      symbol: 'MATIC',
+      decimals: 18,
+    },
+  },
+};
