@@ -4,7 +4,7 @@
 import type { Operation } from '@apollo/client/core';
 import { RetryLink } from '@apollo/client/link/retry';
 import { Logger } from '../utils/logger';
-import OrderManager from '../utils/orderManager';
+import { OrderManager } from './orderManager';
 
 export type RetryLinkOption = {
   orderManager: OrderManager;
@@ -12,7 +12,7 @@ export type RetryLinkOption = {
   logger?: Logger;
 };
 
-export const createRetryLink = ({ orderManager, maxRetries = 8, logger }: RetryLinkOption) =>
+export const createRetryLink = ({ orderManager, maxRetries = 3, logger }: RetryLinkOption) =>
   new RetryLink({
     attempts: function (count: number, operation: Operation, error: any) {
       if (count <= maxRetries) {

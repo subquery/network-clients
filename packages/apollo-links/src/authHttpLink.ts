@@ -13,17 +13,17 @@ import {
   createRetryLink,
 } from './core';
 import { ProjectType } from './types';
-import { createCache } from './utils/cache';
 import { Logger, silentLogger } from './utils/logger';
-import OrderMananger from './utils/orderManager';
+import { OrderManager } from './core/orderManager';
+import { IStore } from './utils/store';
 
 interface BaseAuthOptions {
   authUrl: string; // auth service url
   httpOptions: Options['httpOptions']; // http options for init `HttpLink`
   logger?: Logger; // logger for `AuthLink`
   fallbackServiceUrl?: string; // fall back service url for `AuthLink`
-  cacheEnabled?: boolean; // enable cache for `AuthLink`
-  ttl?: number; // ttl for cache, milliseconds, 1 day by default
+  scoreStore?: IStore; // pass store in, so it doesn't get lost between page refresh
+  maxRetries?: number;
 }
 
 interface DictAuthOptions extends BaseAuthOptions {
@@ -59,22 +59,19 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
     fallbackServiceUrl,
     authUrl,
     projectType,
+    maxRetries,
     logger: _logger,
-    cacheEnabled,
-    ttl,
   } = options;
 
   const logger = _logger ?? silentLogger();
-  const cache = cacheEnabled !== false ? createCache({ ttl: ttl ?? 86_400_000 }) : undefined;
-  const orderManager = new OrderMananger({
+  const orderManager = new OrderManager({
     authUrl,
     projectId: deploymentId,
     projectType,
     logger,
-    cache,
   });
 
-  const retryLink = createRetryLink({ orderManager, logger });
+  const retryLink = createRetryLink({ orderManager, logger, maxRetries });
   const fallbackLink = new FallbackLink(fallbackServiceUrl, logger);
   const httpLink = new DynamicHttpLink({ httpOptions, logger });
   const responseLink = new ResponseLink({ authUrl, logger });

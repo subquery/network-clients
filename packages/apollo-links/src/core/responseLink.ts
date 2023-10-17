@@ -5,6 +5,7 @@ import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apoll
 import { Logger } from '../utils/logger';
 import { POST } from '../utils/query';
 import { ChannelState, OrderType } from '../types';
+import { Base64 } from 'js-base64';
 
 export type ResponseLinkOptions = {
   authUrl: string;
@@ -26,8 +27,13 @@ export class ResponseLink extends ApolloLink {
   async syncChannelState(state: ChannelState): Promise<void> {
     try {
       const stateUrl = new URL('/channel/state', this.options.authUrl);
-      await POST(stateUrl.toString(), state);
-      this.logger?.debug(`syncChannelState succeed`);
+      const res = await POST<{ consumerSign: string }>(stateUrl.toString(), state);
+
+      if (res.consumerSign) {
+        this.logger?.debug(`syncChannelState succeed`);
+      } else {
+        this.logger?.debug(`syncChannelState failed: ${JSON.stringify(res)}`);
+      }
     } catch (e) {
       this.logger?.debug(`syncChannelState failed: ${e}`);
     }
@@ -42,7 +48,13 @@ export class ResponseLink extends ApolloLink {
       const subscription = forward(operation).subscribe({
         next: (response: FetchResult<Record<string, any>> & { state: ChannelState }) => {
           if (!response.errors && type === OrderType.flexPlan) {
-            void this.syncChannelState(response.state);
+            const responseHeaders = operation.getContext().response.headers;
+            const channelState = responseHeaders.get('X-Channel-State')
+              ? (JSON.parse(
+                  Base64.decode(responseHeaders.get('X-Channel-State')).toString()
+                ) as ChannelState)
+              : response.state;
+            void this.syncChannelState(channelState);
           }
 
           observer.next(response);

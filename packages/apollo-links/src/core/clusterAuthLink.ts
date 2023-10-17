@@ -4,16 +4,16 @@
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
 import { Subscription } from 'zen-observable-ts';
 
-import { isTokenExpired } from '../auth/authHelper';
+import { OrderManager } from './orderManager';
+import { isTokenExpired } from '../auth';
 import { ChannelAuth, OrderType } from '../types';
 import { Logger } from '../utils/logger';
-import OrderMananger from '../utils/orderManager';
 import { POST } from '../utils/query';
 
 export type AuthOptions = {
   authUrl: string; // the url for geting token
   projectId: string; // chainId or deploymentId for the project
-  orderManager: OrderMananger; // agreement manager for managing agreements
+  orderManager: OrderManager; // agreement manager for managing agreements
   logger: Logger; // logger for logging
 };
 
@@ -22,6 +22,7 @@ type ParamsResponse = {
     url: string;
     authorization: string;
     type: OrderType;
+    indexer: string;
   };
   error?: {
     indexer: string;
@@ -32,7 +33,7 @@ type ParamsResponse = {
 export class ClusterAuthLink extends ApolloLink {
   private options: AuthOptions;
   private logger: Logger;
-  private orderManager: OrderMananger;
+  private orderManager: OrderManager;
 
   constructor(options: AuthOptions) {
     super();
@@ -50,9 +51,9 @@ export class ClusterAuthLink extends ApolloLink {
       this.getRequestParams()
         .then((params) => {
           if (params?.data) {
-            const { authorization, url, type } = params.data;
+            const { authorization, url, type, indexer } = params.data;
             const headers = { authorization };
-            operation.setContext({ url, headers, type });
+            operation.setContext({ url, headers, type, indexer });
 
             sub = forward(operation).subscribe(observer);
           } else if (params?.error) {
@@ -98,7 +99,8 @@ export class ClusterAuthLink extends ApolloLink {
 
     const type = OrderType.agreement;
     const { token, id, url, indexer } = nextAgreement;
-    if (!isTokenExpired(token)) return { data: { url, type, ...this.tokenToAuthHeader(token) } };
+    if (!isTokenExpired(token))
+      return { data: { url, type, indexer, ...this.tokenToAuthHeader(token) } };
 
     try {
       this.logger?.debug(`request new token for indexer ${indexer}`);
@@ -112,7 +114,7 @@ export class ClusterAuthLink extends ApolloLink {
 
       this.orderManager.updateTokenById(id, res.token);
       this.logger?.debug(`request new token for indexer ${indexer} success`);
-      return { data: { url, type, ...this.tokenToAuthHeader(res.token) } };
+      return { data: { url, type, indexer, ...this.tokenToAuthHeader(res.token) } };
     } catch (error) {
       this.logger?.debug(
         `request new token for indexer ${indexer} and url: ${nextAgreement.url} failed`
@@ -140,7 +142,7 @@ export class ClusterAuthLink extends ApolloLink {
 
       this.logger?.debug(`request new state signature for indexer ${indexer} success`);
       const { authorization } = signedState;
-      return { data: { authorization, url, type } };
+      return { data: { authorization, url, type, indexer } };
     } catch (error) {
       this.logger?.debug(`request new state signature for indexer ${indexer} failed`);
       return { error: { indexer: nextPlan.indexer, message: (error as Error).message } };

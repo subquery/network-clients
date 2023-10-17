@@ -30,7 +30,7 @@ export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig> = {
     gql: gqlEndpoints(SQNetworks.KEPLER),
   },
   [SQNetworks.TESTNET]: {
-    defaultEndpoint: RPC_ENDPOINTS.testnet,
+    defaultEndpoint: undefined,
     sdkOptions: { network: 'testnet', deploymentDetails: testnetDeploymentDetails },
     gql: gqlEndpoints(SQNetworks.TESTNET),
   },
