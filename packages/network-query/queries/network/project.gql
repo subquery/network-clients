@@ -31,6 +31,7 @@ fragment ProjectUpdateField on Project {
   owner
   metadata
   updatedTimestamp
+  totalReward
   deployments {
     nodes {
       serviceAgreements {
