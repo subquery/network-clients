@@ -5,8 +5,8 @@ fragment ProjectFields on Project {
   id
   owner
   metadata
-  currentVersion
-  currentDeployment
+  deploymentMetadata
+  deploymentId
   updatedTimestamp
   createdTimestamp
   deployments {
