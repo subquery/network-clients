@@ -78,7 +78,7 @@ query GetProjectDeployments($projectId: String!) {
       totalCount
       nodes {
         id
-        version
+        metadata
         createdTimestamp
       }
     }
