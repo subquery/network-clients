@@ -22,7 +22,7 @@ interface BaseAuthOptions {
   httpOptions: Options['httpOptions']; // http options for init `HttpLink`
   logger?: Logger; // logger for `AuthLink`
   fallbackServiceUrl?: string; // fall back service url for `AuthLink`
-  indexers?: string[]; // specify indexer addresses to request for `AuthLink`
+  indexer?: string; // specify indexer addresses to request for `AuthLink`
   scoreStore?: IStore; // pass store in, so it doesn't get lost between page refresh
   maxRetries?: number;
 }
@@ -60,7 +60,7 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
     fallbackServiceUrl,
     authUrl,
     projectType,
-    indexers,
+    indexer,
     maxRetries,
     logger: _logger,
   } = options;
@@ -70,7 +70,7 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
     authUrl,
     projectId: deploymentId,
     projectType,
-    indexers: indexers ?? [],
+    indexer,
     logger,
   });
 

@@ -11,7 +11,7 @@ type Options = {
   authUrl: string;
   projectId: string;
   projectType: ProjectType;
-  indexers: string[];
+  indexer?: string;
   scoreStore?: IStore;
 };
 
@@ -24,7 +24,7 @@ export class OrderManager {
 
   private projectType: ProjectType;
   private logger: Logger;
-  private indexers: string[] | undefined;
+  private indexer: string | undefined;
   private scoreStore: IStore;
   private timer: NodeJS.Timeout | undefined;
 
@@ -36,12 +36,12 @@ export class OrderManager {
   private _init: Promise<void>;
 
   constructor(options: Options) {
-    const { authUrl, projectId, logger, projectType, scoreStore } = options;
+    const { authUrl, projectId, logger, indexer, projectType, scoreStore } = options;
     this.authUrl = authUrl;
     this.projectId = projectId;
     this.projectType = projectType;
     this.logger = logger;
-    this.indexers = options.indexers;
+    this.indexer = indexer;
     this.scoreStore = scoreStore ?? createStore({ ttl: 86_400_000 });
 
     this._init = this.refreshAgreements();
@@ -51,8 +51,8 @@ export class OrderManager {
   private async refreshAgreements() {
     try {
       const orders = await fetchOrders(this.authUrl, this.projectId, this.projectType);
-      this.agreements = this.filterByIndexers(orders.agreements);
-      this.plans = this.filterByIndexers(orders.plans);
+      this.agreements = this.filterByIndexer(orders.agreements);
+      this.plans = this.filterByIndexer(orders.plans);
       this.healthy = true;
     } catch (e) {
       // it seems cannot reach this code, fetchOrders already handle the errors.
@@ -61,11 +61,9 @@ export class OrderManager {
     }
   }
 
-  private filterByIndexers<T extends Order>(orders: T[]): T[] {
-    let { indexers } = this;
-    if (indexers === undefined || indexers.length == 0) return orders;
-    indexers = indexers.map((indexer) => indexer.toLowerCase());
-    return orders.filter(({ indexer }) => indexers?.includes(indexer.toLowerCase()));
+  private filterByIndexer<T extends Order>(orders: T[]): T[] {
+    if (!this.indexer) return orders;
+    return orders.filter(({ indexer }) => indexer.toLowerCase() === this.indexer?.toLowerCase());
   }
 
   private getRandomStartIndex(n: number) {
@@ -87,6 +85,8 @@ export class OrderManager {
   }
 
   private filterOrdersByScore(orders: Order[]) {
+    // skip score filter if indexer is specified
+    if (this.indexer) return orders;
     return orders.filter(({ indexer }) => this.getIndexerScore(indexer) > this.minScore);
   }
 
