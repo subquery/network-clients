@@ -9,6 +9,44 @@ fragment ProjectFields on Project {
   currentDeployment
   updatedTimestamp
   createdTimestamp
+  deployments {
+    nodes {
+      serviceAgreements {
+        aggregates {
+          sum {
+            lockedAmount
+          }
+        }
+        totalCount
+      }
+      indexers {
+        totalCount
+      }
+    }
+  }
+}
+
+fragment ProjectUpdateField on Project {
+  id
+  owner
+  metadata
+  updatedTimestamp
+  totalReward
+  deployments {
+    nodes {
+      serviceAgreements {
+        aggregates {
+          sum {
+            lockedAmount
+          }
+        }
+        totalCount
+      }
+      indexers {
+        totalCount
+      }
+    }
+  }
 }
 
 query GetProject($id: String!) {
@@ -17,11 +55,19 @@ query GetProject($id: String!) {
   }
 }
 
-query GetProjects($offset: Int, $orderBy: [ProjectsOrderBy!] = ID_ASC) {
-  projects(first: 10, offset: $offset, orderBy: $orderBy) {
+query GetProjects($offset: Int, $orderBy: [ProjectsOrderBy!] = ID_ASC, $ids: [String!] = [""]) {
+  projects(first: 10, offset: $offset, orderBy: $orderBy, filter: { id: { notIn: $ids } }) {
     totalCount
     nodes {
       ...ProjectFields
+    }
+  }
+}
+
+query GetProjectsAll {
+  projects(orderBy: ID_ASC) {
+    nodes {
+      ...ProjectUpdateField
     }
   }
 }
