@@ -26,8 +26,7 @@ export const RPC_ENDPOINTS = {
 export const NETWORK_SUBQL_ENDPOINTS = {
   [SQNetworks.MAINNET]: 'https://api.subquery.network/sq/subquery/kepler-network',
   [SQNetworks.KEPLER]: 'https://api.subquery.network/sq/subquery/kepler-network',
-  // TODO: change back to testnet-prod endpoint
-  [SQNetworks.TESTNET]: 'https://api.subquery.network/sq/subquery/kepler-testnet__c3Vic',
+  [SQNetworks.TESTNET]: 'https://api.subquery.network/sq/subquery/kepler-testnet',
 };
 
 export const LEADERBOARD_SUBQL_ENDPOINTS = {

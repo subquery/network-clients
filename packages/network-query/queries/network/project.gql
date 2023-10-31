@@ -5,8 +5,8 @@ fragment ProjectFields on Project {
   id
   owner
   metadata
-  deploymentMetadata
-  deploymentId
+  currentVersion
+  currentDeployment
   updatedTimestamp
   createdTimestamp
   deployments {
@@ -78,7 +78,7 @@ query GetProjectDeployments($projectId: String!) {
       totalCount
       nodes {
         id
-        metadata
+        version
         createdTimestamp
       }
     }
