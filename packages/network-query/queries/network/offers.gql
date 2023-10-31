@@ -20,6 +20,7 @@ fragment OfferFields on Offer {
   }
   deposit
   minimumAcceptHeight
+  minimumStakingAmount
   expireDate
   limit # indexer cap
   accepted # accepted indexer amount
