@@ -10,8 +10,8 @@ import {
   Observable,
   Operation,
 } from '@apollo/client/core';
-import { Logger } from '../utils/logger';
 import fetch from 'cross-fetch';
+import { Logger } from '../utils/logger';
 
 export type Options = {
   httpOptions: {

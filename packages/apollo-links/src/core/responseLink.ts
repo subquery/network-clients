@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
+import { ChannelState, OrderType } from '@subql/network-support';
+import { Base64 } from 'js-base64';
 import { Logger } from '../utils/logger';
 import { POST } from '../utils/query';
-import { ChannelState, OrderType } from '../types';
-import { Base64 } from 'js-base64';
 
 export type ResponseLinkOptions = {
   authUrl: string;
@@ -35,7 +35,7 @@ export class ResponseLink extends ApolloLink {
         this.logger?.debug(`syncChannelState failed: ${JSON.stringify(res)}`);
       }
     } catch (e) {
-      this.logger?.debug(`syncChannelState failed: ${e}`);
+      this.logger?.debug(`syncChannelState failed: ${String(e)}`);
     }
   }
 

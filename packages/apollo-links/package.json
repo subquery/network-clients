@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@metamask/eth-sig-util": "5.1.0",
+    "@subql/network-support": "workspace:*",
     "apollo-link-error": "^1.1.13",
     "axios": "^0.27.2",
     "buffer": "^6.0.3",

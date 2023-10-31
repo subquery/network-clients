@@ -1,21 +1,20 @@
-// Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApolloLink, from } from '@apollo/client/core';
 
+import { IStore, OrderManager, ResponseFormat, RunnerSelector } from '@subql/network-support';
 import {
   ClusterAuthLink,
+  createRetryLink,
+  creatErrorLink,
   DynamicHttpLink,
   FallbackLink,
   Options,
   ResponseLink,
-  creatErrorLink,
-  createRetryLink,
 } from './core';
 import { ProjectType } from './types';
 import { Logger, silentLogger } from './utils/logger';
-import { OrderManager } from './core/orderManager';
-import { IStore } from './utils/store';
 
 interface BaseAuthOptions {
   authUrl: string; // auth service url
@@ -23,17 +22,18 @@ interface BaseAuthOptions {
   logger?: Logger; // logger for `AuthLink`
   fallbackServiceUrl?: string; // fall back service url for `AuthLink`
   scoreStore?: IStore; // pass store in, so it doesn't get lost between page refresh
+  selector?: RunnerSelector;
 }
 
-interface DictAuthOptions extends BaseAuthOptions {
+export interface DictAuthOptions extends BaseAuthOptions {
   chainId: string; // chain id for the requested dictionary
 }
 
-interface DeploymentAuthOptions extends BaseAuthOptions {
+export interface DeploymentAuthOptions extends BaseAuthOptions {
   deploymentId: string; // deployment id
 }
 
-interface AuthOptions extends DeploymentAuthOptions {
+export interface AuthOptions extends DeploymentAuthOptions {
   projectType: ProjectType; // order type
 }
 
@@ -58,7 +58,9 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
     fallbackServiceUrl,
     authUrl,
     projectType,
+    scoreStore,
     logger: _logger,
+    selector,
   } = options;
 
   const logger = _logger ?? silentLogger();
@@ -67,6 +69,9 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
     projectId: deploymentId,
     projectType,
     logger,
+    scoreStore,
+    responseFormat: ResponseFormat.Inline,
+    selector,
   });
 
   const retryLink = createRetryLink({ orderManager, logger });

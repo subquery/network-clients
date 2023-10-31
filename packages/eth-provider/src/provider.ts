@@ -1,18 +1,18 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { JsonRpcProvider } from '@ethersproject/providers';
-import { deepCopy } from '@ethersproject/properties';
-import { ConnectionInfo, fetchJson } from '@ethersproject/web';
 import { Networkish } from '@ethersproject/networks';
+import { deepCopy } from '@ethersproject/properties';
+import { JsonRpcProvider } from '@ethersproject/providers';
+import { ConnectionInfo, fetchJson } from '@ethersproject/web';
 import {
+  IStore,
   Logger,
   OrderManager,
   ProjectType,
   RequestParam,
   silentLogger,
 } from '@subql/network-support';
-import { IStore } from '@subql/apollo-links/dist/utils/store';
 
 function getResult(payload: {
   error?: { code?: number; data?: any; message?: string };
@@ -77,14 +77,15 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
     // We can expand this in the future to any call, but for now these
     // are the biggest wins and do not require any serializing parameters.
     const cache = ['eth_chainId', 'eth_blockNumber'].indexOf(method) >= 0;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment, @typescript-eslint/no-misused-promises
     if (cache && super._cache[method]) {
       return super._cache[method];
     }
     let result;
     const requestParams = await this.orderManager.getRequestParams();
     if (requestParams) {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       const { url, runner, headers, responseTransform, postRequest } = requestParams;
       try {
         result = await this._send(
@@ -96,7 +97,7 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
           responseTransform
         );
         if (postRequest) {
-          await postRequest(result);
+          await postRequest(result, new Headers(headers));
         }
       } catch (err) {
         if (this.fallbackUrl) {

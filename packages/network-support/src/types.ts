@@ -15,7 +15,7 @@ export type OrderWithType = (Order | ServiceAgreementOrder) & { type: OrderType 
 
 export interface Order {
   id: string;
-  runner: string;
+  indexer: string;
   url: string;
 }
 
@@ -43,10 +43,10 @@ export type ChannelAuth = {
 export type RequestParam = {
   url: string;
   headers: { [key: string]: string };
-  // type: OrderType;
+  type: OrderType;
   runner: string;
-  responseTransform?(body: string, headers: Headers): string | Promise<string>;
-  postRequest?(body: string, headers: Headers): void | Promise<void>;
+  responseTransform?: (body: string, headers: Headers) => string | Promise<string>;
+  postRequest?: (body: string, headers: Headers) => void | Promise<void>;
 };
 
 export class RequestParamError extends Error {
@@ -59,4 +59,10 @@ export interface WrappedResponse {
   result: string; // base64 encoded
   signature: string; // indexer signature
   state: string; // base64 encoded channel state
+}
+
+export interface RunnerSelector {
+  runnerAddresses?: string[];
+  agreements?: string[];
+  channelIds?: string[];
 }

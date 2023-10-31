@@ -1,6 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { Base64 } from 'js-base64';
 import {
   ChannelAuth,
   ChannelState,
@@ -11,20 +12,25 @@ import {
   ProjectType,
   RequestParam,
   RequestParamError,
+  RunnerSelector,
   ServiceAgreementOrder,
   WrappedResponse,
 } from './types';
-import { createStore, fetchOrders, IStore, Logger } from './utils';
-import { isTokenExpired } from '@subql/apollo-links';
-import { POST } from '@subql/apollo-links/dist/utils/query';
-import { Base64 } from 'js-base64';
+import { createStore, fetchOrders, isTokenExpired, IStore, Logger, POST } from './utils';
+
+export enum ResponseFormat {
+  Inline = 'inline',
+  Wrap = 'wrap',
+}
 
 type Options = {
   logger: Logger;
   authUrl: string;
   projectId: string;
   projectType: ProjectType;
+  responseFormat?: ResponseFormat;
   scoreStore?: IStore;
+  selector?: RunnerSelector;
 };
 
 function tokenToAuthHeader(token: string) {
@@ -36,8 +42,8 @@ export class OrderManager {
   private nextAgreementIndex: number | undefined;
 
   private nextPlanIndex: number | undefined;
-  private agreements: ServiceAgreementOrder[] = [];
-  private plans: FlexPlanOrder[] = [];
+  private _agreements: ServiceAgreementOrder[] = [];
+  private _plans: FlexPlanOrder[] = [];
 
   private logger: Logger;
   private scoreStore: IStore;
@@ -48,25 +54,66 @@ export class OrderManager {
   private interval = 300_000;
   private minScore = 0;
   private healthy = true;
+  private selector?: RunnerSelector;
+  private responseFormat?: ResponseFormat;
   private _init: Promise<void>;
 
   constructor(options: Options) {
-    const { authUrl, projectId, logger, projectType, scoreStore } = options;
+    const { authUrl, projectId, logger, projectType, scoreStore, selector, responseFormat } =
+      options;
     this.authUrl = authUrl;
     this.projectId = projectId;
     this.projectType = projectType;
     this.logger = logger;
     this.scoreStore = scoreStore ?? createStore({ ttl: 86_400_000 });
+    this.responseFormat = responseFormat;
 
     this._init = this.refreshAgreements();
-    this.timer = setInterval(this.refreshAgreements, this.interval);
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    this.timer = setInterval(() => this.refreshAgreements(), this.interval);
+    this.selector = selector;
+  }
+
+  get agreements(): ServiceAgreementOrder[] {
+    let result: ServiceAgreementOrder[] = this._agreements;
+    if (this.selector?.agreements?.length) {
+      result = result.filter((a) => this.selector?.agreements?.includes(a.id));
+    }
+    if (this.selector?.runnerAddresses?.length) {
+      result = result.filter((a) =>
+        this.selector!.runnerAddresses!.findIndex(
+          (addr) => addr.toLowerCase() === a.indexer.toLowerCase()
+        )
+      );
+    }
+
+    return result;
+  }
+
+  get plans(): FlexPlanOrder[] {
+    let result: FlexPlanOrder[] = this._plans;
+    if (this.selector?.channelIds?.length) {
+      result = result.filter((p) => this.selector!.channelIds!.includes(p.id));
+    }
+    if (this.selector?.runnerAddresses?.length) {
+      result = result.filter((p) =>
+        this.selector!.runnerAddresses!.findIndex(
+          (addr) => addr.toLowerCase() === p.indexer.toLowerCase()
+        )
+      );
+    }
+    return result;
   }
 
   private async refreshAgreements() {
     try {
       const orders = await fetchOrders(this.authUrl, this.projectId, this.projectType);
-      this.agreements = orders.agreements;
-      this.plans = orders.plans;
+      if (orders.agreements) {
+        this._agreements = orders.agreements;
+      }
+      if (orders.plans) {
+        this._plans = orders.plans;
+      }
       this.healthy = true;
     } catch (e) {
       // it seems cannot reach this code, fetchOrders already handle the errors.
@@ -94,20 +141,20 @@ export class OrderManager {
   }
 
   private filterOrdersByScore(orders: Order[]) {
-    return orders.filter(({ runner }) => this.getScore(runner) > this.minScore);
+    return orders.filter(({ indexer }) => this.getScore(indexer) > this.minScore);
   }
 
   private getNextOrderIndex(total: number, currentIndex: number) {
     return currentIndex < total - 1 ? currentIndex + 1 : 0;
   }
 
-  public async getRequestParams(): Promise<RequestParam | undefined> {
+  async getRequestParams(): Promise<RequestParam | undefined> {
     const order = await this.getNextOrder();
     const headers: RequestParam['headers'] = {};
     if (order) {
-      const { type, runner, url, id } = order;
+      const { type, indexer: runner, url, id } = order;
       if (type === OrderType.agreement) {
-        headers['X-Indexer-Response-Format'] = 'inline';
+        headers['X-Indexer-Response-Format'] = this.responseFormat ?? 'inline';
         let { token } = order as ServiceAgreementOrder;
         if (isTokenExpired(token)) {
           try {
@@ -118,10 +165,10 @@ export class OrderManager {
           }
         }
         headers.authorization = tokenToAuthHeader(token);
-        return { url, runner, headers };
+        return { url, runner, headers, type };
       } else if (type === OrderType.flexPlan) {
         const channelId = id;
-        headers['X-Indexer-Response-Format'] = 'wrapped';
+        headers['X-Indexer-Response-Format'] = this.responseFormat ?? 'wrapped';
         try {
           this.logger?.debug(`request new signature for runner ${runner}`);
 
@@ -137,6 +184,7 @@ export class OrderManager {
           headers.authorization = authorization;
 
           return {
+            type,
             url,
             runner,
             headers,
@@ -148,7 +196,7 @@ export class OrderManager {
                 : JSON.parse(body).state;
               void this.syncChannelState(channelState);
             },
-            responseTransform: async (payload, headers) => {
+            responseTransform: (payload, headers) => {
               if (headers.get('X-Indexer-Response-Format') === 'wrapped') {
                 const body = JSON.parse(payload) as WrappedResponse;
                 return Base64.decode(body.result);
@@ -181,7 +229,7 @@ export class OrderManager {
     }
   }
 
-  public async getNextOrder(): Promise<OrderWithType | undefined> {
+  private async getNextOrder(): Promise<OrderWithType | undefined> {
     await this._init;
     if (this.agreements.length) {
       const order = await this.getNextAgreement();
@@ -215,7 +263,7 @@ export class OrderManager {
     const agreement = agreements[this.nextAgreementIndex];
     this.nextAgreementIndex = this.getNextOrderIndex(agreements.length, this.nextAgreementIndex);
 
-    this.logger?.debug(`next agreement: ${JSON.stringify(agreement.runner)}`);
+    this.logger?.debug(`next agreement: ${JSON.stringify(agreement.indexer)}`);
 
     return agreement;
   }
@@ -225,7 +273,7 @@ export class OrderManager {
 
     if (!this.plans) return;
 
-    const plans = this.filterOrdersByScore(this.plans) as FlexPlanOrder[];
+    const plans = this.filterOrdersByScore(this.plans);
     if (!this.healthy || !plans?.length) return;
 
     if (this.nextPlanIndex === undefined) {
@@ -238,7 +286,7 @@ export class OrderManager {
     return plan;
   }
 
-  public async refreshAgreementToken(agreementId: string, runner: string): Promise<string> {
+  async refreshAgreementToken(agreementId: string, runner: string): Promise<string> {
     this.logger?.debug(`request new token for runner ${runner}`);
     const tokenUrl = new URL('/orders/token', this.authUrl);
     const res = await POST<{ token: string }>(tokenUrl.toString(), {
@@ -259,7 +307,7 @@ export class OrderManager {
     this.agreements[index].token = token;
   }
 
-  public updateScore(runner: string, errorType: 'graphql' | 'network') {
+  updateScore(runner: string, errorType: 'graphql' | 'network') {
     const key = this.getCacheKey(runner);
     const score = this.scoreStore.get<number>(key) ?? 100;
 
@@ -269,7 +317,7 @@ export class OrderManager {
     this.scoreStore.set(key, newScore);
   }
 
-  public cleanup() {
+  cleanup() {
     if (this.timer) {
       clearInterval(this.timer);
     }

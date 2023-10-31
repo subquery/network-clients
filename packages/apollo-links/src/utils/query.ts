@@ -1,9 +1,7 @@
-// Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import axios from 'axios';
-
-import { Agreement, Plan, ProjectType } from '../types';
 
 export async function POST<T>(
   url: string,
@@ -20,24 +18,4 @@ export async function GET<T>(url: string) {
   const res = await axios.get<T>(url, { headers });
 
   return res.data;
-}
-
-interface AgreementsResponse {
-  agreements: Agreement[];
-  plans: Plan[];
-}
-
-export async function fetchOrders(
-  authUrl: string,
-  projectId: string,
-  projectType: ProjectType
-): Promise<AgreementsResponse> {
-  try {
-    const agreementsURL = new URL(`/orders/${projectType}/${projectId}`, authUrl);
-    const result = await GET<AgreementsResponse>(agreementsURL.toString());
-
-    return result;
-  } catch {
-    return { agreements: [], plans: [] };
-  }
 }
