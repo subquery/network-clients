@@ -40,7 +40,7 @@ query GetDeploymentIndexers(
   $deploymentId: String!
   $orderby: [IndexerDeploymentsOrderBy!] = LAST_EVENT_ASC
 ) {
-  deploymentIndexers(
+  indexerDeployments(
     first: $first
     offset: $offset
     orderBy: $orderby
