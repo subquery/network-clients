@@ -1,7 +1,7 @@
 # Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 # SPDX-License-Identifier: Apache-2.0
 
-fragment indexerDeploymentFields on IndexerDeployment {
+fragment DeploymentIndexerFields on DeploymentIndexer {
   id
   indexerId
   deploymentId
@@ -12,8 +12,8 @@ fragment indexerDeploymentFields on IndexerDeployment {
   }
 }
 
-fragment IndexerDeploymentNodeFields on IndexerDeployment {
-  ...indexerDeploymentFields
+fragment DeploymentIndexerNodeFields on DeploymentIndexer {
+  ...DeploymentIndexerFields
   deployment {
     id
     project {
@@ -26,7 +26,7 @@ fragment IndexerDeploymentNodeFields on IndexerDeployment {
 query GetDeployment($deploymentId: String!) {
   deployment(id: $deploymentId) {
     id
-    metadata
+    version
     project {
       id
       metadata
@@ -38,9 +38,9 @@ query GetDeploymentIndexers(
   $first: Int = 20
   $offset: Int
   $deploymentId: String!
-  $orderby: [IndexerDeploymentsOrderBy!] = LAST_EVENT_ASC
+  $orderby: [DeploymentIndexersOrderBy!] = LAST_EVENT_ASC
 ) {
-  indexerDeployments(
+  deploymentIndexers(
     first: $first
     offset: $offset
     orderBy: $orderby
@@ -48,7 +48,7 @@ query GetDeploymentIndexers(
   ) {
     totalCount
     nodes {
-      ...indexerDeploymentFields
+      ...DeploymentIndexerFields
     }
   }
 }
@@ -57,10 +57,10 @@ query GetDeploymentIndexersBySearch(
   $first: Int = 20
   $offset: Int
   $deploymentId: String!
-  $orderby: [IndexerDeploymentsOrderBy!] = LAST_EVENT_ASC
+  $orderby: [DeploymentIndexersOrderBy!] = LAST_EVENT_ASC
   $indexerId: String! = ""
 ) {
-  indexerDeployments(
+  deploymentIndexers(
     first: $first
     offset: $offset
     orderBy: $orderby
@@ -72,24 +72,24 @@ query GetDeploymentIndexersBySearch(
   ) {
     totalCount
     nodes {
-      ...indexerDeploymentFields
+      ...DeploymentIndexerFields
     }
   }
 }
 
-query GetIndexerDeployment($indexerAddress: String!, $deploymentId: String!) {
-  indexerDeployments(
+query GetDeploymentIndexer($indexerAddress: String!, $deploymentId: String!) {
+  deploymentIndexers(
     filter: { indexerId: { equalTo: $indexerAddress }, deploymentId: { equalTo: $deploymentId } }
   ) {
     totalCount
     nodes {
-      ...indexerDeploymentFields
+      ...DeploymentIndexerFields
     }
   }
 }
 
 query GetDeploymentIndexersByIndexer($indexerAddress: String!) {
-  indexerDeployments(filter: { indexerId: { equalTo: $indexerAddress } }) {
+  deploymentIndexers(filter: { indexerId: { equalTo: $indexerAddress } }) {
     totalCount
     pageInfo {
       startCursor
@@ -97,7 +97,7 @@ query GetDeploymentIndexersByIndexer($indexerAddress: String!) {
       hasNextPage
     }
     nodes {
-      ...indexerDeploymentFields
+      ...DeploymentIndexerFields
       deployment {
         id
         project {
@@ -110,9 +110,9 @@ query GetDeploymentIndexersByIndexer($indexerAddress: String!) {
 }
 
 query GetDeploymentIndexersDeploymentByIndexer($indexerAddress: String!) {
-  indexerDeployments(filter: { indexerId: { equalTo: $indexerAddress } }) {
+  deploymentIndexers(filter: { indexerId: { equalTo: $indexerAddress } }) {
     nodes {
-      ...IndexerDeploymentNodeFields
+      ...DeploymentIndexerNodeFields
     }
   }
 }
