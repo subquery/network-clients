@@ -35,7 +35,7 @@
     "typescript": "^4.6.4"
   },
   "peerDependencies": {
-    "@subql/contract-sdk": "^0.16.2",
+    "@subql/contract-sdk": "^0.100.2",
     "graphql": "^16.5.0",
     "react": "^18"
   },

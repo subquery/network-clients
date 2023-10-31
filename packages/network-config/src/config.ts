@@ -5,8 +5,8 @@ import { GQLEndpoint, IPFS_URLS, RPC_ENDPOINTS, SQNetworks, gqlEndpoints } from 
 
 import { SdkOptions } from '@subql/contract-sdk/types';
 
-import mainnetDeploymentDetails from '@subql/contract-sdk/publish/mainnet.json';
 import keplerDeploymentDetails from '@subql/contract-sdk/publish/kepler.json';
+import mainnetDeploymentDetails from '@subql/contract-sdk/publish/mainnet.json';
 import testnetDeploymentDetails from '@subql/contract-sdk/publish/testnet.json';
 
 export interface NetworkConfig {
@@ -26,6 +26,8 @@ export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig> = {
   },
   [SQNetworks.KEPLER]: {
     defaultEndpoint: RPC_ENDPOINTS.kepler,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     sdkOptions: { network: 'kepler', deploymentDetails: keplerDeploymentDetails },
     gql: gqlEndpoints(SQNetworks.KEPLER),
   },
