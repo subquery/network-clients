@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.100.0] - 2023-11-01
+
 ## [0.3.16] - 2023-09-28
 
 Upgrade @subql/contracts
@@ -37,7 +39,8 @@ Add `LEADERBOARD_SUBQL_ENDPOINTS`
 
 - Release first version
 
-[unreleased]: https://github.com/subquery/network-clients/compare/v0.3.16...HEAD
+[unreleased]: https://github.com/subquery/network-clients/compare/v0.100.0...HEAD
+[0.100.0]: https://github.com/subquery/network-clients/compare/v0.3.16...v0.100.0
 [0.3.16]: https://github.com/subquery/network-clients/compare/v0.3.14...v0.3.16
 [0.3.14]: https://github.com/subquery/network-clients/compare/v0.3.13...v0.3.14
 [0.3.13]: https://github.com/subquery/network-clients/compare/v0.3.11...v0.3.13
