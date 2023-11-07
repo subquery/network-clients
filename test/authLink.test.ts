@@ -1394,7 +1394,7 @@ const createDeploymentClient = async (deploymentId: string, fallbackServiceUrl?:
 describe('Auth http link with real data', () => {
   const defaultFallbackUrl = 'https://api.subquery.network/sq/subquery/aleph-zero-dictionary';
   const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
-  // TODO: need to update this one to network deploymentId
+  // TODO: need to update this one to network deploymentId1
   const deploymentId = 'QmStgQRJVMGxj1LdzNirEcppPf7t8Zm4pgDkCqChqvrDKG';
   const unavailableChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c4';
 
