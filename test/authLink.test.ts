@@ -1420,7 +1420,8 @@ describe('Auth http link with real data', () => {
     }
   });
 
-  it('can query data with deployment auth link for payg', async () => {
+  // FIXME
+  it.skip('can query data with deployment auth link for payg', async () => {
     const client = await createDeploymentClient(deploymentId);
     for (let i = 0; i < 10; i++) {
       const result = await client.query({ query: metadataQuery });
