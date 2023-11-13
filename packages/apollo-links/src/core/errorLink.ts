@@ -10,7 +10,7 @@ export type ErrorLinkOption = {
   orderManager: OrderManager;
   fallbackLink: ApolloLink;
   httpLink: ApolloLink;
-  useFallbackImmediateAfterGraphqlError?: boolean;
+  useImmediateFallbackOnError?: boolean;
   logger?: Logger;
 };
 
@@ -18,7 +18,7 @@ export const creatErrorLink = ({
   fallbackLink,
   httpLink,
   orderManager,
-  useFallbackImmediateAfterGraphqlError,
+  useImmediateFallbackOnError,
   logger,
 }: ErrorLinkOption) =>
   onError(({ graphQLErrors, networkError, operation }) => {
@@ -42,7 +42,7 @@ export const creatErrorLink = ({
     // graphql error is 200 status. 200 would not handle by retryLink.
     // network error will retry before enter this handler.
     // both them are need use fallback url to retry.
-    if (networkError || (graphQLErrors && useFallbackImmediateAfterGraphqlError)) {
+    if (networkError || (graphQLErrors && useImmediateFallbackOnError)) {
       if (!operation.getContext().fallback) {
         operation.setContext({ url: undefined });
         return fallbackLink.request(
