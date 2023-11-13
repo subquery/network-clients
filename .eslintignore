@@ -1,2 +1,3 @@
 **/__graphql__/**
 **/__hooks__/**
+jest.config.ts

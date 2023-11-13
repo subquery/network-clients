@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
-import { ChannelState, OrderType } from '@subql/network-support';
+import { ChannelState, OrderType, POST } from '@subql/network-support';
 import { Base64 } from 'js-base64';
 import { Logger } from '../utils/logger';
-import { POST } from '../utils/query';
 
 export type ResponseLinkOptions = {
   authUrl: string;

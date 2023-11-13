@@ -3,9 +3,8 @@
 
 import buffer from 'buffer';
 import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
-import jwt_decode from 'jwt-decode';
+import { POST } from '@subql/network-support';
 
-import { POST } from '../utils/query';
 import { AuthMessage, buildTypedMessage, createAuthRequestBody } from './eip712';
 
 const Buffer = buffer.Buffer;

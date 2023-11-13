@@ -1,6 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import { Base64 } from 'js-base64';
 import {
   ChannelAuth,
@@ -20,7 +21,7 @@ import { createStore, fetchOrders, isTokenExpired, IStore, Logger, POST } from '
 
 export enum ResponseFormat {
   Inline = 'inline',
-  Wrap = 'wrap',
+  Wrapped = 'wrapped',
 }
 
 type Options = {
@@ -168,7 +169,7 @@ export class OrderManager {
         return { url, runner, headers, type };
       } else if (type === OrderType.flexPlan) {
         const channelId = id;
-        headers['X-Indexer-Response-Format'] = this.responseFormat ?? 'wrapped';
+        headers['X-Indexer-Response-Format'] = this.responseFormat ?? 'inline';
         try {
           this.logger?.debug(`request new signature for runner ${runner}`);
 
@@ -188,22 +189,27 @@ export class OrderManager {
             url,
             runner,
             headers,
-            postRequest: (body: string, headers: Headers) => {
-              const channelState = headers.get('X-Channel-State')
-                ? (JSON.parse(
-                    Base64.decode(headers.get('X-Channel-State')!).toString()
-                  ) as ChannelState)
-                : JSON.parse(body).state;
-              void this.syncChannelState(channelState);
-            },
-            responseTransform: (payload, headers) => {
-              if (headers.get('X-Indexer-Response-Format') === 'wrapped') {
-                const body = JSON.parse(payload) as WrappedResponse;
-                return Base64.decode(body.result);
-              } else {
-                return payload;
-              }
-            },
+            // postRequest: true,
+            // responseTransform: true,
+            // postRequest: this.syncChannelState.bind(this),
+            // responseTransform: (payload, headers) => {
+            //   if (headers.get('X-Indexer-Response-Format') === 'wrapped') {
+            //     const body = (
+            //       typeof payload === 'string' ? JSON.parse(payload) : payload
+            //     ) as WrappedResponse;
+            //     return [
+            //       Base64.decode(body.result),
+            //       JSON.parse(Base64.decode(body.state)),
+            //       body.signature,
+            //     ];
+            //   } else {
+            //     const _state = headers.get('X-Channel-State');
+            //     assert(_state, 'invalid response, missing channel state');
+            //     const _signature = headers.get('X-Channel-Signature');
+            //     assert(_signature, 'invalid response, missing channel signature');
+            //     return [payload, JSON.parse(Base64.decode(_state)), _signature];
+            //   }
+            // },
           };
         } catch (error) {
           this.logger?.debug(`request new state signature for runner ${runner} failed`);
@@ -212,6 +218,47 @@ export class OrderManager {
       }
     }
     return;
+  }
+
+  extractChannelState(
+    payload: string | object,
+    headers: Headers
+  ): [object | string, ChannelState, string] {
+    switch (headers.get('X-Indexer-Response-Format')) {
+      case ResponseFormat.Wrapped: {
+        const body = (
+          typeof payload === 'string' ? JSON.parse(payload) : payload
+        ) as WrappedResponse;
+        return [Base64.decode(body.result), JSON.parse(Base64.decode(body.state)), body.signature];
+      }
+      case ResponseFormat.Inline: {
+        const _state = headers.get('X-Channel-State');
+        assert(_state, 'invalid response, missing channel state');
+        const _signature = headers.get('X-Channel-Signature');
+        assert(_signature, 'invalid response, missing channel signature');
+        return [payload, JSON.parse(Base64.decode(_state)), _signature];
+      }
+      case undefined: {
+        let _payload = payload;
+        if (typeof payload === 'string') {
+          _payload = JSON.parse(payload);
+        }
+        const state = (_payload as unknown as any).state;
+        return [_payload, state, ''];
+      }
+      default:
+        throw new Error('invalid X-Indexer-Response-Format');
+    }
+    // if (headers.get('X-Indexer-Response-Format') === 'wrapped') {
+    //   const body = (typeof payload === 'string' ? JSON.parse(payload) : payload) as WrappedResponse;
+    //   return [Base64.decode(body.result), JSON.parse(Base64.decode(body.state)), body.signature];
+    // } else if (headers.get('X-Indexer-Response-Format') === 'inline') {
+    //   const _state = headers.get('X-Channel-State');
+    //   assert(_state, 'invalid response, missing channel state');
+    //   const _signature = headers.get('X-Channel-Signature');
+    //   assert(_signature, 'invalid response, missing channel signature');
+    //   return [payload, JSON.parse(Base64.decode(_state)), _signature];
+    // }
   }
 
   async syncChannelState(state: ChannelState): Promise<void> {

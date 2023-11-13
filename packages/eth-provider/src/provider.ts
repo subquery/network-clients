@@ -6,11 +6,13 @@ import { deepCopy } from '@ethersproject/properties';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { ConnectionInfo, fetchJson } from '@ethersproject/web';
 import {
+  ChannelState,
   IStore,
   Logger,
   OrderManager,
+  OrderType,
   ProjectType,
-  RequestParam,
+  ResponseFormat,
   silentLogger,
 } from '@subql/network-support';
 
@@ -57,6 +59,7 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
       projectId: opt.deploymentId,
       projectType: ProjectType.deployment,
       logger: this.logger,
+      responseFormat: ResponseFormat.Wrapped,
     });
   }
 
@@ -86,7 +89,7 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
     const requestParams = await this.orderManager.getRequestParams();
     if (requestParams) {
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      const { url, runner, headers, responseTransform, postRequest } = requestParams;
+      const { url, runner, headers, type } = requestParams;
       try {
         result = await this._send(
           {
@@ -94,14 +97,11 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
             headers,
           },
           request,
-          responseTransform
+          type === OrderType.flexPlan
         );
-        if (postRequest) {
-          await postRequest(result, new Headers(headers));
-        }
       } catch (err) {
         if (this.fallbackUrl) {
-          result = await this._send(this.fallbackUrl, request);
+          result = await this._send(this.fallbackUrl, request, false);
         } else {
           throw err;
         }
@@ -117,21 +117,25 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
         super._cache[method] = null;
       }, 50);
     }
-    return;
+    return result;
   }
 
   async _send(
     url: string | ConnectionInfo,
     request: unknown,
-    transform?: RequestParam['responseTransform'],
+    isFlexPlan: boolean,
     retries = 0
   ): Promise<any> {
     let result;
+    let state: ChannelState | undefined;
     try {
-      result = await fetchJson(this.connection, JSON.stringify(request), async (payload, resp) => {
+      result = await fetchJson(url, JSON.stringify(request), (payload, resp) => {
         let res = payload;
-        if (transform) {
-          res = await transform(payload, new Headers(resp.headers));
+        if (isFlexPlan) {
+          [res, state] = this.orderManager.extractChannelState(payload, new Headers(resp.headers));
+        }
+        if (typeof res === 'string') {
+          res = JSON.parse(res);
         }
         return getResult(res);
       }).then((result) => {
@@ -152,10 +156,12 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
         provider: this,
       });
       if (retries < this.maxRetries) {
-        return this._send(url, request, transform, retries + 1);
+        return this._send(url, request, isFlexPlan, retries + 1);
       }
     }
-
+    if (state && isFlexPlan) {
+      void this.orderManager.syncChannelState(state);
+    }
     return result;
   }
 }

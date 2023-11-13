@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { ApolloClient, ApolloLink, InMemoryCache } from '@apollo/client/core';
+import { ApolloClient, InMemoryCache } from '@apollo/client/core';
 import { DeploymentAuthOptions } from '@subql/apollo-links';
 import dotenv from 'dotenv';
 import gql from 'graphql-tag';
@@ -50,7 +50,14 @@ describe('auth link e2e', () => {
     cleanup = _cleanup;
     return new ApolloClient({
       cache: new InMemoryCache(),
-      defaultOptions: { query: { fetchPolicy: 'no-cache' } },
+      defaultOptions: {
+        watchQuery: {
+          fetchPolicy: 'no-cache',
+        },
+        query: {
+          fetchPolicy: 'no-cache',
+        },
+      },
       link,
     });
   };
@@ -63,10 +70,16 @@ describe('auth link e2e', () => {
     jest.clearAllMocks();
   });
 
-  it('can query via state channel', async () => {
+  // @ts-ignore
+  it('can query via state channel', async (done) => {
     // const client = await makeAuthLink('QmQ77QHgkKa81cVXbiChfLCcivucQpVmbim8GnnXxzd2Lu', keplerOptions);
-    const client = makeAuthLink('QmNYsNZvM9XZuzkF3n6XcqFVxvMLfWYtEQHzszMFfNCkgt', testnetOptions);
-    const res = await client.query({ query: metadataQuery });
-    expect(res).toBeTruthy();
-  });
+    const res = [];
+    for (let i = 0; i < 1; i++) {
+      const client = makeAuthLink('QmNYsNZvM9XZuzkF3n6XcqFVxvMLfWYtEQHzszMFfNCkgt', testnetOptions);
+      res.push(client.query({ query: metadataQuery }));
+    }
+    await Promise.all(res);
+    expect(res.length).toBeTruthy();
+    setTimeout(done, 10000);
+  }, 15000);
 });

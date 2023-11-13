@@ -6,15 +6,15 @@ import axios from 'axios';
 
 const mockAxios = axios as jest.Mocked<typeof axios>;
 
-import dotenv from 'dotenv';
-
+// eslint-disable-next-line import/order
 import { ApolloClient, ApolloLink, from, HttpLink, InMemoryCache } from '@apollo/client/core';
 import fetch, { Headers } from 'cross-fetch';
+import dotenv from 'dotenv';
 import gql from 'graphql-tag';
+import { Base64 } from 'js-base64';
 import Pino from 'pino';
 import { ProjectType } from '../packages/apollo-links/src/types';
 import { Logger } from '../packages/apollo-links/src/utils/logger';
-import { Base64 } from 'js-base64';
 
 dotenv.config();
 
@@ -1221,7 +1221,7 @@ describe('Auth http link with real data', () => {
   const deploymentId = 'QmStgQRJVMGxj1LdzNirEcppPf7t8Zm4pgDkCqChqvrDKG';
   const unavailableChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c4';
 
-  beforeEach(async () => {
+  beforeEach(() => {
     const actualAxios = jest.requireActual('axios');
     mockAxios.get.mockImplementation(actualAxios.get);
     mockAxios.post.mockImplementation(actualAxios.post);

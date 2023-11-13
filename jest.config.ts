@@ -32,7 +32,12 @@ export default {
     '^.+\\.(ts|tsx)?$': 'ts-jest',
     '^.+\\.(js|jsx)$': 'babel-jest',
   },
-
+  moduleNameMapper: {
+    '^@subql/eth-provider$': '<rootDir>/packages/eth-provider/src/',
+    '^@subql/eth-provider/(.*)$': '<rootDir>/packages/eth-provider/src/$1',
+    '^@subql/network-support$': '<rootDir>/packages/network-support/src/',
+    '^@subql/network-support/(.*)$': '<rootDir>/packages/network-support/src/$1',
+  },
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   transformIgnorePatterns: ['node_modules/(?!(@polkadot|@subql|@babel/runtime/helpers/esm)/)'],
 };
