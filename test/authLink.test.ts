@@ -1298,7 +1298,7 @@ describe('mock: auth link with auth center', () => {
     const { link } = deploymentHttpLink({
       ...options,
       deploymentId,
-      useFallbackImmediateAfterGraphqlError: true,
+      useImmediateFallbackOnError: true,
       httpOptions: {
         ...httpOptions,
         fetch: (uri: RequestInfo | URL, options: any): Promise<Response> => {
