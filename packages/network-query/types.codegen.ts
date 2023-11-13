@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CodegenConfig } from '@graphql-codegen/cli';
-import { NETWORK_CONFIGS } from '@subql/network-config';
+import { NETWORK_CONFIGS, SQNetworks } from '@subql/network-config';
+
+const network = (process.env.NETWORK ?? 'testnet') as SQNetworks;
 
 const config: CodegenConfig = {
-  schema: [`${NETWORK_CONFIGS.testnet.gql.network}`, `${NETWORK_CONFIGS.kepler.gql.leaderboard}`],
+  schema: [`${NETWORK_CONFIGS[network].gql.network}`, `${NETWORK_CONFIGS.kepler.gql.leaderboard}`],
   documents: ['./queries/network/*.gql', './queries/leaderboard/*.gql'],
   config: {
     preResolveTypes: true,

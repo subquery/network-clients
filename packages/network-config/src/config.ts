@@ -26,6 +26,8 @@ export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig> = {
   },
   [SQNetworks.KEPLER]: {
     defaultEndpoint: RPC_ENDPOINTS.kepler,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     sdkOptions: { network: 'kepler', deploymentDetails: keplerDeploymentDetails },
     gql: gqlEndpoints(SQNetworks.KEPLER),
   },
