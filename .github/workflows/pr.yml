@@ -16,14 +16,6 @@ jobs:
         node-version: 16
     - run: yarn
 
-    - name: Set network env for main branch
-      if: github.ref == 'refs/heads/main'
-      run: echo "NETWORK=kepler" >> $GITHUB_ENV
-
-    - name: Set network env for develop branch
-      if: github.ref == 'refs/heads/develop'
-      run: echo "NETWORK=testnet" >> $GITHUB_ENV
-
     - name: build
       run: yarn build
 

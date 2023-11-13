@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - develop
     paths-ignore:
       - '.github/workflows/**'
   workflow_dispatch:
@@ -41,14 +40,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 16
-
-      - name: Set network env for main branch
-        if: github.ref == 'refs/heads/main'
-        run: echo "NETWORK=kepler" >> $GITHUB_ENV
-
-      - name: Set network env for develop branch
-        if: github.ref == 'refs/heads/develop'
-        run: echo "NETWORK=testnet" >> $GITHUB_ENV
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-network-config
