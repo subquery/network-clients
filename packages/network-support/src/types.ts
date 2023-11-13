@@ -45,13 +45,6 @@ export type RequestParam = {
   headers: { [key: string]: string };
   type: OrderType;
   runner: string;
-  // responseTransform: boolean;
-  // postRequest: boolean;
-  // responseTransform?: (
-  //   body: object | string,
-  //   headers: Headers
-  // ) => [object | string, ChannelState, string] | Promise<[object | string, ChannelState, string]>;
-  // postRequest?: (channelState: ChannelState) => void | Promise<void>;
 };
 
 export class RequestParamError extends Error {
