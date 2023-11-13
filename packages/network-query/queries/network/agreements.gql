@@ -12,7 +12,7 @@ fragment ServiceAgreementFields on ServiceAgreement {
   endTime
   deployment {
     id
-    version
+    metadata
     project {
       id
       metadata

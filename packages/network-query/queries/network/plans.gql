@@ -84,7 +84,7 @@ query GetPlans($address: String!) {
 }
 
 query GetSpecificPlans($address: String) {
-  deploymentIndexers(filter: { indexerId: { equalTo: $address } }) {
+  indexerDeployments(filter: { indexerId: { equalTo: $address } }) {
     totalCount
     nodes {
       deployment {

@@ -3,51 +3,52 @@
 
 import { ApolloClient } from '@apollo/client/core';
 import assert from 'assert';
+import { constants } from 'ethers';
 import { GraphqlQueryClient, NETWORK_CONFIGS } from '../packages/network-clients/src';
 import {
-  GetDelegation,
-  GetIndexer,
-  GetIndexers,
-  GetDelegator,
-  GetIndexerDelegators,
-  GetExpiredServiceAgreements,
-  GetOngoingServiceAgreements,
-  GetProjectOngoingServiceAgreements,
   GetAcceptedOffers,
+  GetAggregatesEraRewards,
+  GetAggregatesEraRewardsByIndexer,
+  GetAirdrops,
+  GetAirdropsByAccount,
+  GetAllDelegations,
+  GetAllOpenOffers,
+  GetConsumerClosedFlexPlans,
+  GetConsumerOngoingFlexPlans,
+  GetDashboard,
+  GetDelegation,
+  GetDelegator,
   GetDeployment,
   GetDeploymentIndexers,
-  GetAllDelegations,
-  GetFilteredDelegations,
   GetDeploymentIndexersByIndexer,
-  GetAllOpenOffers,
+  GetDeploymentPlans,
+  GetEraQuery,
+  GetEraRewardsByIndexerAndPage,
+  GetExpiredServiceAgreements,
+  GetFilteredDelegations,
+  GetIndexer,
+  GetIndexerClosedFlexPlans,
+  GetIndexerDelegators,
+  GetIndexerOngoingFlexPlans,
+  GetIndexerRewards,
+  GetIndexerStakesByEras,
+  GetIndexerStakesByIndexer,
+  GetIndexerUnfinalisedPlans,
+  GetIndexers,
+  GetOngoingServiceAgreements,
+  GetOrders,
   GetOwnExpiredOffers,
   GetOwnOpenOffers,
-  GetSpecificOpenOffers,
-  GetDeploymentPlans,
   GetPlanTemplates,
   GetPlans,
   GetProject,
   GetProjectDeployments,
+  GetProjectOngoingServiceAgreements,
   GetProjects,
-  GetIndexerRewards,
   GetRewards,
-  GetWithdrawls,
+  GetSpecificOpenOffers,
   GetStateChannels,
-  GetConsumerOngoingFlexPlans,
-  GetConsumerClosedFlexPlans,
-  GetIndexerOngoingFlexPlans,
-  GetIndexerUnfinalisedPlans,
-  GetIndexerClosedFlexPlans,
-  GetDashboard,
-  GetIndexerStakesByIndexer,
-  GetIndexerStakesByEras,
-  GetAggregatesEraRewards,
-  GetAggregatesEraRewardsByIndexer,
-  GetEraRewardsByIndexerAndPage,
-  GetOrders,
-  GetAirdrops,
-  GetAirdropsByAccount,
-  GetEraQuery,
+  GetWithdrawls,
 } from '../packages/network-query';
 
 function deepAssert(obj: any) {
@@ -64,8 +65,8 @@ describe('query client', () => {
   const address1 = '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04';
   const address2 = '0xa40987037547C2cc5df0b06fFe52B7FdCCB7D4FC';
   const address3 = '0xf9e4E6307a3186991F153249294815228D3a4634';
-  const projectId = 'QmZGAZQ7e1oZgfuK4V29Fa5gveYK3G2zEwvUzTZKNvSBsm';
-  const projectId2 = 'QmPemHcmAJ6BRyV13FN91miLCHNtqXLLacsqYjSaTmbFmr';
+  const projectId = 'QmNYsNZvM9XZuzkF3n6XcqFVxvMLfWYtEQHzszMFfNCkgt';
+  const projectId2 = 'QmZGAZQ7e1oZgfuK4V29Fa5gveYK3G2zEwvUzTZKNvSBsm';
   const consumer = '0xD5d48b83389150FFaa0B897ffC88817622abce58';
   const pId = '0x01';
 
@@ -187,7 +188,7 @@ describe('query client', () => {
       variables: { indexerAddress: address3 },
     });
     assert(result, 'cannot request query GET_DEPLOYMENT_INDEXERS_WITH_INDEXER');
-    expect(result.data.deploymentIndexers).toBeTruthy();
+    expect(result.data.indexerDeployments).toBeTruthy();
   });
 
   it('can query get accepted offer', async () => {
@@ -484,7 +485,7 @@ describe('query client', () => {
     const result = await client.query({
       query: GetOrders,
       variables: {
-        swapFrom: '0x0000',
+        swapFrom: constants.AddressZero,
         now: new Date(),
       },
     });
@@ -504,7 +505,7 @@ describe('query client', () => {
     const result = await client.query({
       query: GetAirdropsByAccount,
       variables: {
-        account: '0x000000',
+        account: constants.AddressZero,
       },
     });
 
@@ -515,7 +516,7 @@ describe('query client', () => {
     const result = await client.query({
       query: GetAirdropsByAccount,
       variables: {
-        account: '0x000000',
+        account: constants.AddressZero,
       },
     });
 
@@ -526,7 +527,7 @@ describe('query client', () => {
     const result = await client.query({
       query: GetEraQuery,
       variables: {
-        account: '0x000000',
+        account: constants.AddressZero,
       },
     });
 
