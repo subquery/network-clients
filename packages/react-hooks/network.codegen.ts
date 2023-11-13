@@ -5,8 +5,7 @@ import { CodegenConfig } from '@graphql-codegen/cli';
 import { NETWORK_CONFIGS } from '@subql/network-config';
 
 const config: CodegenConfig = {
-  // FIXME: use `NETWORK_CONFIGS.kepler.gql.network`
-  schema: NETWORK_CONFIGS.testnet.gql.network,
+  schema: NETWORK_CONFIGS.kepler.gql.network,
   documents: '../network-query/queries/network/*.gql',
   config: {
     preResolveTypes: true,

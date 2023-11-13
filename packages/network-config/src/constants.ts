@@ -20,7 +20,7 @@ export const IPFS_URLS = {
 export const RPC_ENDPOINTS = {
   [SQNetworks.MAINNET]: 'https://polygon-rpc.com/',
   [SQNetworks.KEPLER]: 'https://polygon-rpc.com/',
-  [SQNetworks.TESTNET]: 'https://polygon-mumbai.infura.io/v3/4458cf4d1689497b9a38b1d6bbf05e78',
+  [SQNetworks.TESTNET]: 'https://rpc.ankr.com/polygon_mumbai',
 };
 
 export const NETWORK_SUBQL_ENDPOINTS = {
