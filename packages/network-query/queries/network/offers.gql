@@ -133,3 +133,9 @@ query GetOfferCount($consumer: String!, $reachLimit: Boolean = false) {
     totalCount
   }
 }
+
+query GetOfferCountByDeploymentId($deploymentId: String!) {
+  offers(filter: { deploymentId: { equalTo: $deploymentId } }) {
+    totalCount
+  }
+}
