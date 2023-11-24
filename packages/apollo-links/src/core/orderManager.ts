@@ -142,8 +142,11 @@ export class OrderManager {
   public updateIndexerScore(indexer: string, errorType: 'graphql' | 'network') {
     const key = this.getCacheKey(indexer);
     const score = this.scoreStore.get<number>(key) ?? 100;
-
-    const delta = errorType === 'graphql' ? 10 : 50;
+    // Graphql error have two cases:
+    // 1: client query is not compatiable of indexer's version.
+    // 2: indexer's graphql have something wrong.
+    // both them don't need retry for user.
+    const delta = errorType === 'graphql' ? 100 : 20;
     const newScore = Math.max(score - delta, 0);
 
     this.scoreStore.set(key, newScore);
