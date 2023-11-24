@@ -1,7 +1,7 @@
 # Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 # SPDX-License-Identifier: Apache-2.0
 
-fragment indexerDeploymentFields on IndexerDeployment {
+fragment IndexerDeploymentFields on IndexerDeployment {
   id
   indexerId
   deploymentId
@@ -13,7 +13,7 @@ fragment indexerDeploymentFields on IndexerDeployment {
 }
 
 fragment IndexerDeploymentNodeFields on IndexerDeployment {
-  ...indexerDeploymentFields
+  ...IndexerDeploymentFields
   deployment {
     id
     project {
@@ -48,7 +48,7 @@ query GetDeploymentIndexers(
   ) {
     totalCount
     nodes {
-      ...indexerDeploymentFields
+      ...IndexerDeploymentFields
     }
   }
 }
@@ -72,7 +72,7 @@ query GetDeploymentIndexersBySearch(
   ) {
     totalCount
     nodes {
-      ...indexerDeploymentFields
+      ...IndexerDeploymentFields
     }
   }
 }
@@ -83,7 +83,7 @@ query GetIndexerDeployment($indexerAddress: String!, $deploymentId: String!) {
   ) {
     totalCount
     nodes {
-      ...indexerDeploymentFields
+      ...IndexerDeploymentFields
     }
   }
 }
@@ -97,7 +97,7 @@ query GetDeploymentIndexersByIndexer($indexerAddress: String!) {
       hasNextPage
     }
     nodes {
-      ...indexerDeploymentFields
+      ...IndexerDeploymentFields
       deployment {
         id
         project {

@@ -24,6 +24,7 @@ interface BaseAuthOptions {
   fallbackServiceUrl?: string; // fall back service url for `AuthLink`
   scoreStore?: IStore; // pass store in, so it doesn't get lost between page refresh
   maxRetries?: number;
+  useImmediateFallbackOnError?: boolean;
 }
 
 interface DictAuthOptions extends BaseAuthOptions {
@@ -60,6 +61,7 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
     authUrl,
     projectType,
     maxRetries,
+    useImmediateFallbackOnError = false,
     logger: _logger,
   } = options;
 
@@ -75,7 +77,13 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
   const fallbackLink = new FallbackLink(fallbackServiceUrl, logger);
   const httpLink = new DynamicHttpLink({ httpOptions, logger });
   const responseLink = new ResponseLink({ authUrl, logger });
-  const errorLink = creatErrorLink({ orderManager, fallbackLink, httpLink, logger });
+  const errorLink = creatErrorLink({
+    orderManager,
+    fallbackLink,
+    httpLink,
+    useImmediateFallbackOnError,
+    logger,
+  });
   const authLink = new ClusterAuthLink({
     authUrl,
     projectId: deploymentId,
