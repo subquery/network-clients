@@ -3,7 +3,7 @@
 
 import { ApolloLink, FetchResult, NextLink, Observable } from '@apollo/client/core';
 import { onError } from '@apollo/client/link/error';
-import { OrderManager } from '@subql/network-support';
+import { OrderManager, ScoreType } from '@subql/network-support';
 import { Logger } from '../utils/logger';
 
 export type ErrorLinkOption = {
@@ -24,13 +24,13 @@ export const creatErrorLink = ({
   onError(({ graphQLErrors, networkError, operation }) => {
     const { indexer } = operation.getContext();
     if (networkError) {
-      orderManager.updateScore(indexer, 'network');
+      orderManager.updateScore(indexer, ScoreType.NETWORK);
       logger?.debug(`[Network error]: ${networkError}`);
     }
 
     if (graphQLErrors) {
       graphQLErrors.forEach(({ message, locations, path }) => {
-        orderManager.updateScore(indexer, 'graphql');
+        orderManager.updateScore(indexer, ScoreType.GRAPHQL);
         logger?.debug(
           `[GraphQL error]: Message: ${message}, Location: ${JSON.stringify(
             locations

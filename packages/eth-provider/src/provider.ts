@@ -13,8 +13,10 @@ import {
   OrderType,
   ProjectType,
   ResponseFormat,
+  ScoreType,
   silentLogger,
 } from '@subql/network-support';
+import { Base64 } from 'js-base64';
 
 function getResult(payload: {
   error?: { code?: number; data?: any; message?: string };
@@ -84,32 +86,48 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
     if (cache && super._cache[method]) {
       return super._cache[method];
     }
-    let result;
-    const requestParams = await this.orderManager.getRequestParams();
-    if (requestParams) {
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      const { url, headers, type } = requestParams;
-      try {
-        result = await this._send(
-          {
-            url,
-            headers,
-          },
-          request,
-          type === OrderType.flexPlan
-        );
-      } catch (err) {
-        if (this.fallbackUrl) {
-          result = await this._send(this.fallbackUrl, request, false);
-        } else {
-          throw err;
+    let retries = 0;
+    const requestResult: () => Promise<string> = async () => {
+      const requestParams = await this.orderManager.getRequestParams();
+      if (requestParams) {
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        const { url, headers, type, runner } = requestParams;
+        try {
+          const result = await this._send(
+            {
+              url,
+              headers,
+            },
+            request,
+            {
+              type,
+            }
+          );
+
+          if (!result) {
+            throw new Error('Request RPC error');
+          }
+          return result;
+        } catch (err) {
+          if (retries < this.maxRetries) {
+            this.orderManager.updateScore(runner, ScoreType.RPC);
+            retries += 1;
+            return requestResult();
+          }
+          if (this.fallbackUrl) {
+            const result = await this._send(this.fallbackUrl, request);
+            return result;
+          } else {
+            throw err;
+          }
         }
       }
-    }
+    };
 
+    const result = await requestResult();
     // Cache the fetch, but clear it on the next event loop
     if (cache) {
-      this._cache[method] = result;
+      this._cache[method] = new Promise((resolve) => resolve(result));
       setTimeout(() => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -122,20 +140,31 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
   async _send(
     url: string | ConnectionInfo,
     request: unknown,
-    isFlexPlan: boolean,
-    retries = 0
+    options: {
+      type?: OrderType;
+    } = {}
   ): Promise<any> {
+    const { type } = options;
     let result;
     let state: ChannelState | undefined;
     try {
       result = await fetchJson(url, JSON.stringify(request), (payload, resp) => {
         let res = payload;
-        if (isFlexPlan) {
+        if (type === OrderType.flexPlan) {
           [res, state] = this.orderManager.extractChannelState(payload, new Headers(resp.headers));
         }
         if (typeof res === 'string') {
           res = JSON.parse(res);
         }
+
+        // is Agreement
+        if (type === OrderType.agreement) {
+          res = {
+            ...res,
+            ...JSON.parse(Base64.decode(res.result)),
+          };
+        }
+
         return getResult(res);
       }).then((result) => {
         this.emit('debug', {
@@ -144,7 +173,6 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
           response: result,
           provider: this,
         });
-
         return result;
       });
     } catch (error) {
@@ -154,11 +182,9 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
         request: request,
         provider: this,
       });
-      if (retries < this.maxRetries) {
-        return this._send(url, request, isFlexPlan, retries + 1);
-      }
+      throw error;
     }
-    if (state && isFlexPlan) {
+    if (state && type === OrderType.flexPlan) {
       void this.orderManager.syncChannelState(state);
     }
     return result;

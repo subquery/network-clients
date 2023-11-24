@@ -34,6 +34,18 @@ type Options = {
   selector?: RunnerSelector;
 };
 
+export enum ScoreType {
+  GRAPHQL = 'Graphql',
+  NETWORK = 'network',
+  RPC = 'RPC',
+}
+
+const scoresDelta = {
+  [ScoreType.GRAPHQL]: 50,
+  [ScoreType.NETWORK]: 10,
+  [ScoreType.RPC]: 10,
+};
+
 function tokenToAuthHeader(token: string) {
   return `Bearer ${token}`;
 }
@@ -81,10 +93,11 @@ export class OrderManager {
       result = result.filter((a) => this.selector?.agreements?.includes(a.id));
     }
     if (this.selector?.runnerAddresses?.length) {
-      result = result.filter((a) =>
-        this.selector!.runnerAddresses!.findIndex(
-          (addr) => addr.toLowerCase() === a.indexer.toLowerCase()
-        )
+      result = result.filter(
+        (a) =>
+          !!this.selector?.runnerAddresses?.find(
+            (addr) => addr.toLowerCase() === a.indexer.toLowerCase()
+          )
       );
     }
 
@@ -94,13 +107,14 @@ export class OrderManager {
   get plans(): FlexPlanOrder[] {
     let result: FlexPlanOrder[] = this._plans;
     if (this.selector?.channelIds?.length) {
-      result = result.filter((p) => this.selector!.channelIds!.includes(p.id));
+      result = result.filter((p) => this.selector?.channelIds?.includes(p.id));
     }
     if (this.selector?.runnerAddresses?.length) {
-      result = result.filter((p) =>
-        this.selector!.runnerAddresses!.findIndex(
-          (addr) => addr.toLowerCase() === p.indexer.toLowerCase()
-        )
+      result = result.filter(
+        (p) =>
+          !!this?.selector?.runnerAddresses?.find(
+            (addr) => addr.toLowerCase() === p.indexer.toLowerCase()
+          )
       );
     }
     return result;
@@ -189,27 +203,6 @@ export class OrderManager {
             url,
             runner,
             headers,
-            // postRequest: true,
-            // responseTransform: true,
-            // postRequest: this.syncChannelState.bind(this),
-            // responseTransform: (payload, headers) => {
-            //   if (headers.get('X-Indexer-Response-Format') === 'wrapped') {
-            //     const body = (
-            //       typeof payload === 'string' ? JSON.parse(payload) : payload
-            //     ) as WrappedResponse;
-            //     return [
-            //       Base64.decode(body.result),
-            //       JSON.parse(Base64.decode(body.state)),
-            //       body.signature,
-            //     ];
-            //   } else {
-            //     const _state = headers.get('X-Channel-State');
-            //     assert(_state, 'invalid response, missing channel state');
-            //     const _signature = headers.get('X-Channel-Signature');
-            //     assert(_signature, 'invalid response, missing channel signature');
-            //     return [payload, JSON.parse(Base64.decode(_state)), _signature];
-            //   }
-            // },
           };
         } catch (error) {
           this.logger?.debug(`request new state signature for runner ${runner} failed`);
@@ -249,16 +242,6 @@ export class OrderManager {
       default:
         throw new Error('invalid X-Indexer-Response-Format');
     }
-    // if (headers.get('X-Indexer-Response-Format') === 'wrapped') {
-    //   const body = (typeof payload === 'string' ? JSON.parse(payload) : payload) as WrappedResponse;
-    //   return [Base64.decode(body.result), JSON.parse(Base64.decode(body.state)), body.signature];
-    // } else if (headers.get('X-Indexer-Response-Format') === 'inline') {
-    //   const _state = headers.get('X-Channel-State');
-    //   assert(_state, 'invalid response, missing channel state');
-    //   const _signature = headers.get('X-Channel-Signature');
-    //   assert(_signature, 'invalid response, missing channel signature');
-    //   return [payload, JSON.parse(Base64.decode(_state)), _signature];
-    // }
   }
 
   async syncChannelState(state: ChannelState): Promise<void> {
@@ -354,11 +337,11 @@ export class OrderManager {
     this.agreements[index].token = token;
   }
 
-  updateScore(runner: string, errorType: 'graphql' | 'network') {
+  updateScore(runner: string, errorType: ScoreType) {
     const key = this.getCacheKey(runner);
     const score = this.scoreStore.get<number>(key) ?? 100;
 
-    const delta = errorType === 'graphql' ? 10 : 50;
+    const delta = scoresDelta[errorType];
     const newScore = Math.max(score - delta, 0);
 
     this.scoreStore.set(key, newScore);
