@@ -46,14 +46,16 @@ export class ResponseLink extends ApolloLink {
     return new Observable<FetchResult>((observer) => {
       const subscription = forward(operation).subscribe({
         next: (response: FetchResult<Record<string, any>> & { state: ChannelState }) => {
-          if (!response.errors && type === OrderType.flexPlan) {
+          if (type === OrderType.flexPlan) {
             const responseHeaders = operation.getContext().response.headers;
-            const channelState = responseHeaders.get('X-Channel-State')
-              ? (JSON.parse(
-                  Base64.decode(responseHeaders.get('X-Channel-State')).toString()
-                ) as ChannelState)
-              : response.state;
-            void this.syncChannelState(channelState);
+            if (responseHeaders) {
+              const channelState = responseHeaders.get('X-Channel-State')
+                ? (JSON.parse(
+                    Base64.decode(responseHeaders.get('X-Channel-State')).toString()
+                  ) as ChannelState)
+                : response.state;
+              void this.syncChannelState(channelState);
+            }
           }
 
           observer.next(response);

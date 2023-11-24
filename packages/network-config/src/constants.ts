@@ -20,7 +20,7 @@ export const IPFS_URLS = {
 export const RPC_ENDPOINTS = {
   [SQNetworks.MAINNET]: 'https://polygon-rpc.com/',
   [SQNetworks.KEPLER]: 'https://polygon-rpc.com/',
-  [SQNetworks.TESTNET]: 'https://polygon-mumbai.infura.io/v3/4458cf4d1689497b9a38b1d6bbf05e78',
+  [SQNetworks.TESTNET]: 'https://rpc.ankr.com/polygon_mumbai',
 };
 
 export const NETWORK_SUBQL_ENDPOINTS = {
@@ -62,3 +62,42 @@ export function gqlEndpoints(network: SQNetworks) {
     [GQLEndpoint.Leaderboard]: LEADERBOARD_SUBQL_ENDPOINTS[network],
   };
 }
+
+export const NETWORKS_CONFIG_INFO = {
+  [SQNetworks.TESTNET]: {
+    chainId: '0x13881',
+    chainName: 'Mumbai',
+    rpcUrls: ['https://rpc.ankr.com/polygon_mumbai'],
+    iconUrls: ['https://icons.llamao.fi/icons/chains/rsz_polygon.jpg'],
+    blockExplorerUrls: ['https://mumbai.polygonscan.com/'],
+    nativeCurrency: {
+      name: 'Matic Token',
+      symbol: 'MATIC',
+      decimals: 18,
+    },
+  },
+  [SQNetworks.KEPLER]: {
+    chainId: '0x89',
+    chainName: 'Polygon',
+    rpcUrls: ['https://polygon-rpc.com'],
+    iconUrls: ['https://icons.llamao.fi/icons/chains/rsz_polygon.jpg'],
+    blockExplorerUrls: ['https://polygonscan.com/'],
+    nativeCurrency: {
+      name: 'Matic Token',
+      symbol: 'MATIC',
+      decimals: 18,
+    },
+  },
+  [SQNetworks.MAINNET]: {
+    chainId: '0x89',
+    chainName: 'Polygon',
+    rpcUrls: ['https://polygon-rpc.com/'],
+    iconUrls: ['https://icons.llamao.fi/icons/chains/rsz_polygon.jpg'],
+    blockExplorerUrls: ['https://polygonscan.com/'],
+    nativeCurrency: {
+      name: 'Matic Token',
+      symbol: 'MATIC',
+      decimals: 18,
+    },
+  },
+};

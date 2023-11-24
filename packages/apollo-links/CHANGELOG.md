@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.2] - 2023-11-13
+
 ## [1.1.0] - 2023-10-13
 
 - Support new communication protocol
@@ -82,7 +84,8 @@ Breaking change for `dictHttpLink` and `deploymentHttpLink`, use `const { link }
 
 - Add Authlink for Apollo client
 
-[unreleased]: https://github.com/subquery/network-clients/compare/v1.1.0...HEAD
+[unreleased]: https://github.com/subquery/network-clients/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/subquery/network-clients/compare/v1.1.0...v1.2.2
 [1.1.0]: https://github.com/subquery/network-clients/compare/v1.0.8...v1.1.0
 [1.0.8]: https://github.com/subquery/network-clients/compare/v1.0.4...v1.0.8
 [1.0.4]: https://github.com/subquery/network-clients/compare/v1.0.2...v1.0.4

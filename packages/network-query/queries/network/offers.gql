@@ -15,6 +15,7 @@ fragment OfferFields on Offer {
     id
     period
     dailyReqCap
+    active
     rateLimit
   }
   deposit
@@ -129,6 +130,12 @@ query GetSpecificOpenOffers(
 
 query GetOfferCount($consumer: String!, $reachLimit: Boolean = false) {
   offers(filter: { consumer: { equalTo: $consumer }, reachLimit: { equalTo: $reachLimit } }) {
+    totalCount
+  }
+}
+
+query GetOfferCountByDeploymentId($deploymentId: String!) {
+  offers(filter: { deploymentId: { equalTo: $deploymentId } }) {
     totalCount
   }
 }

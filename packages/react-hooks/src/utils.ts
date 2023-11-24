@@ -1,11 +1,11 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { SQT_DECIMAL } from '@subql/network-config';
+import BigNumberJs from 'bignumber.js';
+import { BigNumberish, BigNumber, utils } from 'ethers';
 import { ReactElement } from 'react';
 import { AsyncData } from './types';
-import BigNumberJs from 'bignumber.js';
-import { SQT_DECIMAL } from '@subql/network-config';
-import { BigNumberish, BigNumber, utils } from 'ethers';
 
 export function mergeAsync<T1, T2, T3, T4>(
   v1: AsyncData<T1>,
