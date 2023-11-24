@@ -73,7 +73,7 @@ describe('query client', () => {
   const polkadotDictDeploymentId = 'QmSjjRjfjXXEfSUTheNwvWcBaH54pWoToTHPDsJRby955X';
 
   beforeAll(async () => {
-    const config = NETWORK_CONFIGS.kepler;
+    const config = NETWORK_CONFIGS.testnet;
     assert(config, 'network config not defined');
     client = new GraphqlQueryClient(config).networkClient;
   });
