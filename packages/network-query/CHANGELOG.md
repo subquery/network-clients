@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.100.2] - 2023-11-24
+
 ## [0.100.0] - 2023-11-01
 
 ## [0.3.15] - 2023-07-21
@@ -33,7 +35,8 @@ Add `leaderboard`.
 
 - Release first version
 
-[unreleased]: https://github.com/subquery/network-clients/compare/v0.100.0...HEAD
+[unreleased]: https://github.com/subquery/network-clients/compare/v0.100.2...HEAD
+[0.100.2]: https://github.com/subquery/network-clients/compare/v0.100.0...v0.100.2
 [0.100.0]: https://github.com/subquery/network-clients/compare/v0.3.13...v0.100.0
 [0.3.13]: https://github.com/subquery/network-clients/compare/v0.3.11...v0.3.13
 [0.3.11]: https://github.com/subquery/network-clients/compare/v0.3.9...v0.3.11

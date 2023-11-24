@@ -1,6 +1,6 @@
 {
   "name": "@subql/network-clients",
-  "version": "0.100.1-0",
+  "version": "0.100.2",
   "description": "SubQuery client sdk for network",
   "main": "dist/index.js",
   "author": "SubQuery Pte Limited",
