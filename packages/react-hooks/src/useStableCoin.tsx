@@ -1,11 +1,6 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { useMemo, useState } from 'react';
-import { useInterval } from 'ahooks';
-import BigNumber from 'bignumber.js';
-import dayjs from 'dayjs';
-import { formatUnits } from 'ethers/lib/utils';
 import { ContractSDK } from '@subql/contract-sdk';
 import {
   SQNetworks,
@@ -14,7 +9,12 @@ import {
   STABLE_COIN_SYMBOLS,
   TOKEN_SYMBOLS,
 } from '@subql/network-config';
+import { useInterval } from 'ahooks';
+import BigNumber from 'bignumber.js';
+import dayjs from 'dayjs';
 import { toChecksumAddress } from 'ethereum-checksum-address';
+import { formatUnits } from 'ethers/lib/utils';
+import { useMemo, useState } from 'react';
 
 import { formatEther, formatSQT } from './utils';
 
@@ -33,10 +33,11 @@ export const useStableCoin = (contracts: ContractSDK | undefined, network: SQNet
   );
   const [now, setNow] = useState<dayjs.Dayjs>();
   const coinsAddressDict = useMemo<{ [key: string]: 'USDC' | 'kSQT' | 'SQT' }>(() => {
-    if (!contracts?.sqToken)
+    if (!contracts?.sqToken) {
       return {
         [toChecksumAddress(STABLE_COIN_ADDRESS)]: STABLE_TOKEN,
       };
+    }
     return {
       [toChecksumAddress(STABLE_COIN_ADDRESS)]: STABLE_TOKEN,
       [toChecksumAddress(contracts.sqToken.address)]: TOKEN,
@@ -62,11 +63,12 @@ export const useStableCoin = (contracts: ContractSDK | undefined, network: SQNet
   };
 
   const transPrice = (fromAddress: string | undefined, price: string | number | bigint) => {
-    if (!contracts?.sqToken.address || !fromAddress)
+    if (!contracts?.sqToken.address || !fromAddress) {
       return {
         usdcPrice: '0',
         sqtPrice: '0',
       };
+    }
 
     try {
       const isSQT =
@@ -152,10 +154,14 @@ export const useStableCoin = (contracts: ContractSDK | undefined, network: SQNet
     }
   };
 
+  const getPriceOracleFunc = async () => {
+    await getPriceOracle();
+    setNow(dayjs());
+  };
+
   useInterval(
-    async () => {
-      await getPriceOracle();
-      setNow(dayjs());
+    () => {
+      void getPriceOracleFunc();
     },
     30000,
     {

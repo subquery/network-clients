@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 /**
  * @jest-environment jsdom
  */
@@ -5,12 +6,12 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { act, render, screen } from '@testing-library/react';
-import { useStableCoin } from '../packages/react-hooks/src';
 import { ContractSDK } from '@subql/contract-sdk';
 import { SQNetworks, STABLE_COIN_ADDRESSES, STABLE_COIN_DECIMAL } from '@subql/network-config/src';
+import { act, render, screen } from '@testing-library/react';
 import { BigNumber } from 'ethers';
 import { useEffect } from 'react';
+import { useStableCoin } from '../packages/react-hooks/src';
 
 test('useStableCoin should work', async () => {
   let calledTimes = 0;
@@ -76,9 +77,9 @@ test('useStableCoin should work', async () => {
     );
   }
 
-  await act(async () => await render(<Setup />));
+  await act(async () => render(<Setup />));
 
-  expect(await screen.getByRole('sqtPrice').textContent?.includes('50'));
-  expect(await screen.getByRole('usdcPrice').textContent?.includes('1'));
+  expect(screen.getByRole('sqtPrice').textContent?.includes('50'));
+  expect(screen.getByRole('usdcPrice').textContent?.includes('1'));
   expect(calledTimes).toEqual(1);
 });

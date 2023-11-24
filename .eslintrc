@@ -24,12 +24,12 @@
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/ban-ts-comment": "off",
-    "@typescript-eslint/explicit-member-accessibility": [
-      "error",
-      {
-        "accessibility": "no-public"
-      }
-    ],
+    // "@typescript-eslint/explicit-member-accessibility": [
+    //   "error",
+    //   {
+    //     "accessibility": "no-public"
+    //   }
+    // ],
     "@typescript-eslint/no-unsafe-argument": "off",
     "@typescript-eslint/no-unsafe-assignment": "off",
     "@typescript-eslint/no-unsafe-call": "off",

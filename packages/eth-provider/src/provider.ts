@@ -27,7 +27,6 @@ function getResult(payload: {
     error.data = payload.error.data;
     throw error;
   }
-
   return payload.result;
 }
 
@@ -89,7 +88,7 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
     const requestParams = await this.orderManager.getRequestParams();
     if (requestParams) {
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      const { url, runner, headers, type } = requestParams;
+      const { url, headers, type } = requestParams;
       try {
         result = await this._send(
           {
