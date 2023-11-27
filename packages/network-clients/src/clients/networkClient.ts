@@ -1,22 +1,21 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ContractSDK } from '@subql/contract-sdk';
+import assert from 'assert';
+import { ApolloClient, ApolloClientOptions, NormalizedCacheObject } from '@apollo/client/core';
 import type { Provider as AbstractProvider } from '@ethersproject/abstract-provider';
-import { Signer, providers } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
+import { ContractSDK } from '@subql/contract-sdk';
+import { DEFAULT_IPFS_URL, NETWORK_CONFIGS } from '@subql/network-config';
+import { SQNetworks } from '@subql/network-config';
+import { Signer, providers } from 'ethers';
 
+import { Indexer } from '../models/indexer';
+import { isCID, min } from '../utils';
+import { parseRawEraValue } from '../utils/parseEraValue';
 import { ContractClient } from './contractClient';
 import { IPFSClient } from './ipfsClient';
 import { GraphqlQueryClient } from './queryClient';
-
-import { isCID, min } from '../utils';
-import { DEFAULT_IPFS_URL, NETWORK_CONFIGS } from '@subql/network-config';
-import assert from 'assert';
-import { Indexer } from '../models/indexer';
-import { parseRawEraValue } from '../utils/parseEraValue';
-import { SQNetworks } from '@subql/network-config';
-import { ApolloClient, ApolloClientOptions, NormalizedCacheObject } from '@apollo/client/core';
 
 type Provider = AbstractProvider | Signer;
 
@@ -108,7 +107,7 @@ export class NetworkClient {
 
     if (!indexer) return BigNumber.from(0);
 
-    const { totalStake, ownStake } = await indexer;
+    const { totalStake, ownStake } = indexer;
 
     const totalStakingAmountAfter = BigNumber.from(totalStake?.after ?? 0);
     const ownStakeAfter = BigNumber.from(ownStake?.after ?? 0);
@@ -141,7 +140,7 @@ export class NetworkClient {
     return sortedTotalDelegations.sub(sortedOwnStake);
   }
 
-  public async projectMetadata(cid: string) {
+  public projectMetadata(cid: string) {
     if (!isCID(cid)) throw new Error(`Invalid cid: ${cid}`);
     // get project metadata
     // cat project metadata

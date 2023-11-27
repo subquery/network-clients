@@ -32,7 +32,7 @@ export function useAsyncMemo<T>(
   }, deps);
 
   const refetch = useCallback(
-    async (retainCurrent?: boolean) => {
+    (retainCurrent?: boolean) => {
       const promise = factory();
       if (promise === undefined || promise === null) return;
       setResult((current) => ({ loading: true, data: retainCurrent ? current.data : undefined }));

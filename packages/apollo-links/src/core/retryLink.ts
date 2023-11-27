@@ -3,8 +3,8 @@
 
 import type { Operation } from '@apollo/client/core';
 import { RetryLink } from '@apollo/client/link/retry';
+import { OrderManager, ScoreType } from '@subql/network-support';
 import { Logger } from '../utils/logger';
-import { OrderManager } from './orderManager';
 
 export type RetryLinkOption = {
   orderManager: OrderManager;
@@ -17,7 +17,7 @@ export const createRetryLink = ({ orderManager, maxRetries = 3, logger }: RetryL
     attempts: function (count: number, operation: Operation, error: any) {
       if (count <= maxRetries) {
         const { indexer } = operation.getContext();
-        orderManager.updateIndexerScore(indexer, 'network');
+        orderManager.updateScore(indexer, ScoreType.NETWORK);
 
         const isEmptyUrlError = error?.message?.includes('empty url');
         const isFallback = operation.getContext().fallback;

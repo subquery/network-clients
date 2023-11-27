@@ -1,8 +1,8 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { utils } from 'ethers';
 import buffer from 'buffer';
+import { utils } from 'ethers';
 
 const Buffer = buffer.Buffer;
 

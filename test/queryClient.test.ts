@@ -1,8 +1,8 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ApolloClient } from '@apollo/client/core';
 import assert from 'assert';
+import { ApolloClient } from '@apollo/client/core';
 import { GraphqlQueryClient, NETWORK_CONFIGS } from '../packages/network-clients/src';
 import {
   GetDelegation,
@@ -71,7 +71,7 @@ describe('query client', () => {
 
   const polkadotDictDeploymentId = 'QmSjjRjfjXXEfSUTheNwvWcBaH54pWoToTHPDsJRby955X';
 
-  beforeAll(async () => {
+  beforeAll(() => {
     const config = NETWORK_CONFIGS.kepler;
     assert(config, 'network config not defined');
     client = new GraphqlQueryClient(config).networkClient;

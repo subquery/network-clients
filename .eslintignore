@@ -1,2 +1,4 @@
+**/__mocks__/**
 **/__graphql__/**
 **/__hooks__/**
+jest.config.ts

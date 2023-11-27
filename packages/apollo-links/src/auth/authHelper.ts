@@ -1,26 +1,13 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
-import jwt_decode from 'jwt-decode';
 import buffer from 'buffer';
+import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
+import { POST } from '@subql/network-support';
 
 import { AuthMessage, buildTypedMessage, createAuthRequestBody } from './eip712';
-import { POST } from '../utils/query';
 
 const Buffer = buffer.Buffer;
-
-export function isTokenExpired(token: string): boolean {
-  if (!token) return true;
-
-  try {
-    const { exp } = jwt_decode(token) as { exp: number };
-    const currentDate = new Date().getTime();
-    return exp < currentDate;
-  } catch {
-    return true;
-  }
-}
 
 export function signMessage(msg: AuthMessage, sk: string, chainId: number): string {
   if (!sk) return '';

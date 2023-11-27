@@ -8,7 +8,7 @@ import {
   InMemoryCache,
   NormalizedCacheObject,
 } from '@apollo/client/core';
-import fetch from 'cross-fetch';
+import { GQLEndpoint, NetworkConfig } from '@subql/network-config';
 import {
   GetDelegation,
   GetDelegationQuery,
@@ -22,7 +22,7 @@ import {
   GetDelegatorQuery,
   GetDelegatorQueryVariables,
 } from '@subql/network-query';
-import { GQLEndpoint, NetworkConfig } from '@subql/network-config';
+import fetch from 'cross-fetch';
 
 import { wrapApolloResult } from '../utils/apollo';
 

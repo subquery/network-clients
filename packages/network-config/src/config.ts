@@ -1,13 +1,11 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { GQLEndpoint, IPFS_URLS, RPC_ENDPOINTS, SQNetworks, gqlEndpoints } from './constants';
-
-import { SdkOptions } from '@subql/contract-sdk/types';
-
-import mainnetDeploymentDetails from '@subql/contract-sdk/publish/mainnet.json';
 import keplerDeploymentDetails from '@subql/contract-sdk/publish/kepler.json';
+import mainnetDeploymentDetails from '@subql/contract-sdk/publish/mainnet.json';
 import testnetDeploymentDetails from '@subql/contract-sdk/publish/testnet.json';
+import { SdkOptions } from '@subql/contract-sdk/types';
+import { GQLEndpoint, IPFS_URLS, RPC_ENDPOINTS, SQNetworks, gqlEndpoints } from './constants';
 
 export interface NetworkConfig {
   gql: Record<GQLEndpoint, string | undefined>;

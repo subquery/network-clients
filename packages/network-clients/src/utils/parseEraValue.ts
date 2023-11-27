@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import { BigNumber, BigNumberish } from 'ethers';
 import { isBigNumberish } from '@ethersproject/bignumber/lib/bignumber';
+import { BigNumber, BigNumberish } from 'ethers';
 import { CurrentEraValue, EraValue, JSONBigInt, RawEraValue } from '../models/eraValue';
 
 function jsonBigIntToBigInt(value: JSONBigInt | BigNumberish): BigNumber {
