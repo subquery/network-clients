@@ -10,7 +10,7 @@ import {
   Observable,
   Operation,
 } from '@apollo/client/core';
-import fetch from 'cross-fetch';
+import { customFetch, timeoutController } from '@subql/network-support';
 import { Logger } from '../utils/logger';
 
 export type Options = {
@@ -53,7 +53,12 @@ export class DynamicHttpLink extends ApolloLink {
   private createHttpLink(uri: string): HttpLink {
     return new HttpLink({
       ...this.options.httpOptions,
-      fetch: this.options.httpOptions.fetch ? this.options.httpOptions.fetch : fetch,
+      fetchOptions: {
+        ...this.options.httpOptions.fetchOptions,
+        signal: timeoutController().signal,
+      },
+      // note: fetch signal is not work even the signle is on customFetch, must pass timeout signle to fetchOptions
+      fetch: this.options.httpOptions.fetch ? this.options.httpOptions.fetch : customFetch,
       uri,
     });
   }

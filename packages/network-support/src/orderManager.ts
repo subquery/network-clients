@@ -32,6 +32,7 @@ type Options = {
   responseFormat?: ResponseFormat;
   scoreStore?: IStore;
   selector?: RunnerSelector;
+  timeout?: number;
 };
 
 export enum ScoreType {
@@ -69,11 +70,20 @@ export class OrderManager {
   private healthy = true;
   private selector?: RunnerSelector;
   private responseFormat?: ResponseFormat;
+  private timeout = 60000;
   private _init: Promise<void>;
 
   constructor(options: Options) {
-    const { authUrl, projectId, logger, projectType, scoreStore, selector, responseFormat } =
-      options;
+    const {
+      authUrl,
+      projectId,
+      logger,
+      projectType,
+      scoreStore,
+      selector,
+      responseFormat,
+      timeout = 60000,
+    } = options;
     this.authUrl = authUrl;
     this.projectId = projectId;
     this.projectType = projectType;
@@ -85,6 +95,7 @@ export class OrderManager {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this.timer = setInterval(() => this.refreshAgreements(), this.interval);
     this.selector = selector;
+    this.timeout = timeout;
   }
 
   get agreements(): ServiceAgreementOrder[] {
@@ -164,53 +175,67 @@ export class OrderManager {
   }
 
   async getRequestParams(): Promise<RequestParam | undefined> {
-    const order = await this.getNextOrder();
-    const headers: RequestParam['headers'] = {};
-    if (order) {
-      const { type, indexer: runner, url, id } = order;
-      if (type === OrderType.agreement) {
-        headers['X-Indexer-Response-Format'] = this.responseFormat ?? 'inline';
-        let { token } = order as ServiceAgreementOrder;
-        if (isTokenExpired(token)) {
+    const innerRequest = async () => {
+      const order = await this.getNextOrder();
+      const headers: RequestParam['headers'] = {};
+      if (order) {
+        const { type, indexer: runner, url, id } = order;
+        if (type === OrderType.agreement) {
+          headers['X-Indexer-Response-Format'] = this.responseFormat ?? 'inline';
+          let { token } = order as ServiceAgreementOrder;
+          if (isTokenExpired(token)) {
+            try {
+              token = await this.refreshAgreementToken(id, runner);
+            } catch (error) {
+              this.logger?.debug(`request new token for indexer ${runner} and url: ${url} failed`);
+              throw new RequestParamError((error as any).message, runner);
+            }
+          }
+          headers.authorization = tokenToAuthHeader(token);
+          return { url, runner, headers, type };
+        } else if (type === OrderType.flexPlan) {
+          const channelId = id;
+          headers['X-Indexer-Response-Format'] = this.responseFormat ?? 'inline';
           try {
-            token = await this.refreshAgreementToken(id, runner);
+            this.logger?.debug(`request new signature for runner ${runner}`);
+
+            const tokenUrl = new URL('/channel/sign', this.authUrl);
+            const signedState = await POST<ChannelAuth>(tokenUrl.toString(), {
+              deployment: this.projectId,
+              channelId,
+            });
+
+            this.logger?.debug(`request new state signature for runner ${runner} success`);
+            const { authorization } = signedState;
+            // TODO: debug to confirm
+            headers.authorization = authorization;
+
+            return {
+              type,
+              url,
+              runner,
+              headers,
+            };
           } catch (error) {
-            this.logger?.debug(`request new token for indexer ${runner} and url: ${url} failed`);
+            this.logger?.debug(`request new state signature for runner ${runner} failed`);
             throw new RequestParamError((error as any).message, runner);
           }
         }
-        headers.authorization = tokenToAuthHeader(token);
-        return { url, runner, headers, type };
-      } else if (type === OrderType.flexPlan) {
-        const channelId = id;
-        headers['X-Indexer-Response-Format'] = this.responseFormat ?? 'inline';
-        try {
-          this.logger?.debug(`request new signature for runner ${runner}`);
-
-          const tokenUrl = new URL('/channel/sign', this.authUrl);
-          const signedState = await POST<ChannelAuth>(tokenUrl.toString(), {
-            deployment: this.projectId,
-            channelId,
-          });
-
-          this.logger?.debug(`request new state signature for runner ${runner} success`);
-          const { authorization } = signedState;
-          // TODO: debug to confirm
-          headers.authorization = authorization;
-
-          return {
-            type,
-            url,
-            runner,
-            headers,
-          };
-        } catch (error) {
-          this.logger?.debug(`request new state signature for runner ${runner} failed`);
-          throw new RequestParamError((error as any).message, runner);
-        }
       }
+    };
+
+    // innerRequest includes multi promise tasks. we want timeout once.
+    const raceAwait = await Promise.race<RequestParam | 'timeout' | undefined>([
+      innerRequest(),
+      new Promise((resolve) => setTimeout(() => resolve('timeout'), this.timeout)),
+    ]);
+
+    if (raceAwait === 'timeout') {
+      this.logger?.debug(`request order timeout`);
+      return undefined;
     }
-    return;
+
+    return raceAwait;
   }
 
   extractChannelState(

@@ -4,12 +4,36 @@
 import fetch from 'cross-fetch';
 import { ServiceAgreementOrder, FlexPlanOrder, ProjectType } from '../types';
 
+let timeout = 60000;
+
+export const setFetchTimeout = (newVal: number) => {
+  timeout = newVal;
+};
+
+export const timeoutController = () => {
+  const abort = new AbortController();
+
+  setTimeout(() => abort.abort(), timeout);
+
+  return abort;
+};
+
+export const customFetch = (
+  input: URL | RequestInfo,
+  init?: RequestInit | undefined
+): Promise<Response> => {
+  return fetch(input, {
+    signal: timeoutController().signal,
+    ...init,
+  });
+};
+
 export async function POST<T>(
   url: string,
   body: Record<string, string | number | boolean | undefined>
-) {
+): Promise<T> {
   const headers = { 'Content-Type': 'application/json' };
-  const res = await fetch(url, {
+  const res = await customFetch(url, {
     body: JSON.stringify(body),
     method: 'post',
     headers,
@@ -20,9 +44,9 @@ export async function POST<T>(
   return res.json();
 }
 
-export async function GET<T>(url: string) {
+export async function GET<T>(url: string): Promise<T> {
   const headers = { 'Content-Type': 'application/json' };
-  const res = await fetch(url, {
+  const res = await customFetch(url, {
     method: 'get',
     headers,
   });
@@ -37,11 +61,7 @@ interface AgreementsResponse {
   plans: FlexPlanOrder[];
 }
 
-export async function fetchOrders(
-  authUrl: string,
-  projectId: string,
-  projectType: ProjectType
-): Promise<AgreementsResponse> {
+export async function fetchOrders(authUrl: string, projectId: string, projectType: ProjectType) {
   try {
     const agreementsURL = new URL(`/orders/${projectType}/${projectId}`, authUrl);
     return await GET<AgreementsResponse>(agreementsURL.toString());

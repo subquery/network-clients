@@ -3,7 +3,13 @@
 
 import { ApolloLink, from } from '@apollo/client/core';
 
-import { IStore, OrderManager, ResponseFormat, RunnerSelector } from '@subql/network-support';
+import {
+  IStore,
+  OrderManager,
+  ResponseFormat,
+  RunnerSelector,
+  setFetchTimeout,
+} from '@subql/network-support';
 import {
   ClusterAuthLink,
   createRetryLink,
@@ -25,6 +31,7 @@ interface BaseAuthOptions {
   selector?: RunnerSelector;
   maxRetries?: number;
   useImmediateFallbackOnError?: boolean;
+  timeout?: number;
 }
 
 export interface DictAuthOptions extends BaseAuthOptions {
@@ -64,8 +71,10 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
     maxRetries,
     useImmediateFallbackOnError = false,
     logger: _logger,
+    timeout = 60000,
     selector,
   } = options;
+  setFetchTimeout(timeout);
 
   const logger = _logger ?? silentLogger();
   const orderManager = new OrderManager({
@@ -76,6 +85,7 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
     scoreStore,
     responseFormat: ResponseFormat.Inline,
     selector,
+    timeout,
   });
 
   const retryLink = createRetryLink({ orderManager, logger, maxRetries });
