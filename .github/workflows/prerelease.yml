@@ -47,6 +47,16 @@ jobs:
           paths: packages/network-config
 
       - uses: marceloprado/has-changed-path@v1
+        id: changed-network-support
+        with:
+          paths: packages/network-support
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-eth-provider
+        with:
+          paths: packages/eth-provider
+
+      - uses: marceloprado/has-changed-path@v1
         id: changed-network-clients
         with:
           paths: packages/network-clients
@@ -78,6 +88,20 @@ jobs:
           package-path: packages/network-config
           npm-token: ${{ secrets.NPM_TOKEN }}
 
+      - name: Bump network-support & deploy
+        if: steps.changed-network-support.outputs.changed == 'true' || github.event.inputs.force-release
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/network-support
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump eth-provider & deploy
+        if: steps.changed-eth-provider.outputs.changed == 'true' || steps.changed-network-support == 'true' || github.event.inputs.force-release
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/eth-provider
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
       - name: Bump network-query & deploy
         if: steps.changed-network-query.outputs.changed == 'true' || github.event.inputs.force-release
         uses: ./.github/actions/create-prerelease
@@ -100,7 +124,7 @@ jobs:
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump apollo-links & deploy
-        if: steps.changed-apollo-links.outputs.changed == 'true' || github.event.inputs.force-release
+        if: steps.changed-apollo-links.outputs.changed == 'true' || steps.changed-network-support == 'true' || github.event.inputs.force-release
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/apollo-links
