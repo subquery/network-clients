@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/require-await */
 /**
  * @jest-environment jsdom
  */
+/* eslint-disable @typescript-eslint/require-await */
 /* eslint-disable header/header */
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0

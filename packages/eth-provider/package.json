@@ -10,6 +10,7 @@
   "packageManager": "yarn@3.2.4",
   "dependencies": {
     "@ethersproject/providers": "^5.7.2",
-    "@subql/network-support": "workspace:*"
+    "@subql/network-support": "workspace:*",
+    "typescript": "^4.6.4"
   }
 }

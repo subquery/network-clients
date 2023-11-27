@@ -13,7 +13,7 @@ const mockLogger: Logger = {
 describe('eth provider', () => {
   it('can send rpc without network option', async () => {
     const privider = new SubqueryAuthedRpcProvider({
-      deploymentId: 'Qmdn8iu7p39YR6WKfzECiwywxhUkyXJp68fjEqG4bkLA7z',
+      deploymentId: 'QmTeutqL8wQqzAdG8MNWMXxoz1LDkkRZkY6HEw1HbdT2um',
       authUrl: 'https://kepler-auth.thechaindata.com',
       logger: mockLogger,
     });
@@ -23,7 +23,7 @@ describe('eth provider', () => {
 
   it('can send rpc with network option', async () => {
     const privider = new SubqueryAuthedRpcProvider({
-      deploymentId: 'Qmdn8iu7p39YR6WKfzECiwywxhUkyXJp68fjEqG4bkLA7z',
+      deploymentId: 'QmTeutqL8wQqzAdG8MNWMXxoz1LDkkRZkY6HEw1HbdT2um',
       authUrl: 'https://kepler-auth.thechaindata.com',
       logger: mockLogger,
       network: 12345,
