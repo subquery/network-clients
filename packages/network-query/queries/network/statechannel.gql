@@ -92,6 +92,29 @@ query GetConsumerClosedFlexPlans($consumer: String!, $now: Datetime!, $offset: I
   }
 }
 
+query GetConsumerFlexPlansByDeploymentId(
+  $consumer: String!
+  $now: Datetime!
+  $first: Int = 0
+  $offset: Int
+  $deploymentId: String!
+) {
+  stateChannels(
+    filter: {
+      consumer: { equalTo: $consumer }
+      deploymentId: { equalTo: $deploymentId }
+      expiredAt: { greaterThan: $now }
+    }
+    first: $first
+    offset: $offset
+  ) {
+    totalCount
+    nodes {
+      ...StateChannelFields
+    }
+  }
+}
+
 # INDEXER STATE CHANNEL QUERIES
 
 query GetIndexerOngoingFlexPlans(
