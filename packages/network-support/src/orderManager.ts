@@ -42,9 +42,9 @@ export enum ScoreType {
 }
 
 const scoresDelta = {
-  [ScoreType.GRAPHQL]: 50,
-  [ScoreType.NETWORK]: 10,
-  [ScoreType.RPC]: 10,
+  [ScoreType.GRAPHQL]: 0.5,
+  [ScoreType.NETWORK]: 0.8,
+  [ScoreType.RPC]: 0.8,
 };
 
 function tokenToAuthHeader(token: string) {
@@ -53,9 +53,6 @@ function tokenToAuthHeader(token: string) {
 
 export class OrderManager {
   private projectType: ProjectType;
-  private nextAgreementIndex: number | undefined;
-
-  private nextPlanIndex: number | undefined;
   private _agreements: ServiceAgreementOrder[] = [];
   private _plans: FlexPlanOrder[] = [];
 
@@ -166,8 +163,10 @@ export class OrderManager {
     return score;
   }
 
-  private filterOrdersByScore(orders: Order[]) {
-    return orders.filter(({ indexer }) => this.getScore(indexer) > this.minScore);
+  private addScoresToOrders(orders: Order[]): { score: number; order: Order }[] {
+    return orders
+      .map((order) => ({ score: this.getScore(order.indexer), order }))
+      .filter((order) => order.score > this.minScore);
   }
 
   private getNextOrderIndex(total: number, currentIndex: number) {
@@ -306,19 +305,16 @@ export class OrderManager {
 
     if (!this.agreements) return;
 
-    const agreements = this.filterOrdersByScore(this.agreements) as ServiceAgreementOrder[];
-    this.logger?.debug(`available agreements count: ${agreements.length}`);
+    const possibleAgreements = this.addScoresToOrders(this.agreements);
+    this.logger?.debug(`Available agreements count: ${possibleAgreements.length}`);
 
-    if (!this.healthy || !agreements.length) return;
+    if (!this.healthy || !possibleAgreements.length || possibleAgreements?.length < 1) return;
 
-    if (this.nextAgreementIndex === undefined) {
-      this.nextAgreementIndex = this.getRandomStartIndex(agreements.length);
-    }
+    const agreement = possibleAgreements
+      .map((a) => ({ weighted: Math.random() * a.score, ...a }))
+      .sort((a, b) => (a.weighted < b.weighted ? -1 : 1))[0].order as ServiceAgreementOrder;
 
-    const agreement = agreements[this.nextAgreementIndex];
-    this.nextAgreementIndex = this.getNextOrderIndex(agreements.length, this.nextAgreementIndex);
-
-    this.logger?.debug(`next agreement: ${JSON.stringify(agreement.indexer)}`);
+    this.logger?.debug(`Next agreement: ${JSON.stringify(agreement.indexer)}`);
 
     return agreement;
   }
@@ -328,15 +324,12 @@ export class OrderManager {
 
     if (!this.plans) return;
 
-    const plans = this.filterOrdersByScore(this.plans);
-    if (!this.healthy || !plans?.length) return;
+    const possiblePlans = this.addScoresToOrders(this.plans);
+    if (!this.healthy || !possiblePlans?.length || possiblePlans?.length < 1) return;
 
-    if (this.nextPlanIndex === undefined) {
-      this.nextPlanIndex = this.getRandomStartIndex(plans.length);
-    }
-
-    const plan = plans[this.nextPlanIndex];
-    this.nextPlanIndex = this.getNextOrderIndex(plans.length, this.nextPlanIndex);
+    const plan = possiblePlans
+      .map((a) => ({ weighted: Math.random() * a.score, ...a }))
+      .sort((a, b) => (a.weighted < b.weighted ? -1 : 1))[0].order;
 
     return plan;
   }
@@ -367,7 +360,7 @@ export class OrderManager {
     const score = this.scoreStore.get<number>(key) ?? 100;
 
     const delta = scoresDelta[errorType];
-    const newScore = Math.max(score - delta, 0);
+    const newScore = Math.max(score * delta, 0);
 
     this.scoreStore.set(key, newScore);
   }
