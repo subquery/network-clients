@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.111.0] - 2023-12-15
 
+Upgrade sdk
+
 ## [0.100.2] - 2023-11-24
 
 ## [0.100.0] - 2023-11-01
