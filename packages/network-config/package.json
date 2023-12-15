@@ -1,6 +1,6 @@
 {
   "name": "@subql/network-config",
-  "version": "0.100.3",
+  "version": "0.111.0",
   "main": "dist/index.js",
   "description": "SubQuery package containing network configuration",
   "author": "SubQuery Pte Limited",
