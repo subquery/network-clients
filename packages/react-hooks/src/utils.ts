@@ -32,7 +32,7 @@ export function mapAsync<O, T>(scope: (t: T) => O, data: AsyncData<T>): AsyncDat
   return { ...data, data: data.data ? scope(data.data) : undefined };
 }
 
-export type RenderResult = ReactElement | null;
+export type RenderResult = ReactElement | React.ReactNode | null;
 
 export type Handlers<T> = {
   loading: () => RenderResult;

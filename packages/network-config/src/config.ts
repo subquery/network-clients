@@ -5,7 +5,6 @@ import { GQLEndpoint, IPFS_URLS, RPC_ENDPOINTS, SQNetworks, gqlEndpoints } from 
 
 import { SdkOptions } from '@subql/contract-sdk/types';
 
-import keplerDeploymentDetails from '@subql/contract-sdk/publish/kepler.json';
 import mainnetDeploymentDetails from '@subql/contract-sdk/publish/mainnet.json';
 import testnetDeploymentDetails from '@subql/contract-sdk/publish/testnet.json';
 
@@ -21,19 +20,17 @@ export const NETWORK_CONFIGS: Record<SQNetworks, NetworkConfig> = {
     // TODO: FIXME
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    sdkOptions: { network: 'mainnet', deploymentDetails: mainnetDeploymentDetails },
+    sdkOptions: { network: 'mainnet', deploymentDetails: mainnetDeploymentDetails.child },
     gql: gqlEndpoints(SQNetworks.MAINNET),
-  },
-  [SQNetworks.KEPLER]: {
-    defaultEndpoint: RPC_ENDPOINTS.kepler,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    sdkOptions: { network: 'kepler', deploymentDetails: keplerDeploymentDetails },
-    gql: gqlEndpoints(SQNetworks.KEPLER),
   },
   [SQNetworks.TESTNET]: {
     defaultEndpoint: RPC_ENDPOINTS.testnet,
-    sdkOptions: { network: 'testnet', deploymentDetails: testnetDeploymentDetails },
+    sdkOptions: { network: 'testnet', deploymentDetails: testnetDeploymentDetails.child },
+    gql: gqlEndpoints(SQNetworks.TESTNET),
+  },
+  [SQNetworks.LOCAL]: {
+    defaultEndpoint: RPC_ENDPOINTS.testnet,
+    sdkOptions: { network: 'testnet', deploymentDetails: testnetDeploymentDetails.child },
     gql: gqlEndpoints(SQNetworks.TESTNET),
   },
 };
