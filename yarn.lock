@@ -3144,13 +3144,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/contract-sdk@npm:^0.111.0":
-  version: 0.111.0
-  resolution: "@subql/contract-sdk@npm:0.111.0"
+"@subql/contract-sdk@npm:^0.112.0":
+  version: 0.112.0
+  resolution: "@subql/contract-sdk@npm:0.112.0"
   dependencies:
     "@maticnetwork/maticjs": ^3.6.7
     "@maticnetwork/maticjs-ethers": ^1.0.3
-  checksum: db20fb424c491033f3be7cff318249f7b22bd377f746ddf420a88af6439db912929fecd05e89756d62b62fddd6e81c7e69d03cb60fb05ab303ef3db434e3d3ab
+  checksum: 94fbb472ff089bd3d6e2a00c7478cef7b6b299352085d7cd9d3e9e444cb9a40fa25dd19de9532e93b0f38a05ea57c7486dae3285bdcb41cf36b4524013d9ce20
   languageName: node
   linkType: hard
 
@@ -3171,7 +3171,7 @@ __metadata:
     graphql: ^16.5.0
     typescript: ^4.6.4
   peerDependencies:
-    "@subql/contract-sdk": ^0.111.0
+    "@subql/contract-sdk": ^0.112.0
     ipfs-http-client: ^53.0.1
   languageName: unknown
   linkType: soft
@@ -3182,7 +3182,7 @@ __metadata:
   dependencies:
     typescript: ^4.8.4
   peerDependencies:
-    "@subql/contract-sdk": ^0.111.0
+    "@subql/contract-sdk": ^0.112.0
     ipfs-http-client: ^53.0.1
   languageName: unknown
   linkType: soft
@@ -3213,7 +3213,7 @@ __metadata:
     "@apollo/client": ^3.7.0
     "@metamask/eth-sig-util": ^4.0.1
     "@octokit/request": ^5.6.3
-    "@subql/contract-sdk": ^0.111.0
+    "@subql/contract-sdk": ^0.112.0
     "@testing-library/react": ^14.0.0
     "@types/jest": ^28.1.6
     "@types/react": ^18.2.28
@@ -3269,7 +3269,7 @@ __metadata:
     prettier: ^2.7.1
     typescript: ^4.6.4
   peerDependencies:
-    "@subql/contract-sdk": ^0.111.0
+    "@subql/contract-sdk": ^0.112.0
     graphql: ^16.5.0
     react: ^18
   languageName: unknown

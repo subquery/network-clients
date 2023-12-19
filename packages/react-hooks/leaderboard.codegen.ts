@@ -5,7 +5,6 @@ import { CodegenConfig } from '@graphql-codegen/cli';
 import { NETWORK_CONFIGS } from '@subql/network-config';
 
 const config: CodegenConfig = {
-  // FIXME: use `NETWORK_CONFIGS.kepler.gql.network`
   schema: NETWORK_CONFIGS.mainnet.gql.leaderboard,
   documents: '../network-query/queries/leaderboard/*.gql',
   config: {
