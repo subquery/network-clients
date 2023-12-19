@@ -1,15 +1,10 @@
 # Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 # SPDX-License-Identifier: Apache-2.0
 
-# FIXME: add `sender` back once subql fix the issue
 query GetOrders($swapFrom: String!, $now: Datetime!) {
   orders(
-    orderBy: EXPIRE_DATE_DESC
-    filter: {
-      status: { equalTo: ACTIVE }
-      expireDate: { greaterThan: $now }
-      tokenGive: { equalTo: $swapFrom }
-    }
+    orderBy: UPDATE_AT_DESC
+    filter: { status: { equalTo: ACTIVE }, tokenGive: { equalTo: $swapFrom } }
   ) {
     totalCount
     nodes {
