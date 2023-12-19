@@ -9,8 +9,6 @@ import {
   GetAcceptedOffers,
   GetAggregatesEraRewards,
   GetAggregatesEraRewardsByIndexer,
-  GetAirdrops,
-  GetAirdropsByAccount,
   GetAllDelegations,
   GetAllOpenOffers,
   GetConsumerClosedFlexPlans,
@@ -491,36 +489,6 @@ describe('query client', () => {
     });
 
     expect(result.data.orders.totalCount).toBeGreaterThanOrEqual(0);
-  });
-
-  it('can query airdrops', async () => {
-    const result = await client.query({
-      query: GetAirdrops,
-    });
-
-    expect(result.data.airdrops.totalCount).toBeGreaterThanOrEqual(0);
-  });
-
-  it('can query airdrops by account', async () => {
-    const result = await client.query({
-      query: GetAirdropsByAccount,
-      variables: {
-        account: constants.AddressZero,
-      },
-    });
-
-    expect(result.data.airdropUsers.totalCount).toBeGreaterThanOrEqual(0);
-  });
-
-  it('can query airdrops by account', async () => {
-    const result = await client.query({
-      query: GetAirdropsByAccount,
-      variables: {
-        account: constants.AddressZero,
-      },
-    });
-
-    expect(result.data.airdropUsers.totalCount).toBeGreaterThanOrEqual(0);
   });
 
   it('can query era stakes by account', async () => {
