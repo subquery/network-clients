@@ -1,7 +1,7 @@
 # Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 # SPDX-License-Identifier: Apache-2.0
 
-query GetOrders($swapFrom: String!, $now: Datetime!) {
+query GetOrders($swapFrom: String!) {
   orders(
     orderBy: UPDATE_AT_DESC
     filter: { status: { equalTo: ACTIVE }, tokenGive: { equalTo: $swapFrom } }

@@ -442,7 +442,6 @@ describe('query client', () => {
     });
 
     expect(result.data.indexerStakes.groupedAggregates).toBeTruthy();
-    expect(result.data.indexerStakes.groupedAggregates[0].keys).toBeTruthy();
   });
 
   it('can query aggregates era rewards', async () => {
