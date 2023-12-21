@@ -3263,6 +3263,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/apollo-links@workspace:packages/apollo-links"
   dependencies:
+    "@apollo/client": ^3.8.8
     "@metamask/eth-sig-util": 5.1.0
     "@subql/network-support": "workspace:*"
     apollo: ^2.34.0
@@ -3276,7 +3277,6 @@ __metadata:
     pino: ^8.14.1
     typescript: ^4.6.4
   peerDependencies:
-    "@apollo/client": "*"
     graphql: "*"
   languageName: unknown
   linkType: soft
