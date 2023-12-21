@@ -1,6 +1,6 @@
 {
   "name": "@subql/apollo-links",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "SubQuery Network - graphql links",
   "main": "dist/index.js",
   "author": "SubQuery Pte Limited",
@@ -9,6 +9,7 @@
     "build": "tsc -b"
   },
   "dependencies": {
+    "@apollo/client": "^3.8.8",
     "@metamask/eth-sig-util": "5.1.0",
     "@subql/network-support": "workspace:*",
     "apollo-link-error": "^1.1.13",
@@ -25,7 +26,6 @@
     "typescript": "^4.6.4"
   },
   "peerDependencies": {
-    "@apollo/client": "*",
     "graphql": "*"
   },
   "stableVersion": "1.2.0"
