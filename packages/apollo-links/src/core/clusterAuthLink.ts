@@ -41,11 +41,19 @@ export class ClusterAuthLink extends ApolloLink {
             sub = forward(operation).subscribe(observer);
           } else {
             this.logger?.debug('no available orders');
+            // For handling if one indexer's score is not enough for reduce retries times
+            // e.g indexer have 10 score, when first failed, the score is reach to 0,
+            // but because at above code set the url & indexer. retryLink also believe it's a
+            // valid url. so re-try again.
+            // set url is null-string can enter fallbackLink to handle if use fallback link
+            // otherwise would re-try until reach the max retires.
+            operation.setContext({ url: '' });
             sub = forward(operation).subscribe(observer);
           }
         })
         .catch((error) => {
           if (error.indexer) {
+            console.warn(456);
             this.logger?.debug(`Failed to get token: ${String(error.message)}`);
             operation.setContext({ indexer: error.indexer });
             observer.error(new Error('failed to get indexer request params'));

@@ -54,6 +54,10 @@ export class ResponseLink extends ApolloLink {
                     Base64.decode(responseHeaders.get('X-Channel-State')).toString()
                   ) as ChannelState)
                 : response.state;
+
+              if (!channelState) {
+                this.logger?.debug("Can't find the channel state information");
+              }
               void this.syncChannelState(channelState);
             }
           }
