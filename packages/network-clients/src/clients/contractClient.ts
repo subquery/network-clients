@@ -1,7 +1,7 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ContractSDK } from '@subql/contract-sdk';
+import { ContractSDK } from '@subql/contract-sdk/sdk';
 import { BigNumber, utils } from 'ethers';
 
 export class ContractClient {

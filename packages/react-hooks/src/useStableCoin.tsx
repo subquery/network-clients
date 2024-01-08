@@ -6,7 +6,7 @@ import { useInterval } from 'ahooks';
 import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
 import { formatUnits } from 'ethers/lib/utils';
-import { ContractSDK } from '@subql/contract-sdk';
+import { ContractSDK } from '@subql/contract-sdk/sdk';
 import {
   SQNetworks,
   STABLE_COIN_ADDRESSES,
