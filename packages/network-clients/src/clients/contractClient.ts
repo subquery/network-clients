@@ -42,7 +42,7 @@ export class ContractClient {
   public async dailyRewardCap(indexer: string): Promise<BigNumber> {
     if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
 
-    const threshold = await this._sdk.serviceAgreementRegistry.threshold();
+    const threshold = await this._sdk.serviceAgreementExtra.threshold();
     const totalStakingAmount = await this._sdk.stakingManager.getTotalStakingAmount(indexer);
 
     if (!threshold || threshold.eq(0)) return BigNumber.from(0);
@@ -54,7 +54,7 @@ export class ContractClient {
     if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
 
     const dailyRewardCap = await this.dailyRewardCap(indexer);
-    const sumDailyReward = await this._sdk.serviceAgreementRegistry.sumDailyReward(indexer);
+    const sumDailyReward = await this._sdk.serviceAgreementExtra.sumDailyReward(indexer);
 
     return dailyRewardCap.gt(sumDailyReward)
       ? dailyRewardCap.sub(sumDailyReward)
