@@ -286,17 +286,13 @@ export class OrderManager {
 
   private async getNextOrder(): Promise<OrderWithType | undefined> {
     await this._init;
-    if (this.agreements.length) {
-      const order = await this.getNextAgreement();
-      if (order) {
-        return { ...order, type: OrderType.agreement };
-      }
+    const agreementsOrders = await this.getNextAgreement();
+    if (agreementsOrders) {
+      return { ...agreementsOrders, type: OrderType.agreement };
     }
-    if (this.plans.length) {
-      const order = await this.getNextPlan();
-      if (order) {
-        return { ...order, type: OrderType.flexPlan };
-      }
+    const flexPlanOrders = await this.getNextPlan();
+    if (flexPlanOrders) {
+      return { ...flexPlanOrders, type: OrderType.flexPlan };
     }
     return undefined;
   }
