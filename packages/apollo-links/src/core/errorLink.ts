@@ -21,7 +21,7 @@ export const creatErrorLink = ({
   useImmediateFallbackOnError,
   logger,
 }: ErrorLinkOption) =>
-  onError(({ graphQLErrors, networkError, operation }) => {
+  onError(({ graphQLErrors, networkError, operation, forward }) => {
     const { indexer } = operation.getContext();
     if (networkError) {
       orderManager.updateScore(indexer, ScoreType.NETWORK);
@@ -50,4 +50,6 @@ export const creatErrorLink = ({
         ) as Observable<FetchResult>;
       }
     }
+
+    return forward(operation);
   });
