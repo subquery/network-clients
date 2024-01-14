@@ -52,7 +52,7 @@ export class OrderManager {
   private logger: Logger;
   private timer: NodeJS.Timeout | undefined;
 
-  private selectedIndexersStore: IStore;
+  private selectedRunnersStore: IStore;
   private scoreManager: ScoreManager;
 
   private authUrl: string;
@@ -84,7 +84,7 @@ export class OrderManager {
     // this.scoreStore = scoreStore ?? createStore({ ttl: 86_400_000 });
     this.responseFormat = responseFormat;
 
-    this.selectedIndexersStore = createStore({ ttl: 86_400_000 });
+    this.selectedRunnersStore = createStore({ ttl: 86_400_000 });
     this.scoreManager = new ScoreManager({
       projectId,
       fallbackServiceUrl,
@@ -160,9 +160,9 @@ export class OrderManager {
     return orders.filter(({ indexer }) => this.scoreManager.getScore(indexer) > this.minScore);
   }
 
-  private filterOrdersBySelectedIndexers(requestId: string, orders: Order[]) {
+  private filterOrdersBySelectedRunners(requestId: string, orders: Order[]) {
     if (!requestId) return orders;
-    const selected = this.getSelectedIndexers(requestId);
+    const selected = this.getSelectedRunners(requestId);
     return orders.filter(({ indexer }) => !selected.includes(indexer));
   }
 
@@ -299,7 +299,7 @@ export class OrderManager {
     if (!this.agreements) return;
 
     const agreements = this.filterOrdersByScore(
-      this.filterOrdersBySelectedIndexers(requestId, this.agreements)
+      this.filterOrdersBySelectedRunners(requestId, this.agreements)
     ) as ServiceAgreementOrder[];
     this.logger?.debug(`available agreements count: ${agreements.length}`);
 
@@ -314,7 +314,7 @@ export class OrderManager {
 
     this.logger?.debug(`next agreement: ${JSON.stringify(agreement.indexer)}`);
 
-    this.updateSelectedIndexer(requestId, agreement.indexer);
+    this.updateSelectedRunner(requestId, agreement.indexer);
 
     return agreement;
   }
@@ -325,7 +325,7 @@ export class OrderManager {
     if (!this.plans) return;
 
     const plans = this.filterOrdersByScore(
-      this.filterOrdersBySelectedIndexers(requestId, this.plans)
+      this.filterOrdersBySelectedRunners(requestId, this.plans)
     );
     if (!this.healthy || !plans?.length) return;
 
@@ -336,7 +336,7 @@ export class OrderManager {
     const plan = plans[this.nextPlanIndex];
     this.nextPlanIndex = this.getNextOrderIndex(plans.length, this.nextPlanIndex);
 
-    this.updateSelectedIndexer(requestId, plan.indexer);
+    this.updateSelectedRunner(requestId, plan.indexer);
 
     return plan;
   }
@@ -354,16 +354,16 @@ export class OrderManager {
     return res.token;
   }
 
-  private getSelectedIndexers(requestId: string): string[] {
+  private getSelectedRunners(requestId: string): string[] {
     if (!requestId) return [];
-    return this.selectedIndexersStore.get<string[]>(requestId) || [];
+    return this.selectedRunnersStore.get<string[]>(requestId) || [];
   }
 
-  private updateSelectedIndexer(requestId: string, indexer: string) {
-    if (!requestId || !indexer) return;
-    const indexers = this.getSelectedIndexers(requestId) ?? [];
-    if (indexers.includes(indexer)) return;
-    this.selectedIndexersStore.set(requestId, [...indexers, indexer]);
+  private updateSelectedRunner(requestId: string, runner: string) {
+    if (!requestId || !runner) return;
+    const runners = this.getSelectedRunners(requestId) ?? [];
+    if (runners.includes(runner)) return;
+    this.selectedRunnersStore.set(requestId, [...runners, runner]);
   }
 
   protected updateTokenById(agreementId: string, token: string) {

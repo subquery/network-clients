@@ -40,8 +40,8 @@ export class ScoreManager {
     this.projectId = options.projectId;
   }
 
-  getScore(indexer: string) {
-    const key = this.getCacheKey(indexer);
+  getScore(runner: string) {
+    const key = this.getCacheKey(runner);
     let score = this.scoreStore.get<number | ScoreStoreType>(key);
 
     if (score === undefined) {
@@ -103,7 +103,7 @@ export class ScoreManager {
     this.scoreStore.set(key, score);
   }
 
-  private getCacheKey(indexer: string): string {
-    return `$query-score-${indexer}-${this.projectId}`;
+  private getCacheKey(runner: string): string {
+    return `$query-score-${runner}-${this.projectId}`;
   }
 }
