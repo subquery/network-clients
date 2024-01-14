@@ -298,23 +298,25 @@ export class OrderManager {
 
     if (!this.agreements) return;
 
-    const agreements = this.filterOrdersByScore(
-      this.filterOrdersBySelectedRunners(requestId, this.agreements)
-    ) as ServiceAgreementOrder[];
+    const agreements = this.filterOrdersBySelectedRunners(requestId, this.agreements);
     this.logger?.debug(`available agreements count: ${agreements.length}`);
 
     if (!this.healthy || !agreements.length) return;
 
-    if (this.nextAgreementIndex === undefined) {
-      this.nextAgreementIndex = this.getRandomStartIndex(agreements.length);
-    }
+    // if (this.nextAgreementIndex === undefined) {
+    //   this.nextAgreementIndex = this.getRandomStartIndex(agreements.length);
+    // }
 
-    const agreement = agreements[this.nextAgreementIndex];
-    this.nextAgreementIndex = this.getNextOrderIndex(agreements.length, this.nextAgreementIndex);
+    // const agreement = agreements[this.nextAgreementIndex];
+    // this.nextAgreementIndex = this.getNextOrderIndex(agreements.length, this.nextAgreementIndex);
+
+    const agreement = this.selectRunner(agreements) as ServiceAgreementOrder;
 
     this.logger?.debug(`next agreement: ${JSON.stringify(agreement.indexer)}`);
 
-    this.updateSelectedRunner(requestId, agreement.indexer);
+    if (agreement) {
+      this.updateSelectedRunner(requestId, agreement.indexer);
+    }
 
     return agreement;
   }
@@ -324,21 +326,35 @@ export class OrderManager {
 
     if (!this.plans) return;
 
-    const plans = this.filterOrdersByScore(
-      this.filterOrdersBySelectedRunners(requestId, this.plans)
-    );
+    const plans = this.filterOrdersBySelectedRunners(requestId, this.plans);
     if (!this.healthy || !plans?.length) return;
 
-    if (this.nextPlanIndex === undefined) {
-      this.nextPlanIndex = this.getRandomStartIndex(plans.length);
+    // if (this.nextPlanIndex === undefined) {
+    //   this.nextPlanIndex = this.getRandomStartIndex(plans.length);
+    // }
+
+    // const plan = plans[this.nextPlanIndex];
+    // this.nextPlanIndex = this.getNextOrderIndex(plans.length, this.nextPlanIndex);
+
+    const plan = this.selectRunner(plans);
+
+    if (plan) {
+      this.updateSelectedRunner(requestId, plan.indexer);
     }
 
-    const plan = plans[this.nextPlanIndex];
-    this.nextPlanIndex = this.getNextOrderIndex(plans.length, this.nextPlanIndex);
-
-    this.updateSelectedRunner(requestId, plan.indexer);
-
     return plan;
+  }
+
+  private selectRunner(orders: Order[]): Order | undefined {
+    if (!orders.length) return;
+    const scores = orders.map((o) => this.scoreManager.getScore(o.indexer));
+    const random = Math.random() * scores.reduce((a, b) => a + b, 0);
+    let sum = 0;
+    for (let i = 0; i < scores.length; i++) {
+      if (scores[i] === 0) continue;
+      sum += scores[i];
+      if (random <= sum) return orders[i];
+    }
   }
 
   async refreshAgreementToken(agreementId: string, runner: string): Promise<string> {
