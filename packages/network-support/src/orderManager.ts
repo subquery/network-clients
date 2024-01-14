@@ -160,7 +160,7 @@ export class OrderManager {
     return orders.filter(({ indexer }) => this.scoreManager.getScore(indexer) > this.minScore);
   }
 
-  private filterOrdersBySelectedRunners(requestId: string, orders: Order[]) {
+  private filterOrdersByRequestId(requestId: string, orders: Order[]) {
     if (!requestId) return orders;
     const selected = this.getSelectedRunners(requestId);
     return orders.filter(({ indexer }) => !selected.includes(indexer));
@@ -298,7 +298,7 @@ export class OrderManager {
 
     if (!this.agreements) return;
 
-    const agreements = this.filterOrdersBySelectedRunners(requestId, this.agreements);
+    const agreements = this.filterOrdersByRequestId(requestId, this.agreements);
     this.logger?.debug(`available agreements count: ${agreements.length}`);
 
     if (!this.healthy || !agreements.length) return;
@@ -326,7 +326,7 @@ export class OrderManager {
 
     if (!this.plans) return;
 
-    const plans = this.filterOrdersBySelectedRunners(requestId, this.plans);
+    const plans = this.filterOrdersByRequestId(requestId, this.plans);
     if (!this.healthy || !plans?.length) return;
 
     // if (this.nextPlanIndex === undefined) {
