@@ -3,6 +3,7 @@
 
 import assert from 'assert';
 import { Base64 } from 'js-base64';
+import { ScoreManager, ScoreType } from './scoreManager';
 import {
   ChannelAuth,
   ChannelState,
@@ -27,24 +28,13 @@ export enum ResponseFormat {
 type Options = {
   logger: Logger;
   authUrl: string;
+  fallbackServiceUrl?: string;
   projectId: string;
   projectType: ProjectType;
   responseFormat?: ResponseFormat;
   scoreStore?: IStore;
   selector?: RunnerSelector;
   timeout?: number;
-};
-
-export enum ScoreType {
-  GRAPHQL = 'Graphql',
-  NETWORK = 'network',
-  RPC = 'RPC',
-}
-
-const scoresDelta = {
-  [ScoreType.GRAPHQL]: 50,
-  [ScoreType.NETWORK]: 10,
-  [ScoreType.RPC]: 10,
 };
 
 function tokenToAuthHeader(token: string) {
@@ -60,8 +50,10 @@ export class OrderManager {
   private _plans: FlexPlanOrder[] = [];
 
   private logger: Logger;
-  private scoreStore: IStore;
   private timer: NodeJS.Timeout | undefined;
+
+  private selectedIndexersStore: IStore;
+  private scoreManager: ScoreManager;
 
   private authUrl: string;
   private projectId: string;
@@ -76,6 +68,7 @@ export class OrderManager {
   constructor(options: Options) {
     const {
       authUrl,
+      fallbackServiceUrl,
       projectId,
       logger,
       projectType,
@@ -88,8 +81,15 @@ export class OrderManager {
     this.projectId = projectId;
     this.projectType = projectType;
     this.logger = logger;
-    this.scoreStore = scoreStore ?? createStore({ ttl: 86_400_000 });
+    // this.scoreStore = scoreStore ?? createStore({ ttl: 86_400_000 });
     this.responseFormat = responseFormat;
+
+    this.selectedIndexersStore = createStore({ ttl: 86_400_000 });
+    this.scoreManager = new ScoreManager({
+      projectId,
+      fallbackServiceUrl,
+      scoreStore,
+    });
 
     this._init = this.refreshAgreements();
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -156,27 +156,23 @@ export class OrderManager {
     return `$query-score-${runner}-${this.projectId}`;
   }
 
-  private getScore(runner: string) {
-    const key = this.getCacheKey(runner);
-    let score = this.scoreStore.get<number>(key);
-    if (score === undefined) {
-      score = 100;
-      this.scoreStore.set(key, score);
-    }
-    return score;
+  private filterOrdersByScore(orders: Order[]) {
+    return orders.filter(({ indexer }) => this.scoreManager.getScore(indexer) > this.minScore);
   }
 
-  private filterOrdersByScore(orders: Order[]) {
-    return orders.filter(({ indexer }) => this.getScore(indexer) > this.minScore);
+  private filterOrdersBySelectedIndexers(requestId: string, orders: Order[]) {
+    if (!requestId) return orders;
+    const selected = this.getSelectedIndexers(requestId);
+    return orders.filter(({ indexer }) => !selected.includes(indexer));
   }
 
   private getNextOrderIndex(total: number, currentIndex: number) {
     return currentIndex < total - 1 ? currentIndex + 1 : 0;
   }
 
-  async getRequestParams(): Promise<RequestParam | undefined> {
+  async getRequestParams(requestId: string): Promise<RequestParam | undefined> {
     const innerRequest = async () => {
-      const order = await this.getNextOrder();
+      const order = await this.getNextOrder(requestId);
       const headers: RequestParam['headers'] = {};
       if (order) {
         const { type, indexer: runner, url, id } = order;
@@ -284,25 +280,27 @@ export class OrderManager {
     }
   }
 
-  private async getNextOrder(): Promise<OrderWithType | undefined> {
+  private async getNextOrder(requestId: string): Promise<OrderWithType | undefined> {
     await this._init;
-    const agreementsOrders = await this.getNextAgreement();
+    const agreementsOrders = await this.getNextAgreement(requestId);
     if (agreementsOrders) {
       return { ...agreementsOrders, type: OrderType.agreement };
     }
-    const flexPlanOrders = await this.getNextPlan();
+    const flexPlanOrders = await this.getNextPlan(requestId);
     if (flexPlanOrders) {
       return { ...flexPlanOrders, type: OrderType.flexPlan };
     }
     return undefined;
   }
 
-  protected async getNextAgreement(): Promise<ServiceAgreementOrder | undefined> {
+  protected async getNextAgreement(requestId: string): Promise<ServiceAgreementOrder | undefined> {
     await this._init;
 
     if (!this.agreements) return;
 
-    const agreements = this.filterOrdersByScore(this.agreements) as ServiceAgreementOrder[];
+    const agreements = this.filterOrdersByScore(
+      this.filterOrdersBySelectedIndexers(requestId, this.agreements)
+    ) as ServiceAgreementOrder[];
     this.logger?.debug(`available agreements count: ${agreements.length}`);
 
     if (!this.healthy || !agreements.length) return;
@@ -316,15 +314,19 @@ export class OrderManager {
 
     this.logger?.debug(`next agreement: ${JSON.stringify(agreement.indexer)}`);
 
+    this.updateSelectedIndexer(requestId, agreement.indexer);
+
     return agreement;
   }
 
-  protected async getNextPlan(): Promise<FlexPlanOrder | undefined> {
+  protected async getNextPlan(requestId: string): Promise<FlexPlanOrder | undefined> {
     await this._init;
 
     if (!this.plans) return;
 
-    const plans = this.filterOrdersByScore(this.plans);
+    const plans = this.filterOrdersByScore(
+      this.filterOrdersBySelectedIndexers(requestId, this.plans)
+    );
     if (!this.healthy || !plans?.length) return;
 
     if (this.nextPlanIndex === undefined) {
@@ -333,6 +335,8 @@ export class OrderManager {
 
     const plan = plans[this.nextPlanIndex];
     this.nextPlanIndex = this.getNextOrderIndex(plans.length, this.nextPlanIndex);
+
+    this.updateSelectedIndexer(requestId, plan.indexer);
 
     return plan;
   }
@@ -350,6 +354,18 @@ export class OrderManager {
     return res.token;
   }
 
+  private getSelectedIndexers(requestId: string): string[] {
+    if (!requestId) return [];
+    return this.selectedIndexersStore.get<string[]>(requestId) || [];
+  }
+
+  private updateSelectedIndexer(requestId: string, indexer: string) {
+    if (!requestId || !indexer) return;
+    const indexers = this.getSelectedIndexers(requestId) ?? [];
+    if (indexers.includes(indexer)) return;
+    this.selectedIndexersStore.set(requestId, [...indexers, indexer]);
+  }
+
   protected updateTokenById(agreementId: string, token: string) {
     if (this.agreements === undefined) return;
     const index = this.agreements?.findIndex((a) => a.id === agreementId);
@@ -359,13 +375,7 @@ export class OrderManager {
   }
 
   updateScore(runner: string, errorType: ScoreType) {
-    const key = this.getCacheKey(runner);
-    const score = this.scoreStore.get<number>(key) ?? 100;
-
-    const delta = scoresDelta[errorType];
-    const newScore = Math.max(score - delta, 0);
-
-    this.scoreStore.set(key, newScore);
+    this.scoreManager.updateScore(runner, errorType);
   }
 
   cleanup() {

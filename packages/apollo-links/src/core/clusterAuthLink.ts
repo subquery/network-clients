@@ -6,6 +6,7 @@ import { OrderManager } from '@subql/network-support';
 import { Subscription } from 'zen-observable-ts';
 
 import { Logger } from '../utils/logger';
+import { generateUniqueId } from '../utils/uniqueId';
 
 export type ClusterAuthLinkOptions = {
   authUrl: string; // the url for geting token
@@ -33,7 +34,7 @@ export class ClusterAuthLink extends ApolloLink {
       let sub: Subscription;
 
       this.orderManager
-        .getRequestParams()
+        .getRequestParams(this.getRequestId(operation))
         .then((params) => {
           if (params) {
             const { headers, url, type, runner } = params;
@@ -68,5 +69,13 @@ export class ClusterAuthLink extends ApolloLink {
 
   private tokenToAuthHeader(token: string) {
     return { authorization: `Bearer ${token}` };
+  }
+
+  private getRequestId(operation: Operation): string {
+    let { requestId } = operation.getContext();
+    if (requestId) return requestId;
+    requestId = generateUniqueId();
+    operation.setContext({ requestId });
+    return requestId;
   }
 }

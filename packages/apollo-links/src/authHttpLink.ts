@@ -79,6 +79,7 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
   const logger = _logger ?? silentLogger();
   const orderManager = new OrderManager({
     authUrl,
+    fallbackServiceUrl,
     projectId: deploymentId,
     projectType,
     logger,
