@@ -13,12 +13,20 @@ export enum ScoreType {
   GRAPHQL = 'Graphql',
   NETWORK = 'network',
   RPC = 'RPC',
+  SUCCESS = 'success',
 }
 
 const scoresDelta = {
-  [ScoreType.GRAPHQL]: 50,
-  [ScoreType.NETWORK]: 10,
-  [ScoreType.RPC]: 10,
+  [ScoreType.GRAPHQL]: -50,
+  [ScoreType.NETWORK]: -10,
+  [ScoreType.RPC]: -10,
+  [ScoreType.SUCCESS]: 50,
+};
+
+type ScoreStoreType = {
+  score: number;
+  lastUpdate: number;
+  lastFailed: number;
 };
 
 export class ScoreManager {
@@ -32,24 +40,67 @@ export class ScoreManager {
     this.projectId = options.projectId;
   }
 
-  public getScore(indexer: string) {
+  getScore(indexer: string) {
     const key = this.getCacheKey(indexer);
-    let score = this.scoreStore.get<number>(key);
+    let score = this.scoreStore.get<number | ScoreStoreType>(key);
+
     if (score === undefined) {
-      score = 100;
+      score = {
+        score: 100,
+        lastUpdate: 0,
+        lastFailed: 0,
+      };
       this.scoreStore.set(key, score);
     }
-    return score;
+
+    if (typeof score === 'number') {
+      return Math.max(score, this.minScore);
+    }
+
+    return this.calculatedScore(score);
   }
 
-  public updateScore(runner: string, errorType: ScoreType) {
+  private calculatedScore(score: ScoreStoreType) {
+    // if (score.lastFailed) {
+    //   return Math.min(
+    //     score.score + Math.floor((Date.now() - score.lastFailed) / (10 * 60 * 1000)),
+    //     100
+    //   );
+    // }
+
+    if (score.lastUpdate && Date.now() - score.lastUpdate < 5 * 1000) {
+      return Math.max(score.score - 50, this.minScore);
+    }
+
+    return Math.min(
+      score.score + Math.floor((Date.now() - score.lastUpdate) / (10 * 60 * 1000)),
+      100
+    );
+
+    // return score.score;
+  }
+
+  updateScore(runner: string, errorType: ScoreType) {
     const key = this.getCacheKey(runner);
-    const score = this.scoreStore.get<number>(key) ?? 100;
+    let score = this.scoreStore.get<number | ScoreStoreType>(key) ?? 100;
+
+    if (typeof score === 'number') {
+      score = {
+        score: score,
+        lastUpdate: 0,
+        lastFailed: 0,
+      };
+    }
 
     const delta = scoresDelta[errorType];
-    const newScore = Math.max(score - delta, 0);
 
-    this.scoreStore.set(key, newScore);
+    score = {
+      score: Math.min(Math.max(score.score + delta, this.minScore), 100),
+      lastUpdate: Date.now(),
+      lastFailed: errorType === ScoreType.SUCCESS ? 0 : Date.now(),
+    };
+
+    this.scoreStore.set(key, score);
   }
 
   private getCacheKey(indexer: string): string {
