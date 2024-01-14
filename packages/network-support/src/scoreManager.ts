@@ -68,16 +68,16 @@ export class ScoreManager {
     //   );
     // }
 
-    if (score.lastUpdate && Date.now() - score.lastUpdate < 5 * 1000) {
-      return Math.max(score.score - 50, this.minScore);
-    }
+    // if (score.lastUpdate && Date.now() - score.lastUpdate < 5 * 1000) {
+    //   return Math.max(score.score - 50, this.minScore);
+    // }
+
+    // return score.score;
 
     return Math.min(
       score.score + Math.floor((Date.now() - score.lastUpdate) / (10 * 60 * 1000)),
       100
     );
-
-    // return score.score;
   }
 
   updateScore(runner: string, errorType: ScoreType) {
