@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
-import { ChannelState, OrderType, POST } from '@subql/network-support';
+import { ChannelState, OrderManager, OrderType, POST, ScoreType } from '@subql/network-support';
 import { Base64 } from 'js-base64';
 import { Logger } from '../utils/logger';
 
 export type ResponseLinkOptions = {
   authUrl: string;
+  orderManager: OrderManager;
   logger?: Logger;
 };
 
@@ -46,6 +47,8 @@ export class ResponseLink extends ApolloLink {
     return new Observable<FetchResult>((observer) => {
       const subscription = forward(operation).subscribe({
         next: (response: FetchResult<Record<string, any>> & { state: ChannelState }) => {
+          this.options.orderManager.updateScore(response.state.indexer, ScoreType.SUCCESS);
+
           if (type === OrderType.flexPlan) {
             const responseHeaders = operation.getContext().response.headers;
             if (responseHeaders) {

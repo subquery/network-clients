@@ -92,7 +92,7 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
   const retryLink = createRetryLink({ orderManager, logger, maxRetries });
   const fallbackLink = new FallbackLink(fallbackServiceUrl, logger);
   const httpLink = new DynamicHttpLink({ httpOptions, logger });
-  const responseLink = new ResponseLink({ authUrl, logger });
+  const responseLink = new ResponseLink({ authUrl, orderManager, logger });
   const errorLink = creatErrorLink({
     orderManager,
     fallbackLink,
