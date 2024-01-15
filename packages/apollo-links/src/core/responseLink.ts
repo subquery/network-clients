@@ -42,12 +42,12 @@ export class ResponseLink extends ApolloLink {
   override request(operation: Operation, forward: NextLink): Observable<FetchResult> | null {
     if (!forward) return null;
 
-    const { type } = operation.getContext();
+    const { type, indexer } = operation.getContext();
 
     return new Observable<FetchResult>((observer) => {
       const subscription = forward(operation).subscribe({
         next: (response: FetchResult<Record<string, any>> & { state: ChannelState }) => {
-          this.options.orderManager.updateScore(response.state.indexer, ScoreType.SUCCESS);
+          this.options.orderManager.updateScore(indexer, ScoreType.SUCCESS);
 
           if (type === OrderType.flexPlan) {
             const responseHeaders = operation.getContext().response.headers;
