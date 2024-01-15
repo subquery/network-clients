@@ -18,7 +18,7 @@ export enum ScoreType {
 
 const scoresDelta = {
   [ScoreType.GRAPHQL]: -50,
-  [ScoreType.NETWORK]: -10,
+  [ScoreType.NETWORK]: -30,
   [ScoreType.RPC]: -10,
   [ScoreType.SUCCESS]: 50,
 };
