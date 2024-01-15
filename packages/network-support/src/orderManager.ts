@@ -349,11 +349,18 @@ export class OrderManager {
     if (!orders.length) return;
     const scores = orders.map((o) => this.scoreManager.getScore(o.indexer));
     const random = Math.random() * scores.reduce((a, b) => a + b, 0);
+    console.debug(`selectRunner: indexers: ${orders.map((o) => o.indexer)}`);
+    console.debug(`selectRunner: scores: ${scores}`);
+    console.debug(`selectRunner: random: ${random}`);
     let sum = 0;
     for (let i = 0; i < scores.length; i++) {
       if (scores[i] === 0) continue;
       sum += scores[i];
-      if (random <= sum) return orders[i];
+      if (random <= sum) {
+        console.debug(`selectRunner: selected index: ${i}`);
+        console.debug(`selectRunner: selected indexer: ${orders[i].indexer}`);
+        return orders[i];
+      }
     }
   }
 

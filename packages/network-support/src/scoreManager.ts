@@ -81,6 +81,11 @@ export class ScoreManager {
   }
 
   updateScore(runner: string, errorType: ScoreType) {
+    if (!runner) {
+      console.debug('updateScore: runner is empty');
+      return;
+    }
+
     const key = this.getCacheKey(runner);
     let score = this.scoreStore.get<number | ScoreStoreType>(key) ?? 100;
 
@@ -92,6 +97,9 @@ export class ScoreManager {
       };
     }
 
+    console.debug(`updateScore type: ${runner} ${errorType}`);
+    console.debug(`updateScore before: ${runner} ${JSON.stringify(score)}`);
+
     const delta = scoresDelta[errorType];
 
     score = {
@@ -99,6 +107,8 @@ export class ScoreManager {
       lastUpdate: Date.now(),
       lastFailed: errorType === ScoreType.SUCCESS ? 0 : Date.now(),
     };
+
+    console.debug(`updateScore after: ${runner} ${JSON.stringify(score)}`);
 
     this.scoreStore.set(key, score);
   }
