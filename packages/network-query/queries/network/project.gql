@@ -9,6 +9,7 @@ fragment ProjectFields on Project {
   deploymentId
   updatedTimestamp
   createdTimestamp
+  type
   deployments {
     nodes {
       id
@@ -57,8 +58,18 @@ query GetProject($id: String!) {
   }
 }
 
-query GetProjects($offset: Int, $orderBy: [ProjectsOrderBy!] = ID_ASC, $ids: [String!] = [""]) {
-  projects(first: 10, offset: $offset, orderBy: $orderBy, filter: { id: { notIn: $ids } }) {
+query GetProjects(
+  $offset: Int
+  $type: [ProjectType!] = [SUBQUERY, RPC]
+  $orderBy: [ProjectsOrderBy!] = ID_ASC
+  $ids: [String!] = [""]
+) {
+  projects(
+    first: 10
+    offset: $offset
+    orderBy: $orderBy
+    filter: { id: { notIn: $ids }, type: { in: $type } }
+  ) {
     totalCount
     nodes {
       ...ProjectFields
