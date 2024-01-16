@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
-import { OrderManager } from '@subql/network-support';
+import { OrderManager, generateUniqueId } from '@subql/network-support';
 import { Subscription } from 'zen-observable-ts';
 
 import { Logger } from '../utils/logger';
-import { generateUniqueId } from '../utils/uniqueId';
 
 export type ClusterAuthLinkOptions = {
   authUrl: string; // the url for geting token

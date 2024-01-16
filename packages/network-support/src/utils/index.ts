@@ -5,3 +5,4 @@ export * from './logger';
 export * from './query';
 export * from './store';
 export * from './auth';
+export * from './uniqueId';

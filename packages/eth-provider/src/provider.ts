@@ -14,6 +14,7 @@ import {
   ProjectType,
   ResponseFormat,
   ScoreType,
+  generateUniqueId,
   silentLogger,
 } from '@subql/network-support';
 import { Base64 } from 'js-base64';
@@ -87,8 +88,9 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
       return super._cache[method];
     }
     let retries = 0;
+    const requestId = generateUniqueId();
     const requestResult: () => Promise<string> = async () => {
-      const requestParams = await this.orderManager.getRequestParams();
+      const requestParams = await this.orderManager.getRequestParams(requestId);
       if (requestParams) {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         const { url, headers, type, runner } = requestParams;
@@ -107,6 +109,7 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
           if (!result) {
             throw new Error('Request RPC error');
           }
+          this.orderManager.updateScore(runner, ScoreType.SUCCESS);
           return result;
         } catch (err) {
           if (retries < this.maxRetries) {
