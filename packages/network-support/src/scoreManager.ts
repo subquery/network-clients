@@ -1,9 +1,11 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { Logger } from './utils';
 import { IStore, createStore } from './utils/store';
 
 type Options = {
+  logger: Logger;
   projectId: string;
   fallbackServiceUrl?: string;
   scoreStore?: IStore;
@@ -30,11 +32,13 @@ type ScoreStoreType = {
 };
 
 export class ScoreManager {
+  private logger: Logger;
   private scoreStore: IStore;
   private minScore: number;
   private projectId: string;
 
   constructor(options: Options) {
+    this.logger = options.logger;
     this.scoreStore = options.scoreStore ?? createStore({ ttl: 86_400_000 });
     this.minScore = options.fallbackServiceUrl ? 0 : 1;
     this.projectId = options.projectId;
@@ -82,7 +86,7 @@ export class ScoreManager {
 
   updateScore(runner: string, errorType: ScoreType) {
     if (!runner) {
-      console.debug('updateScore: runner is empty');
+      this.logger?.debug('updateScore: runner is empty');
       return;
     }
 
@@ -97,8 +101,8 @@ export class ScoreManager {
       };
     }
 
-    console.debug(`updateScore type: ${runner} ${errorType}`);
-    console.debug(`updateScore before: ${runner} ${JSON.stringify(score)}`);
+    this.logger?.debug(`updateScore type: ${runner} ${errorType}`);
+    this.logger?.debug(`updateScore before: ${runner} ${JSON.stringify(score)}`);
 
     const delta = scoresDelta[errorType];
 
@@ -108,7 +112,7 @@ export class ScoreManager {
       lastFailed: errorType === ScoreType.SUCCESS ? 0 : Date.now(),
     };
 
-    console.debug(`updateScore after: ${runner} ${JSON.stringify(score)}`);
+    this.logger?.debug(`updateScore after: ${runner} ${JSON.stringify(score)}`);
 
     this.scoreStore.set(key, score);
   }
