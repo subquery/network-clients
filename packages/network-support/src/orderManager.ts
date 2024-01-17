@@ -81,7 +81,6 @@ export class OrderManager {
     this.projectId = projectId;
     this.projectType = projectType;
     this.logger = logger;
-    // this.scoreStore = scoreStore ?? createStore({ ttl: 86_400_000 });
     this.responseFormat = responseFormat;
 
     this.selectedRunnersStore = createStore({ ttl: 86_400_000 });
@@ -304,13 +303,6 @@ export class OrderManager {
 
     if (!this.healthy || !agreements.length) return;
 
-    // if (this.nextAgreementIndex === undefined) {
-    //   this.nextAgreementIndex = this.getRandomStartIndex(agreements.length);
-    // }
-
-    // const agreement = agreements[this.nextAgreementIndex];
-    // this.nextAgreementIndex = this.getNextOrderIndex(agreements.length, this.nextAgreementIndex);
-
     const agreement = this.selectRunner(agreements) as ServiceAgreementOrder;
 
     this.logger?.debug(`next agreement: ${JSON.stringify(agreement.indexer)}`);
@@ -329,13 +321,6 @@ export class OrderManager {
 
     const plans = this.filterOrdersByRequestId(requestId, this.plans);
     if (!this.healthy || !plans?.length) return;
-
-    // if (this.nextPlanIndex === undefined) {
-    //   this.nextPlanIndex = this.getRandomStartIndex(plans.length);
-    // }
-
-    // const plan = plans[this.nextPlanIndex];
-    // this.nextPlanIndex = this.getNextOrderIndex(plans.length, this.nextPlanIndex);
 
     const plan = this.selectRunner(plans);
 
