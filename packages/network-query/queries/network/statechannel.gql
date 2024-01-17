@@ -17,6 +17,7 @@ fragment StateChannelFields on StateChannel {
     id
     project {
       id
+      type
       metadata
     }
   }

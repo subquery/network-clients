@@ -15,6 +15,7 @@ fragment ServiceAgreementFields on ServiceAgreement {
     metadata
     project {
       id
+      type
       metadata
     }
   }
