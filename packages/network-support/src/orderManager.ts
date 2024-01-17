@@ -83,7 +83,7 @@ export class OrderManager {
     this.logger = logger;
     this.responseFormat = responseFormat;
 
-    this.selectedRunnersStore = createStore({ ttl: 86_400_000 });
+    this.selectedRunnersStore = createStore({ ttl: 600_000 });
     this.scoreManager = new ScoreManager({
       logger,
       projectId,

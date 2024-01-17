@@ -67,7 +67,7 @@ export class ScoreManager {
   private calculatedScore(score: ScoreStoreType) {
     // if (score.lastFailed) {
     //   return Math.min(
-    //     score.score + Math.floor((Date.now() - score.lastFailed) / (10 * 60 * 1000)),
+    //     score.score + Math.floor((Date.now() - score.lastFailed) / (600_000)),
     //     100
     //   );
     // }
@@ -78,10 +78,7 @@ export class ScoreManager {
 
     // return score.score;
 
-    return Math.min(
-      score.score + Math.floor((Date.now() - score.lastUpdate) / (10 * 60 * 1000)),
-      100
-    );
+    return Math.min(score.score + Math.floor((Date.now() - score.lastUpdate) / 600_000), 100);
   }
 
   updateScore(runner: string, errorType: ScoreType) {
