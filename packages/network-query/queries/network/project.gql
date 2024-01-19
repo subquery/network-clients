@@ -21,7 +21,14 @@ fragment ProjectFields on Project {
         }
         totalCount
       }
-      indexers {
+      serviceAgreementsActive: serviceAgreements(
+        filter: { endTime: { greaterThanOrEqualTo: $now } }
+      ) {
+        totalCount
+      }
+      indexers(
+        filter: { indexer: { active: { equalTo: true } }, status: { notEqualTo: TERMINATED } }
+      ) {
         totalCount
       }
     }
@@ -45,14 +52,21 @@ fragment ProjectUpdateField on Project {
         }
         totalCount
       }
-      indexers {
+      serviceAgreementsActive: serviceAgreements(
+        filter: { endTime: { greaterThanOrEqualTo: $now } }
+      ) {
+        totalCount
+      }
+      indexers(
+        filter: { indexer: { active: { equalTo: true } }, status: { notEqualTo: TERMINATED } }
+      ) {
         totalCount
       }
     }
   }
 }
 
-query GetProject($id: String!) {
+query GetProject($id: String!, $now: Datetime = "1970-01-01T00:00:00") {
   project(id: $id) {
     ...ProjectFields
   }
@@ -63,6 +77,7 @@ query GetProjects(
   $type: [ProjectType!] = [SUBQUERY, RPC]
   $orderBy: [ProjectsOrderBy!] = ID_ASC
   $ids: [String!] = [""]
+  $now: Datetime = "1970-01-01T00:00:00"
 ) {
   projects(
     first: 10
@@ -77,7 +92,7 @@ query GetProjects(
   }
 }
 
-query GetProjectsAll {
+query GetProjectsAll($now: Datetime = "1970-01-01T00:00:00") {
   projects(orderBy: ID_ASC) {
     nodes {
       ...ProjectUpdateField
