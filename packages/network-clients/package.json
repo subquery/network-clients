@@ -19,15 +19,15 @@
     "graphql": "^16.5.0"
   },
   "devDependencies": {
+    "@apollo/client": "^3.8.0",
     "apollo": "^2.34.0",
     "create-ts-index": "^1.14.0",
-    "typescript": "^4.6.4",
-    "@apollo/client": "^3.8.0"
+    "typescript": "^4.6.4"
   },
   "peerDependencies": {
+    "@apollo/client": "*",
     "@subql/contract-sdk": "^0.112.0",
-    "ipfs-http-client": "^53.0.1",
-    "@apollo/client": "*"
+    "ipfs-http-client": "^53.0.1"
   },
   "stableVersion": "0.112.1-0"
 }
