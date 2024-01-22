@@ -3,6 +3,7 @@
 
 import assert from 'assert';
 import { Base64 } from 'js-base64';
+import { ScoreManager, ScoreType } from './scoreManager';
 import {
   ChannelAuth,
   ChannelState,
@@ -27,24 +28,13 @@ export enum ResponseFormat {
 type Options = {
   logger: Logger;
   authUrl: string;
+  fallbackServiceUrl?: string;
   projectId: string;
   projectType: ProjectType;
   responseFormat?: ResponseFormat;
   scoreStore?: IStore;
   selector?: RunnerSelector;
   timeout?: number;
-};
-
-export enum ScoreType {
-  GRAPHQL = 'Graphql',
-  NETWORK = 'network',
-  RPC = 'RPC',
-}
-
-const scoresDelta = {
-  [ScoreType.GRAPHQL]: 50,
-  [ScoreType.NETWORK]: 10,
-  [ScoreType.RPC]: 10,
 };
 
 function tokenToAuthHeader(token: string) {
@@ -60,8 +50,10 @@ export class OrderManager {
   private _plans: FlexPlanOrder[] = [];
 
   private logger: Logger;
-  private scoreStore: IStore;
   private timer: NodeJS.Timeout | undefined;
+
+  private selectedRunnersStore: IStore;
+  private scoreManager: ScoreManager;
 
   private authUrl: string;
   private projectId: string;
@@ -76,6 +68,7 @@ export class OrderManager {
   constructor(options: Options) {
     const {
       authUrl,
+      fallbackServiceUrl,
       projectId,
       logger,
       projectType,
@@ -88,8 +81,15 @@ export class OrderManager {
     this.projectId = projectId;
     this.projectType = projectType;
     this.logger = logger;
-    this.scoreStore = scoreStore ?? createStore({ ttl: 86_400_000 });
     this.responseFormat = responseFormat;
+
+    this.selectedRunnersStore = createStore({ ttl: 600_000 });
+    this.scoreManager = new ScoreManager({
+      logger,
+      projectId,
+      fallbackServiceUrl,
+      scoreStore,
+    });
 
     this._init = this.refreshAgreements();
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -156,27 +156,23 @@ export class OrderManager {
     return `$query-score-${runner}-${this.projectId}`;
   }
 
-  private getScore(runner: string) {
-    const key = this.getCacheKey(runner);
-    let score = this.scoreStore.get<number>(key);
-    if (score === undefined) {
-      score = 100;
-      this.scoreStore.set(key, score);
-    }
-    return score;
+  private filterOrdersByScore(orders: Order[]) {
+    return orders.filter(({ indexer }) => this.scoreManager.getScore(indexer) > this.minScore);
   }
 
-  private filterOrdersByScore(orders: Order[]) {
-    return orders.filter(({ indexer }) => this.getScore(indexer) > this.minScore);
+  private filterOrdersByRequestId(requestId: string, orders: Order[]) {
+    if (!requestId) return orders;
+    const selected = this.getSelectedRunners(requestId);
+    return orders.filter(({ indexer }) => !selected.includes(indexer));
   }
 
   private getNextOrderIndex(total: number, currentIndex: number) {
     return currentIndex < total - 1 ? currentIndex + 1 : 0;
   }
 
-  async getRequestParams(): Promise<RequestParam | undefined> {
+  async getRequestParams(requestId: string): Promise<RequestParam | undefined> {
     const innerRequest = async () => {
-      const order = await this.getNextOrder();
+      const order = await this.getNextOrder(requestId);
       const headers: RequestParam['headers'] = {};
       if (order) {
         const { type, indexer: runner, url, id } = order;
@@ -284,57 +280,74 @@ export class OrderManager {
     }
   }
 
-  private async getNextOrder(): Promise<OrderWithType | undefined> {
+  private async getNextOrder(requestId: string): Promise<OrderWithType | undefined> {
     await this._init;
-    const agreementsOrders = await this.getNextAgreement();
+    const agreementsOrders = await this.getNextAgreement(requestId);
     if (agreementsOrders) {
       return { ...agreementsOrders, type: OrderType.agreement };
     }
-    const flexPlanOrders = await this.getNextPlan();
+    const flexPlanOrders = await this.getNextPlan(requestId);
     if (flexPlanOrders) {
       return { ...flexPlanOrders, type: OrderType.flexPlan };
     }
     return undefined;
   }
 
-  protected async getNextAgreement(): Promise<ServiceAgreementOrder | undefined> {
+  protected async getNextAgreement(requestId: string): Promise<ServiceAgreementOrder | undefined> {
     await this._init;
 
     if (!this.agreements) return;
 
-    const agreements = this.filterOrdersByScore(this.agreements) as ServiceAgreementOrder[];
+    const agreements = this.filterOrdersByRequestId(requestId, this.agreements);
     this.logger?.debug(`available agreements count: ${agreements.length}`);
 
     if (!this.healthy || !agreements.length) return;
 
-    if (this.nextAgreementIndex === undefined) {
-      this.nextAgreementIndex = this.getRandomStartIndex(agreements.length);
-    }
-
-    const agreement = agreements[this.nextAgreementIndex];
-    this.nextAgreementIndex = this.getNextOrderIndex(agreements.length, this.nextAgreementIndex);
+    const agreement = this.selectRunner(agreements) as ServiceAgreementOrder;
 
     this.logger?.debug(`next agreement: ${JSON.stringify(agreement.indexer)}`);
+
+    if (agreement) {
+      this.updateSelectedRunner(requestId, agreement.indexer);
+    }
 
     return agreement;
   }
 
-  protected async getNextPlan(): Promise<FlexPlanOrder | undefined> {
+  protected async getNextPlan(requestId: string): Promise<FlexPlanOrder | undefined> {
     await this._init;
 
     if (!this.plans) return;
 
-    const plans = this.filterOrdersByScore(this.plans);
+    const plans = this.filterOrdersByRequestId(requestId, this.plans);
     if (!this.healthy || !plans?.length) return;
 
-    if (this.nextPlanIndex === undefined) {
-      this.nextPlanIndex = this.getRandomStartIndex(plans.length);
+    const plan = this.selectRunner(plans);
+
+    if (plan) {
+      this.updateSelectedRunner(requestId, plan.indexer);
     }
 
-    const plan = plans[this.nextPlanIndex];
-    this.nextPlanIndex = this.getNextOrderIndex(plans.length, this.nextPlanIndex);
-
     return plan;
+  }
+
+  private selectRunner(orders: Order[]): Order | undefined {
+    if (!orders.length) return;
+    const scores = orders.map((o) => this.scoreManager.getScore(o.indexer));
+    const random = Math.random() * scores.reduce((a, b) => a + b, 0);
+    this.logger?.debug(`selectRunner: indexers: ${orders.map((o) => o.indexer)}`);
+    this.logger?.debug(`selectRunner: scores: ${scores}`);
+    this.logger?.debug(`selectRunner: random: ${random}`);
+    let sum = 0;
+    for (let i = 0; i < scores.length; i++) {
+      if (scores[i] === 0) continue;
+      sum += scores[i];
+      if (random <= sum) {
+        this.logger?.debug(`selectRunner: selected index: ${i}`);
+        this.logger?.debug(`selectRunner: selected indexer: ${orders[i].indexer}`);
+        return orders[i];
+      }
+    }
   }
 
   async refreshAgreementToken(agreementId: string, runner: string): Promise<string> {
@@ -350,6 +363,18 @@ export class OrderManager {
     return res.token;
   }
 
+  private getSelectedRunners(requestId: string): string[] {
+    if (!requestId) return [];
+    return this.selectedRunnersStore.get<string[]>(requestId) || [];
+  }
+
+  private updateSelectedRunner(requestId: string, runner: string) {
+    if (!requestId || !runner) return;
+    const runners = this.getSelectedRunners(requestId) ?? [];
+    if (runners.includes(runner)) return;
+    this.selectedRunnersStore.set(requestId, [...runners, runner]);
+  }
+
   protected updateTokenById(agreementId: string, token: string) {
     if (this.agreements === undefined) return;
     const index = this.agreements?.findIndex((a) => a.id === agreementId);
@@ -359,13 +384,7 @@ export class OrderManager {
   }
 
   updateScore(runner: string, errorType: ScoreType) {
-    const key = this.getCacheKey(runner);
-    const score = this.scoreStore.get<number>(key) ?? 100;
-
-    const delta = scoresDelta[errorType];
-    const newScore = Math.max(score - delta, 0);
-
-    this.scoreStore.set(key, newScore);
+    this.scoreManager.updateScore(runner, errorType);
   }
 
   cleanup() {

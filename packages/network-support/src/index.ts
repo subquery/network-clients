@@ -3,4 +3,5 @@
 
 export * from './types';
 export * from './orderManager';
+export * from './scoreManager';
 export * from './utils';

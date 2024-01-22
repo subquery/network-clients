@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
-import { OrderManager } from '@subql/network-support';
+import { OrderManager, generateUniqueId } from '@subql/network-support';
 import { Subscription } from 'zen-observable-ts';
 
 import { Logger } from '../utils/logger';
@@ -33,7 +33,7 @@ export class ClusterAuthLink extends ApolloLink {
       let sub: Subscription;
 
       this.orderManager
-        .getRequestParams()
+        .getRequestParams(this.getRequestId(operation))
         .then((params) => {
           if (params) {
             const { headers, url, type, runner } = params;
@@ -68,5 +68,13 @@ export class ClusterAuthLink extends ApolloLink {
 
   private tokenToAuthHeader(token: string) {
     return { authorization: `Bearer ${token}` };
+  }
+
+  private getRequestId(operation: Operation): string {
+    let { requestId } = operation.getContext();
+    if (requestId) return requestId;
+    requestId = generateUniqueId();
+    operation.setContext({ requestId });
+    return requestId;
   }
 }
