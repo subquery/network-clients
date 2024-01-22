@@ -34,17 +34,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/client@npm:^3.7.0":
-  version: 3.7.0
-  resolution: "@apollo/client@npm:3.7.0"
+"@apollo/client@npm:^3.8.0, @apollo/client@npm:^3.8.8":
+  version: 3.8.10
+  resolution: "@apollo/client@npm:3.8.10"
   dependencies:
     "@graphql-typed-document-node/core": ^3.1.1
-    "@wry/context": ^0.7.0
-    "@wry/equality": ^0.5.0
-    "@wry/trie": ^0.3.0
+    "@wry/equality": ^0.5.6
+    "@wry/trie": ^0.5.0
     graphql-tag: ^2.12.6
     hoist-non-react-statics: ^3.3.2
-    optimism: ^0.16.1
+    optimism: ^0.18.0
     prop-types: ^15.7.2
     response-iterator: ^0.2.6
     symbol-observable: ^4.0.0
@@ -66,7 +65,7 @@ __metadata:
       optional: true
     subscriptions-transport-ws:
       optional: true
-  checksum: e6e2fb6c4f05509a0ec1c632fc8eeae7bd4831dbafd2db243bad1412b3c024476a3efb838e31568888cf6b07bd8833467343edac2309e58d60c7bf50f67d449c
+  checksum: e80d80342edc025dc437f942b2efbc3431b5c1e418c1f9fd58ca2d451978f3e5e01599fc161194b0d82a80ba81f909b8b2781b835575c9e8ba014723dccd9918
   languageName: node
   linkType: hard
 
@@ -3158,7 +3157,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/network-clients@workspace:packages/network-clients"
   dependencies:
-    "@apollo/client": ^3.7.0
+    "@apollo/client": ^3.8.0
     "@ethersproject/bignumber": ^5.7.0
     "@subql/network-config": "workspace:*"
     "@subql/network-query": "workspace:*"
@@ -3171,6 +3170,7 @@ __metadata:
     graphql: ^16.5.0
     typescript: ^4.6.4
   peerDependencies:
+    "@apollo/client": "*"
     "@subql/contract-sdk": ^0.112.0
     ipfs-http-client: ^53.0.1
   languageName: unknown
@@ -3210,7 +3210,7 @@ __metadata:
   resolution: "@subql/network-tools@workspace:."
   dependencies:
     "@actions/core": ^1.9.1
-    "@apollo/client": ^3.7.0
+    "@apollo/client": ^3.8.8
     "@metamask/eth-sig-util": ^4.0.1
     "@octokit/request": ^5.6.3
     "@subql/contract-sdk": ^0.112.0
@@ -3862,12 +3862,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wry/context@npm:^0.6.0":
-  version: 0.6.1
-  resolution: "@wry/context@npm:0.6.1"
+"@wry/caches@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "@wry/caches@npm:1.0.1"
   dependencies:
     tslib: ^2.3.0
-  checksum: 4187863175061a8f54659f124e3e5c202e010b2b65bf886b4de9777ce8a45cf183b6f6d88f1f537002cbcbea52103a2eadc337d494106490def10acaf9522c5d
+  checksum: 9e89aa8e9e08577b2e4acbe805f406b141ae49c2ac4a2e22acf21fbee68339fa0550e0dee28cf2158799f35bb812326e80212e49e2afd169f39f02ad56ae4ef4
   languageName: node
   linkType: hard
 
@@ -3889,21 +3889,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wry/equality@npm:^0.5.0":
-  version: 0.5.3
-  resolution: "@wry/equality@npm:0.5.3"
+"@wry/equality@npm:^0.5.6":
+  version: 0.5.7
+  resolution: "@wry/equality@npm:0.5.7"
   dependencies:
     tslib: ^2.3.0
-  checksum: 7ea8ded51462911217183b93cc3ffbb4d18dc02a62d4a79e0d9983463739bf54106aaeb25649bf33168120bd044b61d135018bfcf4fefad8099c13eac9238aa6
+  checksum: 892f262fae362df80f199b12658ea6966949539d4a3a50c1acf00d94a367d673a38f8efa1abcb726ae9e5cc5e62fce50c540c70f797b7c8a2c4308b401dfd903
   languageName: node
   linkType: hard
 
-"@wry/trie@npm:^0.3.0":
-  version: 0.3.2
-  resolution: "@wry/trie@npm:0.3.2"
+"@wry/trie@npm:^0.4.3":
+  version: 0.4.3
+  resolution: "@wry/trie@npm:0.4.3"
   dependencies:
     tslib: ^2.3.0
-  checksum: 151d06b519e1ff1c3acf6ee6846161b1d7d50bbecd4c48e5cd1b05f9e37c30602aff02e88f20105f6e6c54ae4123f9c4eb7715044d7fd927d4ba4ec3e755cd36
+  checksum: 106e021125cfafd22250a6631a0438a6a3debae7bd73f6db87fe42aa0757fe67693db0dfbe200ae1f60ba608c3e09ddb8a4e2b3527d56ed0a7e02aa0ee4c94e1
+  languageName: node
+  linkType: hard
+
+"@wry/trie@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "@wry/trie@npm:0.5.0"
+  dependencies:
+    tslib: ^2.3.0
+  checksum: 92aeea34152bd8485184236fe328d3d05fc98ee3b431d82ee60cf3584dbf68155419c3d65d0ff3731b204ee79c149440a9b7672784a545afddc8d4342fbf21c9
   languageName: node
   linkType: hard
 
@@ -11244,13 +11253,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"optimism@npm:^0.16.1":
-  version: 0.16.1
-  resolution: "optimism@npm:0.16.1"
+"optimism@npm:^0.18.0":
+  version: 0.18.0
+  resolution: "optimism@npm:0.18.0"
   dependencies:
-    "@wry/context": ^0.6.0
-    "@wry/trie": ^0.3.0
-  checksum: 7506a3e5e37b8945059ffacd68039e920ad121aab3eeff27483b7a8b594f6f694f2a3b61a198aeecc43b81753d35c8cb32b7f662d2b5e2d2449fe7068da678e1
+    "@wry/caches": ^1.0.0
+    "@wry/context": ^0.7.0
+    "@wry/trie": ^0.4.3
+    tslib: ^2.3.0
+  checksum: d6ed6a90b05ee886dadfe556c7a30227c66843f51278e51eb843977a6a9368b6c50297fcc63fa514f53d8a5a58f8ddc8049c2356bd4ffac32f8961bcb806254d
   languageName: node
   linkType: hard
 
