@@ -9,7 +9,6 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "@apollo/client": "^3.7.0",
     "@ethersproject/bignumber": "^5.7.0",
     "@subql/network-config": "workspace:*",
     "@subql/network-query": "workspace:*",
@@ -22,11 +21,13 @@
   "devDependencies": {
     "apollo": "^2.34.0",
     "create-ts-index": "^1.14.0",
-    "typescript": "^4.6.4"
+    "typescript": "^4.6.4",
+    "@apollo/client": "^3.8.0"
   },
   "peerDependencies": {
     "@subql/contract-sdk": "^0.112.0",
-    "ipfs-http-client": "^53.0.1"
+    "ipfs-http-client": "^53.0.1",
+    "@apollo/client": "*"
   },
   "stableVersion": "0.112.1-0"
 }
