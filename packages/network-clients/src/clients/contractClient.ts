@@ -39,28 +39,6 @@ export class ContractClient {
     return currentEra.eq(lastClaimEra.add(1)) && lastSettledEra.lte(lastClaimEra);
   }
 
-  public async dailyRewardCap(indexer: string): Promise<BigNumber> {
-    if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
-
-    const threshold = await this._sdk.serviceAgreementExtra.threshold();
-    const totalStakingAmount = await this._sdk.stakingManager.getTotalStakingAmount(indexer);
-
-    if (!threshold || threshold.eq(0)) return BigNumber.from(0);
-
-    return totalStakingAmount.mul(this.perMill).div(threshold);
-  }
-
-  public async dailyRewardCapcity(indexer: string): Promise<BigNumber> {
-    if (!utils.isAddress(indexer)) throw new Error(`Invalid address: ${indexer}`);
-
-    const dailyRewardCap = await this.dailyRewardCap(indexer);
-    const sumDailyReward = await this._sdk.serviceAgreementExtra.sumDailyReward(indexer);
-
-    return dailyRewardCap.gt(sumDailyReward)
-      ? dailyRewardCap.sub(sumDailyReward)
-      : BigNumber.from(0);
-  }
-
   public async cancelOfferUnspentBalance(offerId: number): Promise<BigNumber> {
     const offer = await this._sdk.purchaseOfferMarket.offers(offerId);
     if (offer.deposit.eq(0)) throw new Error(`Invalid offerId: ${offerId}`);

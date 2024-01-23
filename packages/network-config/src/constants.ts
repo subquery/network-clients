@@ -18,9 +18,9 @@ export const IPFS_URLS = {
 };
 
 export const RPC_ENDPOINTS = {
-  [SQNetworks.MAINNET]: 'https://polygon-rpc.com/',
-  [SQNetworks.TESTNET]: 'https://rpc.ankr.com/polygon_mumbai',
-  [SQNetworks.LOCAL]: 'https://polygon-rpc.com/',
+  [SQNetworks.MAINNET]: 'https://mainnet.base.org/',
+  [SQNetworks.TESTNET]: 'https://sepolia.base.org',
+  [SQNetworks.LOCAL]: 'https://sepolia.base.org',
 };
 
 export const NETWORK_SUBQL_ENDPOINTS = {
@@ -37,9 +37,9 @@ export const LEADERBOARD_SUBQL_ENDPOINTS = {
 };
 
 export const STABLE_COIN_ADDRESSES = {
-  [SQNetworks.MAINNET]: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
-  [SQNetworks.TESTNET]: '0x7E65A71046170A5b1AaB5C5cC64242EDF95CaBEA',
-  [SQNetworks.LOCAL]: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+  [SQNetworks.MAINNET]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+  [SQNetworks.TESTNET]: '0x26dF8d79C4FaCa88d0212f0bd7C4A4d1e8955F0e', // TODO: change it
+  [SQNetworks.LOCAL]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
 } as const;
 
 export const STABLE_COIN_SYMBOLS = {
@@ -66,38 +66,38 @@ export function gqlEndpoints(network: SQNetworks) {
 
 export const NETWORKS_CONFIG_INFO = {
   [SQNetworks.TESTNET]: {
-    chainId: '0x13881',
-    chainName: 'Mumbai',
-    rpcUrls: ['https://rpc.ankr.com/polygon_mumbai'],
-    iconUrls: ['https://icons.llamao.fi/icons/chains/rsz_polygon.jpg'],
-    blockExplorerUrls: ['https://mumbai.polygonscan.com/'],
+    chainId: '0x14a34',
+    chainName: 'Base Sepolia Testnet',
+    rpcUrls: ['https://sepolia.base.org'],
+    iconUrls: ['https://base.org/document/apple-touch-icon.png'],
+    blockExplorerUrls: ['https://sepolia.basescan.org/'],
     nativeCurrency: {
-      name: 'Matic Token',
-      symbol: 'MATIC',
+      name: 'Ether',
+      symbol: 'ETH',
       decimals: 18,
     },
   },
   [SQNetworks.MAINNET]: {
-    chainId: '0x89',
-    chainName: 'Polygon',
-    rpcUrls: ['https://polygon-rpc.com/'],
-    iconUrls: ['https://icons.llamao.fi/icons/chains/rsz_polygon.jpg'],
-    blockExplorerUrls: ['https://polygonscan.com/'],
+    chainId: '0x2105',
+    chainName: 'Base',
+    rpcUrls: ['https://mainnet.base.org'],
+    iconUrls: ['https://base.org/document/apple-touch-icon.png'],
+    blockExplorerUrls: ['https://basescan.org/'],
     nativeCurrency: {
-      name: 'Matic Token',
-      symbol: 'MATIC',
+      name: 'Ether',
+      symbol: 'ETH',
       decimals: 18,
     },
   },
   [SQNetworks.LOCAL]: {
-    chainId: '0x89',
-    chainName: 'Polygon',
-    rpcUrls: ['https://polygon-rpc.com'],
-    iconUrls: ['https://icons.llamao.fi/icons/chains/rsz_polygon.jpg'],
-    blockExplorerUrls: ['https://polygonscan.com/'],
+    chainId: '0x14a34',
+    chainName: 'Base Sepolia Testnet',
+    rpcUrls: ['https://sepolia.base.org'],
+    iconUrls: ['https://base.org/document/apple-touch-icon.png'],
+    blockExplorerUrls: ['https://sepolia.basescan.org/'],
     nativeCurrency: {
-      name: 'Matic Token',
-      symbol: 'MATIC',
+      name: 'Ether',
+      symbol: 'ETH',
       decimals: 18,
     },
   },

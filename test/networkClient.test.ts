@@ -1,7 +1,8 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { NetworkClient, SQNetworks } from '../packages/network-clients/src';
+import { SQNetworks } from '@subql/network-config';
+import { NetworkClient } from '../packages/network-clients/src';
 
 const TEST_INDEXER = '0xFCA0037391B3cfe28f17453D6DBc4A7618F771e1';
 

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.114.0] - 2024-01-23
+
 ## [0.112.0] - 2023-12-19
 
 ## [0.111.0] - 2023-12-15
@@ -55,7 +57,8 @@ Upgrade @subql/contracts
 
 - Release first version
 
-[unreleased]: https://github.com/subquery/network-clients/compare/v0.112.0...HEAD
+[unreleased]: https://github.com/subquery/network-clients/compare/v0.114.0...HEAD
+[0.114.0]: https://github.com/subquery/network-clients/compare/v0.112.0...v0.114.0
 [0.112.0]: https://github.com/subquery/network-clients/compare/v0.111.0...v0.112.0
 [0.111.0]: https://github.com/subquery/network-clients/compare/v0.100.2...v0.111.0
 [0.100.2]: https://github.com/subquery/network-clients/compare/v0.100.0...v0.100.2

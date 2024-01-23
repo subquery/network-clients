@@ -4,7 +4,7 @@
 import { ApolloClient } from '@apollo/client/core';
 import assert from 'assert';
 import { constants } from 'ethers';
-import { GraphqlQueryClient, NETWORK_CONFIGS } from '../packages/network-clients/src';
+import { GraphqlQueryClient } from '../packages/network-clients/src';
 import {
   GetAcceptedOffers,
   GetAggregatesEraRewards,
@@ -48,6 +48,7 @@ import {
   GetStateChannels,
   GetWithdrawls,
 } from '../packages/network-query';
+import { NETWORK_CONFIGS } from '@subql/network-config';
 
 function deepAssert(obj: any) {
   Object.keys(obj).forEach((key) => {
