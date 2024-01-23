@@ -41,7 +41,7 @@ export const creatErrorLink = ({
     // graphql error is 200 status. 200 would not handle by retryLink.
     // network error will retry before enter this handler.
     // both them are need use fallback url to retry.
-    if (networkError || (graphQLErrors && useImmediateFallbackOnError)) {
+    if (networkError || graphQLErrors) {
       if (!operation.getContext().fallback) {
         operation.setContext({ url: undefined });
         return fallbackLink.request(

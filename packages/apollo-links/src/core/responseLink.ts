@@ -47,7 +47,9 @@ export class ResponseLink extends ApolloLink {
     return new Observable<FetchResult>((observer) => {
       const subscription = forward(operation).subscribe({
         next: (response: FetchResult<Record<string, any>> & { state: ChannelState }) => {
-          this.options.orderManager.updateScore(indexer, ScoreType.SUCCESS);
+          if (!response.errors || response.errors?.length === 0) {
+            this.options.orderManager.updateScore(indexer, ScoreType.SUCCESS);
+          }
 
           if (type === OrderType.flexPlan) {
             const responseHeaders = operation.getContext().response.headers;
