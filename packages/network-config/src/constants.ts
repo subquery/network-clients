@@ -38,7 +38,7 @@ export const LEADERBOARD_SUBQL_ENDPOINTS = {
 
 export const STABLE_COIN_ADDRESSES = {
   [SQNetworks.MAINNET]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-  [SQNetworks.TESTNET]: '0x26dF8d79C4FaCa88d0212f0bd7C4A4d1e8955F0e', // TODO: change it
+  [SQNetworks.TESTNET]: '0x3148eb6A6689a5a8A64B50ea8f845231d4617f9B',
   [SQNetworks.LOCAL]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
 } as const;
 
@@ -51,7 +51,7 @@ export const STABLE_COIN_SYMBOLS = {
 export const TOKEN_SYMBOLS = {
   [SQNetworks.MAINNET]: 'SQT',
   [SQNetworks.TESTNET]: 'SQT',
-  [SQNetworks.LOCAL]: 'kSQT',
+  [SQNetworks.LOCAL]: 'SQT',
 } as const;
 
 export const STABLE_COIN_DECIMAL = 6;

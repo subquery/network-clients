@@ -32,7 +32,7 @@ export const useStableCoin = (contracts: ContractSDK | undefined, network: SQNet
     [network]
   );
   const [now, setNow] = useState<dayjs.Dayjs>();
-  const coinsAddressDict = useMemo<{ [key: string]: 'USDC' | 'kSQT' | 'SQT' }>(() => {
+  const coinsAddressDict = useMemo<{ [key: string]: 'USDC' | 'SQT' }>(() => {
     if (!contracts?.sqToken)
       return {
         [toChecksumAddress(STABLE_COIN_ADDRESS)]: STABLE_TOKEN,
