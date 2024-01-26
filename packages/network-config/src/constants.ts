@@ -24,10 +24,10 @@ export const RPC_ENDPOINTS = {
 };
 
 export const NETWORK_SUBQL_ENDPOINTS = {
-  [SQNetworks.MAINNET]: 'https://api.subquery.network/sq/subquery/kepler-network',
-  [SQNetworks.LOCAL]: 'https://api.subquery.network/sq/subquery/kepler-network',
+  [SQNetworks.MAINNET]: 'https://api.subquery.network/sq/subquery/base-network',
+  [SQNetworks.LOCAL]: 'https://api.subquery.network/sq/subquery/base-network',
   // TODO: change back to testnet-prod endpoint
-  [SQNetworks.TESTNET]: 'https://api.subquery.network/sq/subquery/kepler-testnet',
+  [SQNetworks.TESTNET]: 'https://api.subquery.network/sq/subquery/base-testnet',
 };
 
 export const LEADERBOARD_SUBQL_ENDPOINTS = {
