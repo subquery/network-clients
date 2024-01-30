@@ -1,14 +1,12 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { SQNetworks } from '@subql/network-config';
+import { SQNetworks } from '../packages/network-config/src';
 import { NetworkClient } from '../packages/network-clients/src';
 
 const TEST_INDEXER = '0xCef192586b70e3Fc2FAD76Dd1D77983a30d38D04';
 
-// testnet have change, skip for now
-// FIXME
-describe.skip('network client', () => {
+describe('network client', () => {
   let client: NetworkClient;
   beforeAll(() => {
     client = NetworkClient.create(SQNetworks.TESTNET);
