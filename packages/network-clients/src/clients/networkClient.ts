@@ -13,7 +13,7 @@ import { GraphqlQueryClient } from './queryClient';
 import { isCID, min } from '../utils';
 import { DEFAULT_IPFS_URL, NETWORK_CONFIGS } from '@subql/network-config';
 import assert from 'assert';
-import { Indexer } from '../models/indexer';
+import { Indexer, IndexerMetadata } from '../models/indexer';
 import { parseRawEraValue } from '../utils/parseEraValue';
 import { SQNetworks } from '@subql/network-config';
 import { ApolloClient, ApolloClientOptions, NormalizedCacheObject } from '@apollo/client/core';
@@ -99,6 +99,18 @@ export class NetworkClient {
       delegated,
       capacity,
     };
+  }
+
+  public async getIndexerMetadata(address: string): Promise<IndexerMetadata | undefined> {
+    const indexer = await this._gqlClient.getIndexer(address);
+    if (!indexer) return;
+    const { metadata: metadatCID } = indexer;
+    const metadata = await this._ipfs.getJSON<{
+      name: string;
+      url: string;
+    }>(metadatCID);
+
+    return metadata;
   }
 
   public async maxUnstakeAmount(address: string): Promise<BigNumber> {
