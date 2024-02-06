@@ -1,0 +1,24 @@
+# deploymentId:indexerId
+query GetIndexerAllocationSummary($id: String!) {
+  indexerAllocationSummary(id: $id) {
+    totalAmount
+  }
+}
+
+query GetIndexerAllocationProjects($id: String!) {
+  indexerAllocationSummaries(
+    filter: { indexerId: { equalTo: $id }, totalAmount: { greaterThan: "0" } }
+  ) {
+    nodes {
+      deploymentId
+      proejctId
+      totalAmount
+      indexerId
+      deployment {
+        project {
+          metadata
+        }
+      }
+    }
+  }
+}
