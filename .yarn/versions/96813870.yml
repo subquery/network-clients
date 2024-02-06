@@ -1,5 +1,5 @@
 undecided:
   - "@subql/apollo-links"
+  - "@subql/network-clients"
   - "@subql/network-config"
   - "@subql/network-query"
-  - "@subql/react-hooks"
