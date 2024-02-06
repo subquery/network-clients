@@ -31,6 +31,22 @@ fragment ProjectFields on Project {
       ) {
         totalCount
       }
+      deploymentBoosterSummaries {
+        groupedAggregates(groupBy: PROEJCT_ID) {
+          sum {
+            totalAmount
+          }
+        }
+      }
+
+      deploymentBoosterSummariesByDeploymentId: deploymentBoosterSummaries {
+        groupedAggregates(groupBy: DEPLOYMENT_ID) {
+          sum {
+            totalAmount
+          }
+          keys
+        }
+      }
     }
   }
   totalReward
