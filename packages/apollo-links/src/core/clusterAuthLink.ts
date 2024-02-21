@@ -2,40 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
+import { OrderManager, generateUniqueId } from '@subql/network-support';
 import { Subscription } from 'zen-observable-ts';
 
-import { OrderManager } from './orderManager';
-import { isTokenExpired } from '../auth';
-import { ChannelAuth, OrderType } from '../types';
 import { Logger } from '../utils/logger';
-import { POST } from '../utils/query';
 
-export type AuthOptions = {
+export type ClusterAuthLinkOptions = {
   authUrl: string; // the url for geting token
   projectId: string; // chainId or deploymentId for the project
   orderManager: OrderManager; // agreement manager for managing agreements
   logger: Logger; // logger for logging
 };
 
-type ParamsResponse = {
-  data?: {
-    url: string;
-    authorization: string;
-    type: OrderType;
-    indexer: string;
-  };
-  error?: {
-    indexer: string;
-    message: string;
-  };
-};
-
 export class ClusterAuthLink extends ApolloLink {
-  private options: AuthOptions;
+  private options: ClusterAuthLinkOptions;
   private logger: Logger;
   private orderManager: OrderManager;
 
-  constructor(options: AuthOptions) {
+  constructor(options: ClusterAuthLinkOptions) {
     super();
     this.options = options;
     this.logger = options.logger;
@@ -48,28 +32,34 @@ export class ClusterAuthLink extends ApolloLink {
     return new Observable<FetchResult>((observer) => {
       let sub: Subscription;
 
-      this.getRequestParams()
+      this.orderManager
+        .getRequestParams(this.getRequestId(operation))
         .then((params) => {
-          if (params?.data) {
-            const { authorization, url, type, indexer } = params.data;
-            const headers = { authorization };
-            operation.setContext({ url, headers, type, indexer });
-
+          if (params) {
+            const { headers, url, type, runner } = params;
+            operation.setContext({ url, headers, type, indexer: runner });
             sub = forward(operation).subscribe(observer);
-          } else if (params?.error) {
-            const { indexer, message } = params.error;
-            operation.setContext({ indexer });
-
-            this.logger?.debug(`Failed to get token: ${message}`);
-            observer.error(new Error('failed to get indexer request params'));
           } else {
             this.logger?.debug('no available orders');
+            // For handling if one indexer's score is not enough for reduce retries times
+            // e.g indexer have 10 score, when first failed, the score is reach to 0,
+            // but because at above code set the url & indexer. retryLink also believe it's a
+            // valid url. so re-try again.
+            // set url is null-string can enter fallbackLink to handle if use fallback link
+            // otherwise would re-try until reach the max retires.
+            operation.setContext({ url: '' });
             sub = forward(operation).subscribe(observer);
           }
         })
         .catch((error) => {
-          this.logger?.debug(`Failed to get order request params: ${error.message}`);
-          observer.error(new Error('failed to get indexer url and token'));
+          if (error.indexer) {
+            this.logger?.debug(`Failed to get token: ${String(error.message)}`);
+            operation.setContext({ indexer: error.indexer });
+            observer.error(new Error('failed to get indexer request params'));
+          } else {
+            this.logger?.debug(`Failed to get order request params: ${String(error.message)}`);
+            observer.error(new Error('failed to get indexer url and token'));
+          }
         });
 
       return () => sub?.unsubscribe();
@@ -80,72 +70,11 @@ export class ClusterAuthLink extends ApolloLink {
     return { authorization: `Bearer ${token}` };
   }
 
-  private async getRequestParams(): Promise<ParamsResponse | undefined> {
-    const orderType = await this.orderManager.getNextOrderType();
-    if (!orderType) return undefined;
-    switch (orderType) {
-      case OrderType.agreement:
-        return this.getAgreementRequestParams();
-      case OrderType.flexPlan:
-        return this.getPlanRequestParams();
-      default:
-        return undefined;
-    }
-  }
-
-  private async getAgreementRequestParams(): Promise<ParamsResponse | undefined> {
-    const nextAgreement = await this.orderManager.getNextAgreement();
-    if (!nextAgreement) return undefined;
-
-    const type = OrderType.agreement;
-    const { token, id, url, indexer } = nextAgreement;
-    if (!isTokenExpired(token))
-      return { data: { url, type, indexer, ...this.tokenToAuthHeader(token) } };
-
-    try {
-      this.logger?.debug(`request new token for indexer ${indexer}`);
-      const { projectId, authUrl } = this.options;
-      const tokenUrl = new URL('/orders/token', authUrl);
-      const res = await POST<{ token: string }>(tokenUrl.toString(), {
-        projectId,
-        indexer,
-        agreementId: id,
-      });
-
-      this.orderManager.updateTokenById(id, res.token);
-      this.logger?.debug(`request new token for indexer ${indexer} success`);
-      return { data: { url, type, indexer, ...this.tokenToAuthHeader(res.token) } };
-    } catch (error) {
-      this.logger?.debug(
-        `request new token for indexer ${indexer} and url: ${nextAgreement.url} failed`
-      );
-      return { error: { indexer: nextAgreement.indexer, message: (error as Error).message } };
-    }
-  }
-
-  private async getPlanRequestParams(): Promise<ParamsResponse | undefined> {
-    const nextPlan = await this.orderManager.getNextPlan();
-    if (!nextPlan) return undefined;
-
-    const type = OrderType.flexPlan;
-    const { id: channelId, url, indexer } = nextPlan;
-
-    try {
-      this.logger?.debug(`request new signature for indexer ${indexer}`);
-      const { projectId: deployment, authUrl } = this.options;
-
-      const tokenUrl = new URL('/channel/sign', authUrl);
-      const signedState = await POST<ChannelAuth>(tokenUrl.toString(), {
-        deployment,
-        channelId,
-      });
-
-      this.logger?.debug(`request new state signature for indexer ${indexer} success`);
-      const { authorization } = signedState;
-      return { data: { authorization, url, type, indexer } };
-    } catch (error) {
-      this.logger?.debug(`request new state signature for indexer ${indexer} failed`);
-      return { error: { indexer: nextPlan.indexer, message: (error as Error).message } };
-    }
+  private getRequestId(operation: Operation): string {
+    let { requestId } = operation.getContext();
+    if (requestId) return requestId;
+    requestId = generateUniqueId();
+    operation.setContext({ requestId });
+    return requestId;
   }
 }

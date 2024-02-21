@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - develop
     paths-ignore:
       - '.github/workflows/**'
   workflow_dispatch:
@@ -34,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 0
+          fetch-depth: 100
           token: ${{ secrets.REPO_TOKEN }}
 
       - name: Setup Node.js environment
@@ -46,6 +45,16 @@ jobs:
         id: changed-network-config
         with:
           paths: packages/network-config
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-network-support
+        with:
+          paths: packages/network-support
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-eth-provider
+        with:
+          paths: packages/eth-provider
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-network-clients
@@ -79,6 +88,20 @@ jobs:
           package-path: packages/network-config
           npm-token: ${{ secrets.NPM_TOKEN }}
 
+      - name: Bump network-support & deploy
+        if: steps.changed-network-support.outputs.changed == 'true' || github.event.inputs.force-release
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/network-support
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump eth-provider & deploy
+        if: steps.changed-eth-provider.outputs.changed == 'true' || steps.changed-network-support == 'true' || github.event.inputs.force-release
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/eth-provider
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
       - name: Bump network-query & deploy
         if: steps.changed-network-query.outputs.changed == 'true' || github.event.inputs.force-release
         uses: ./.github/actions/create-prerelease
@@ -101,7 +124,7 @@ jobs:
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump apollo-links & deploy
-        if: steps.changed-apollo-links.outputs.changed == 'true' || github.event.inputs.force-release
+        if: steps.changed-apollo-links.outputs.changed == 'true' || steps.changed-network-support == 'true' || github.event.inputs.force-release
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/apollo-links

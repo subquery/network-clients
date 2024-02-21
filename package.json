@@ -48,7 +48,9 @@
     "packages/network-query",
     "packages/apollo-links",
     "packages/network-clients",
-    "packages/react-hooks"
+    "packages/react-hooks",
+    "packages/eth-provider",
+    "packages/network-support"
   ],
   "lint-staged": {
     "*.{ts,tsx}": [

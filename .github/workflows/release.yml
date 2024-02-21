@@ -1,4 +1,4 @@
-name: "Release"
+name: 'Release'
 on:
   push:
     branches:
@@ -43,6 +43,16 @@ jobs:
           paths: packages/network-config
 
       - uses: marceloprado/has-changed-path@v1
+        id: changed-network-support
+        with:
+          paths: packages/network-support
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-eth-provider
+        with:
+          paths: packages/eth-provider
+
+      - uses: marceloprado/has-changed-path@v1
         id: changed-network-clients
         with:
           paths: packages/network-clients
@@ -56,7 +66,7 @@ jobs:
         id: changed-react-hooks
         with:
           paths: packages/react-hooks
-      
+
       - uses: marceloprado/has-changed-path@v1
         id: changed-apollo-links
         with:
@@ -108,3 +118,18 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 
+      - name: Publish network-support
+        if: steps.changed-network-support.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/network-support
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish eth-provider
+        if: steps.changed-eth-provider.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/eth-provider
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}

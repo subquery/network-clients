@@ -7,9 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.100.0] - 2023-11-01
+## [1.3.2] - 2024-01-26
 
-- Upgrade contract-sdk to `v0.100.2`
+## [1.3.0] - 2024-01-22
+
+## [1.2.6] - 2024-01-11
+
+## [1.2.5] - 2023-12-21
+
+## [1.2.4] - 2023-12-21
+
+## [1.2.3] - 2023-11-27
+
+## [1.2.2] - 2023-11-13
 
 ## [1.1.0] - 2023-10-13
 
@@ -86,8 +96,14 @@ Breaking change for `dictHttpLink` and `deploymentHttpLink`, use `const { link }
 
 - Add Authlink for Apollo client
 
-[unreleased]: https://github.com/subquery/network-clients/compare/v1.100.0...HEAD
-[1.100.0]: https://github.com/subquery/network-clients/compare/v1.1.0...v1.100.0
+[unreleased]: https://github.com/subquery/network-clients/compare/v1.3.2...HEAD
+[1.3.2]: https://github.com/subquery/network-clients/compare/v1.3.0...v1.3.2
+[1.3.0]: https://github.com/subquery/network-clients/compare/v1.2.6...v1.3.0
+[1.2.6]: https://github.com/subquery/network-clients/compare/v1.2.4...v1.2.6
+[1.2.5]: https://github.com/subquery/network-clients/compare/v1.2.4...v1.2.5
+[1.2.4]: https://github.com/subquery/network-clients/compare/v1.2.3...v1.2.4
+[1.2.3]: https://github.com/subquery/network-clients/compare/v1.2.2...v1.2.3
+[1.2.2]: https://github.com/subquery/network-clients/compare/v1.1.0...v1.2.2
 [1.1.0]: https://github.com/subquery/network-clients/compare/v1.0.8...v1.1.0
 [1.0.8]: https://github.com/subquery/network-clients/compare/v1.0.4...v1.0.8
 [1.0.4]: https://github.com/subquery/network-clients/compare/v1.0.2...v1.0.4

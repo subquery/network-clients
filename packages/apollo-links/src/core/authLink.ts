@@ -1,11 +1,11 @@
-// Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client/core';
+import { isTokenExpired } from '@subql/network-support';
 import { Subscription } from 'zen-observable-ts';
 
-import { isTokenExpired, requestAuthToken } from '../auth/authHelper';
-import { Message } from '../auth/eip712';
+import { Message, requestAuthToken } from '../auth';
 import { Logger } from '../utils/logger';
 
 interface AuthOptions extends Message {
