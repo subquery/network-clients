@@ -30,8 +30,8 @@ export const NETWORK_SUBQL_ENDPOINTS = {
 };
 
 export const LEADERBOARD_SUBQL_ENDPOINTS = {
-  [SQNetworks.MAINNET]: 'https://mainnet-leaderboard-api.subquery.network/graphql',
-  [SQNetworks.LOCAL]: 'https://mainnet-leaderboard-api.subquery.network/graphql',
+  [SQNetworks.MAINNET]: 'https://lb-api.subquery.network/graphql',
+  [SQNetworks.LOCAL]: 'https://lb-api.subquery.network/graphql',
   [SQNetworks.TESTNET]: 'https://leaderboard-api.thechaindata.com/graphql',
 };
 
