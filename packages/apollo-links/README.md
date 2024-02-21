@@ -25,7 +25,9 @@ npm install @subql/apollo-links @apollo/client graphql
 - **Caching**: Integrated caching ensures data is fetched efficiently with reduced costs.
 
 ## Usage - external authorization mode
+
 ### What scenario work best with external authorization mode
+
 This is the recommended way to use `@subql/apollo-links`. With an auth-server to handle cryptography stuff that consumer needed to interact with indexer.
 Client side doesn't need to expose anything to reveal the identity of consumer.
 Auth-server will also provide some extra benefits like indexer progress monitoring and filtering.
@@ -47,7 +49,6 @@ import gql from 'graphql-tag';
 const options = {
   authUrl: 'https://kepler-auth.subquery.network',
   deploymentId: 'your_deployment_id_here',
-  httpOptions: { fetchOptions: { timeout: 5000 } },
   // ... other optional configurations
   // fallbackUrl:
 };
@@ -92,40 +93,42 @@ const { link, cleanup } = dictHttpLink(options);
 ```
 
 ## Usage - local authorization mode
+
 Need to put consumer controller's private key with client so it can sign and authorise every requests sent to indexer.
 
 ```ts
 const options = {
-    sk: '<private key>',
-    // don't put authUrl
-}
+  sk: '<private key>',
+  // don't put authUrl
+};
 ```
 
 ## Score Store
+
 We have an internal store for indexer scores so bad performed, bad progressed or unreachable indexers will be punished and not getting new requests.
 
 For browser side usage, after page refresh, the score will lose though. To solve that, you can instantiate a LocalStorageStore and pass in when constructing the link object.
+
 ```ts
-const store = createLocalStorageStore({ttl: 86_400_000});
+const store = createLocalStorageStore({ ttl: 86_400_000 });
 
 const { link, cleanup } = deploymentHttpLink({
-    authUrl: 'https://kepler-auth.subquery.network',
-    deploymentId: 'your_deployment_id_here',
-    httpOptions: { fetchOptions: { timeout: 5000 } },
-    scoreStore: store,
+  authUrl: 'https://kepler-auth.subquery.network',
+  deploymentId: 'your_deployment_id_here',
+  httpOptions: { fetchOptions: { timeout: 5000 } },
+  scoreStore: store,
 });
-
 ```
 
 ## Other options
 
 | params | usage                                                            |
-|--------|------------------------------------------------------------------|
+| ------ | ---------------------------------------------------------------- |
 | logger | apollo link will write logs to it, by default no logs will print |
 |        |                                                                  |
 
-
 ## Cleanup
+
 Because of the extra state management logic in it, call `cleanup()` to completely destroy the link and release resources.
 
 ```TS
