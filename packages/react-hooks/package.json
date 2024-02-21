@@ -1,6 +1,6 @@
 {
   "name": "@subql/react-hooks",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "SubQuery client sdk for react hooks",
   "main": "dist/index.js",
   "author": "SubQuery Pte Limited",
