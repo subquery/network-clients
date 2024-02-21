@@ -39,5 +39,5 @@
     "graphql": "^16.5.0",
     "react": "^18"
   },
-  "stableVersion": "0.114.0"
+  "stableVersion": "0.114.1-0"
 }

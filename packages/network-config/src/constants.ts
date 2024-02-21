@@ -26,7 +26,6 @@ export const RPC_ENDPOINTS = {
 export const NETWORK_SUBQL_ENDPOINTS = {
   [SQNetworks.MAINNET]: 'https://api.subquery.network/sq/subquery/base-network',
   [SQNetworks.LOCAL]: 'https://api.subquery.network/sq/subquery/base-network',
-  // TODO: change back to testnet-prod endpoint
   [SQNetworks.TESTNET]: 'https://api.subquery.network/sq/subquery/base-testnet',
 };
 

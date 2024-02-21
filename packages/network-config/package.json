@@ -15,5 +15,5 @@
     "@subql/contract-sdk": "^0.114.0",
     "ipfs-http-client": "^53.0.1"
   },
-  "stableVersion": "0.114.1-0"
+  "stableVersion": "0.114.1-1"
 }

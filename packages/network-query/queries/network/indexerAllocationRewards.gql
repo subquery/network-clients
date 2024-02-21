@@ -1,0 +1,20 @@
+query GetAllocationRewardsByDeploymentId($deploymentId: String!) {
+  indexerAllocationRewards(filter: { deploymentId: { equalTo: $deploymentId } }) {
+    aggregates {
+      sum {
+        reward
+      }
+    }
+  }
+}
+
+query GetAllocationRewardsByDeploymentIdAndIndexerId($indexerId: String!) {
+  indexerAllocationRewards(filter: { indexerId: { equalTo: $indexerId } }) {
+    groupedAggregates(groupBy: DEPLOYMENT_ID) {
+      sum {
+        reward
+      }
+      keys
+    }
+  }
+}
