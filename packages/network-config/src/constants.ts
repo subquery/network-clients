@@ -24,14 +24,14 @@ export const RPC_ENDPOINTS = {
 };
 
 export const NETWORK_SUBQL_ENDPOINTS = {
-  [SQNetworks.MAINNET]: 'https://api.subquery.network/sq/subquery/base-network',
-  [SQNetworks.LOCAL]: 'https://api.subquery.network/sq/subquery/base-network',
+  [SQNetworks.MAINNET]: 'https://api.subquery.network/sq/subquery/subquery-mainnet',
+  [SQNetworks.LOCAL]: 'https://api.subquery.network/sq/subquery/subquery-mainnet',
   [SQNetworks.TESTNET]: 'https://api.subquery.network/sq/subquery/base-testnet',
 };
 
 export const LEADERBOARD_SUBQL_ENDPOINTS = {
-  [SQNetworks.MAINNET]: 'https://leaderboard-api.subquery.network/graphql',
-  [SQNetworks.LOCAL]: 'https://leaderboard-api.subquery.network/graphql',
+  [SQNetworks.MAINNET]: 'https://mainnet-leaderboard-api.subquery.network/graphql',
+  [SQNetworks.LOCAL]: 'https://mainnet-leaderboard-api.subquery.network/graphql',
   [SQNetworks.TESTNET]: 'https://leaderboard-api.thechaindata.com/graphql',
 };
 
