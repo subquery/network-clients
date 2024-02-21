@@ -1,6 +1,6 @@
 {
   "name": "@subql/eth-provider",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "main": "dist/index.js",
   "author": "SubQuery Pte Limited",
   "license": "Apache-2.0",
