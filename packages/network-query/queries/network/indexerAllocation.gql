@@ -11,7 +11,7 @@ query GetIndexerAllocationProjects($id: String!) {
   ) {
     nodes {
       deploymentId
-      proejctId
+      projectId
       totalAmount
       indexerId
       deployment {
