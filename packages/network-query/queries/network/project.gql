@@ -32,7 +32,7 @@ fragment ProjectFields on Project {
         totalCount
       }
       deploymentBoosterSummaries {
-        groupedAggregates(groupBy: PROEJCT_ID) {
+        groupedAggregates(groupBy: PROJECT_ID) {
           sum {
             totalAmount
           }
