@@ -30,6 +30,8 @@ To add graphql queries:
 
 - Create pull request
 
+-
+
 # ChangeLogs
 
 [CHANGELOG.md](./CHANGELOG.md)
