@@ -20,7 +20,7 @@ This package will generate React useQuery hooks by using the queries and types f
     import { useGetDeploymentIndexersQuery } from '@subql/react-hooks';
     const { data, loading, error } = useGetDeploymentIndexersQuery({
         variables: {
-        offset: // value for 'offset'
+        offset: // value for 'offset '
         deploymentId: // value for 'deploymentId'
         },
     });
