@@ -66,6 +66,9 @@ export function createFetch(
         }
 
         orderManager.updateScore(runner, ScoreType.SUCCESS);
+        if (state && type === OrderType.flexPlan) {
+          void orderManager.syncChannelState(state);
+        }
         return {
           status: _res.status,
           headers: _res.headers,
