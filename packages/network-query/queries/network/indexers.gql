@@ -9,7 +9,13 @@ fragment IndexerFields on Indexer {
   maxUnstakeAmount
   capacity
   metadata
-  indexerStake
+  indexerStakes(orderBy: ERA_ID_DESC) {
+    nodes {
+      indexerStake
+      eraIdx
+      eraId
+    }
+  }
 }
 
 query GetIndexer($address: String!) {
