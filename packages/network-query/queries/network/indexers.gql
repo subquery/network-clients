@@ -9,7 +9,7 @@ fragment IndexerFields on Indexer {
   maxUnstakeAmount
   capacity
   metadata
-  indexerStake
+  indexerStakes
 }
 
 query GetIndexer($address: String!) {
