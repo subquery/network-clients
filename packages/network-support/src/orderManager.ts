@@ -234,16 +234,20 @@ export class OrderManager {
     return raceAwait;
   }
 
-  extractChannelState(
-    payload: string | object,
+  extractChannelState<T extends string | object>(
+    payload: T,
     headers: Headers
-  ): [object | string, ChannelState, string] {
+  ): [T, ChannelState, string] {
     switch (headers.get('X-Indexer-Response-Format')) {
       case ResponseFormat.Wrapped: {
         const body = (
           typeof payload === 'string' ? JSON.parse(payload) : payload
         ) as WrappedResponse;
-        return [Base64.decode(body.result), JSON.parse(Base64.decode(body.state)), body.signature];
+        return [
+          Base64.decode(body.result) as any,
+          JSON.parse(Base64.decode(body.state)),
+          body.signature,
+        ];
       }
       case ResponseFormat.Inline: {
         const _state = headers.get('X-Channel-State');
