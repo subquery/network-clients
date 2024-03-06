@@ -28,5 +28,6 @@ describe('eth provider', () => {
       method: 'post',
     });
     expect(res).toBeTruthy();
+    expect(await res.json()).toBeTruthy();
   });
 });
