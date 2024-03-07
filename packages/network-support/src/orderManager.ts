@@ -234,31 +234,33 @@ export class OrderManager {
     return raceAwait;
   }
 
-  extractChannelState(
-    payload: string | object,
-    headers: Headers
-  ): [object | string, ChannelState, string] {
+  extractChannelState(payload: string | object, headers: Headers): [object, ChannelState, string] {
     switch (headers.get('X-Indexer-Response-Format')) {
       case ResponseFormat.Wrapped: {
         const body = (
           typeof payload === 'string' ? JSON.parse(payload) : payload
         ) as WrappedResponse;
-        return [Base64.decode(body.result), JSON.parse(Base64.decode(body.state)), body.signature];
+        return [
+          JSON.parse(Base64.decode(body.result)),
+          JSON.parse(Base64.decode(body.state)),
+          body.signature,
+        ];
       }
       case ResponseFormat.Inline: {
         const _state = headers.get('X-Channel-State');
         assert(_state, 'invalid response, missing channel state');
-        const _signature = headers.get('X-Channel-Signature');
+        const _signature = headers.get('X-Indexer-Sig');
         assert(_signature, 'invalid response, missing channel signature');
-        return [payload, JSON.parse(Base64.decode(_state)), _signature];
+        return [
+          typeof payload === 'string' ? JSON.parse(payload) : payload,
+          JSON.parse(Base64.decode(_state)),
+          _signature,
+        ];
       }
       case undefined: {
-        let _payload = payload;
-        if (typeof payload === 'string') {
-          _payload = JSON.parse(payload);
-        }
-        const state = (_payload as unknown as any).state;
-        return [_payload, state, ''];
+        const body = typeof payload === 'string' ? JSON.parse(payload) : payload;
+        const state = body.state;
+        return [body, state, ''];
       }
       default:
         throw new Error('invalid X-Indexer-Response-Format');
