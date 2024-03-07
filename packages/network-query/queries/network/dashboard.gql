@@ -7,6 +7,14 @@ query GetDashboard {
     }
   }
 
+  indexerRewards {
+    aggregates {
+      sum {
+        amount
+      }
+    }
+  }
+
   rewardsToIndexer: eraRewards(filter: { isIndexer: { equalTo: true } }) {
     totalCount
     aggregates {
