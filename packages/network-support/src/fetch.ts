@@ -48,7 +48,14 @@ export function createFetch(
       }
       const { url, headers, type, runner } = requestParams;
       try {
-        const _res = await _fetch(url, { headers, method: 'post', body: init.body });
+        const _res = await _fetch(url, {
+          headers: {
+            ...(init.headers || {}),
+            ...headers,
+          },
+          method: 'post',
+          body: init.body,
+        });
         let state: ChannelState | undefined, res: object;
         if (type === OrderType.flexPlan) {
           [res, state] = orderManager.extractChannelState(

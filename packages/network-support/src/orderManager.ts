@@ -249,7 +249,7 @@ export class OrderManager {
       case ResponseFormat.Inline: {
         const _state = headers.get('X-Channel-State');
         assert(_state, 'invalid response, missing channel state');
-        const _signature = headers.get('X-Channel-Signature');
+        const _signature = headers.get('X-Indexer-Sig');
         assert(_signature, 'invalid response, missing channel signature');
         return [
           typeof payload === 'string' ? JSON.parse(payload) : payload,
