@@ -28,6 +28,7 @@ export enum ResponseFormat {
 type Options = {
   logger: Logger;
   authUrl: string;
+  apikey?: string;
   fallbackServiceUrl?: string;
   projectId: string;
   projectType: ProjectType;
@@ -56,6 +57,7 @@ export class OrderManager {
   private scoreManager: ScoreManager;
 
   private authUrl: string;
+  private apikey?: string;
   private projectId: string;
   private interval = 300_000;
   private minScore = 0;
@@ -68,6 +70,7 @@ export class OrderManager {
   constructor(options: Options) {
     const {
       authUrl,
+      apikey,
       fallbackServiceUrl,
       projectId,
       logger,
@@ -78,6 +81,7 @@ export class OrderManager {
       timeout = 60000,
     } = options;
     this.authUrl = authUrl;
+    this.apikey = apikey;
     this.projectId = projectId;
     this.projectType = projectType;
     this.logger = logger;
@@ -133,7 +137,7 @@ export class OrderManager {
 
   private async refreshAgreements() {
     try {
-      const orders = await fetchOrders(this.authUrl, this.projectId, this.projectType);
+      const orders = await fetchOrders(this.authUrl, this.projectId, this.projectType, this.apikey);
       if (orders.agreements) {
         this._agreements = orders.agreements;
       }
