@@ -1,9 +1,8 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { default as _fetch } from 'cross-fetch';
 import { OrderManager } from './orderManager';
-import { generateUniqueId } from './utils';
+import { customFetch, generateUniqueId } from './utils';
 import { ChannelState, OrderType } from './types';
 import { ScoreType } from './scoreManager';
 import { Base64 } from 'js-base64';
@@ -48,7 +47,7 @@ export function createFetch(
       }
       const { url, headers, type, runner } = requestParams;
       try {
-        const _res = await _fetch(url, {
+        const _res = await customFetch(url, {
           headers: {
             ...(init.headers || {}),
             ...headers,
