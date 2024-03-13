@@ -8,9 +8,9 @@ fragment DelegationFields on Delegation {
   amount
 }
 
-query GetIndexerDelegators($id: String!, $offset: Int) {
+query GetIndexerDelegators($id: String!, $offset: Int, $first: Int = 10) {
   indexer(id: $id) {
-    delegations(offset: $offset, filter: { delegatorId: { notEqualTo: $id } }) {
+    delegations(offset: $offset, first: $first, filter: { delegatorId: { notEqualTo: $id } }) {
       totalCount
       nodes {
         ...DelegationFields
