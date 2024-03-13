@@ -29,5 +29,5 @@ describe('eth provider', () => {
     });
     expect(res).toBeTruthy();
     expect(await res.json()).toBeTruthy();
-  });
+  }, 30000);
 });
