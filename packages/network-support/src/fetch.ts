@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { OrderManager } from './orderManager';
-import { customFetch, generateUniqueId } from './utils';
+import { customFetch, generateUniqueId, Logger } from './utils';
 import { ChannelState, OrderType } from './types';
 import { ScoreType } from './scoreManager';
 import { Base64 } from 'js-base64';
@@ -32,7 +32,8 @@ export class FetchError extends Error {
 
 export function createFetch(
   orderManager: OrderManager,
-  maxRetries = 5
+  maxRetries = 5,
+  logger?: Logger
 ): (init: RequestInit) => Promise<Response> {
   let retries = 0;
   return async function fetch(init: RequestInit): Promise<Response> {
@@ -84,6 +85,7 @@ export function createFetch(
           text: () => undefined,
         } as unknown as Response;
       } catch (e) {
+        logger?.warn(e);
         if (retries < maxRetries) {
           orderManager.updateScore(runner, ScoreType.RPC);
           retries += 1;

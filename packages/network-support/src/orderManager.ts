@@ -263,7 +263,11 @@ export class OrderManager {
         return [body, state, ''];
       }
       default:
-        throw new Error('invalid X-Indexer-Response-Format');
+        if (typeof payload === 'object' && (payload as any).code) {
+          throw new Error(JSON.stringify(payload));
+        } else {
+          throw new Error('invalid X-Indexer-Response-Format');
+        }
     }
   }
 

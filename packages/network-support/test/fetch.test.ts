@@ -20,14 +20,16 @@ describe('eth provider', () => {
       logger: mockLogger,
       responseFormat: ResponseFormat.Wrapped,
     });
-    const fetch = createFetch(orderManager);
+    const fetch = createFetch(orderManager, 3, mockLogger);
 
-    const res = await fetch({
-      body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_blockNumber', params: [], id: 1 }),
-      headers: { 'Content-Type': 'application/json' },
-      method: 'post',
-    });
-    expect(res).toBeTruthy();
-    expect(await res.json()).toBeTruthy();
+    for (let i = 0; i < 10; i++) {
+      const res = await fetch({
+        body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_blockNumber', params: [], id: 1 }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'post',
+      });
+      expect(res).toBeTruthy();
+      expect(await res.json()).toBeTruthy();
+    }
   }, 30000);
 });
