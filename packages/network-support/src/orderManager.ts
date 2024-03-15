@@ -28,6 +28,7 @@ export enum ResponseFormat {
 type Options = {
   logger: Logger;
   authUrl: string;
+  apikey?: string;
   fallbackServiceUrl?: string;
   projectId: string;
   projectType: ProjectType;
@@ -56,6 +57,7 @@ export class OrderManager {
   private scoreManager: ScoreManager;
 
   private authUrl: string;
+  private apikey?: string;
   private projectId: string;
   private interval = 300_000;
   private minScore = 0;
@@ -68,6 +70,7 @@ export class OrderManager {
   constructor(options: Options) {
     const {
       authUrl,
+      apikey,
       fallbackServiceUrl,
       projectId,
       logger,
@@ -78,6 +81,7 @@ export class OrderManager {
       timeout = 60000,
     } = options;
     this.authUrl = authUrl;
+    this.apikey = apikey;
     this.projectId = projectId;
     this.projectType = projectType;
     this.logger = logger;
@@ -133,7 +137,7 @@ export class OrderManager {
 
   private async refreshAgreements() {
     try {
-      const orders = await fetchOrders(this.authUrl, this.projectId, this.projectType);
+      const orders = await fetchOrders(this.authUrl, this.projectId, this.projectType, this.apikey);
       if (orders.agreements) {
         this._agreements = orders.agreements;
       }
@@ -199,6 +203,7 @@ export class OrderManager {
             const signedState = await POST<ChannelAuth>(tokenUrl.toString(), {
               deployment: this.projectId,
               channelId,
+              apikey: this.apikey,
             });
 
             this.logger?.debug(`request new state signature for runner ${runner} success`);
@@ -274,7 +279,10 @@ export class OrderManager {
   async syncChannelState(state: ChannelState): Promise<void> {
     try {
       const stateUrl = new URL('/channel/state', this.authUrl);
-      const res = await POST<{ consumerSign: string }>(stateUrl.toString(), state);
+      const res = await POST<{ consumerSign: string }>(stateUrl.toString(), {
+        ...state,
+        apikey: this.apikey,
+      });
 
       if (res.consumerSign) {
         this.logger?.debug(`syncChannelState succeed`);

@@ -61,9 +61,17 @@ interface AgreementsResponse {
   plans: FlexPlanOrder[];
 }
 
-export async function fetchOrders(authUrl: string, projectId: string, projectType: ProjectType) {
+export async function fetchOrders(
+  authUrl: string,
+  projectId: string,
+  projectType: ProjectType,
+  apikey?: string
+) {
   try {
     const agreementsURL = new URL(`/orders/${projectType}/${projectId}`, authUrl);
+    if (apikey) {
+      agreementsURL.searchParams.append('apikey', apikey);
+    }
     return await GET<AgreementsResponse>(agreementsURL.toString());
   } catch {
     return { agreements: [], plans: [] };
