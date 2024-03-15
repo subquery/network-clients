@@ -203,6 +203,7 @@ export class OrderManager {
             const signedState = await POST<ChannelAuth>(tokenUrl.toString(), {
               deployment: this.projectId,
               channelId,
+              apikey: this.apikey,
             });
 
             this.logger?.debug(`request new state signature for runner ${runner} success`);
@@ -278,7 +279,10 @@ export class OrderManager {
   async syncChannelState(state: ChannelState): Promise<void> {
     try {
       const stateUrl = new URL('/channel/state', this.authUrl);
-      const res = await POST<{ consumerSign: string }>(stateUrl.toString(), state);
+      const res = await POST<{ consumerSign: string }>(stateUrl.toString(), {
+        ...state,
+        apikey: this.apikey,
+      });
 
       if (res.consumerSign) {
         this.logger?.debug(`syncChannelState succeed`);
