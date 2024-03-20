@@ -36,15 +36,26 @@ export function createFetch(
   logger?: Logger
 ): (init: RequestInit) => Promise<Response> {
   let retries = 0;
+  let triedFallback = false;
   return async function fetch(init: RequestInit): Promise<Response> {
     const requestId = generateUniqueId();
     const requestResult: () => Promise<Response> = async () => {
-      const requestParams = await orderManager.getRequestParams(requestId);
+      let requestParams = await orderManager.getRequestParams(requestId);
       if (init.method?.toLowerCase() !== 'post') {
         throw new FetchError(`method not supported`, 'sqn');
       }
       if (!requestParams) {
-        throw new FetchError(`no available order`, 'sqn');
+        if (orderManager.fallbackServiceUrl && !triedFallback) {
+          triedFallback = true;
+          requestParams = {
+            url: orderManager.fallbackServiceUrl,
+            headers: {},
+            type: OrderType.fallback,
+            runner: 'fallback',
+          };
+        } else {
+          throw new FetchError(`no available order`, 'sqn');
+        }
       }
       const { url, headers, type, runner } = requestParams;
       try {
@@ -70,6 +81,9 @@ export function createFetch(
             ...data,
             ...JSON.parse(Base64.decode(data.result)),
           };
+        }
+        if (type === OrderType.fallback) {
+          res = await _res.json();
         }
 
         orderManager.updateScore(runner, ScoreType.SUCCESS);

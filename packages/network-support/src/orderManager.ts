@@ -67,7 +67,7 @@ export class OrderManager {
   private timeout = 60000;
   private _init: Promise<void>;
 
-  constructor(options: Options) {
+  constructor(private options: Options) {
     const {
       authUrl,
       apikey,
@@ -79,7 +79,7 @@ export class OrderManager {
       selector,
       responseFormat,
       timeout = 60000,
-    } = options;
+    } = this.options;
     this.authUrl = authUrl;
     this.apikey = apikey;
     this.projectId = projectId;
@@ -133,6 +133,10 @@ export class OrderManager {
       );
     }
     return result;
+  }
+
+  get fallbackServiceUrl(): string | undefined {
+    return this.options.fallbackServiceUrl;
   }
 
   private async refreshAgreements() {

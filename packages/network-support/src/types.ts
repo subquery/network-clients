@@ -9,6 +9,7 @@ export enum ProjectType {
 export enum OrderType {
   agreement = 'agreement',
   flexPlan = 'flexPlan',
+  fallback = 'fallback',
 }
 
 export type OrderWithType = (Order | ServiceAgreementOrder) & { type: OrderType };
