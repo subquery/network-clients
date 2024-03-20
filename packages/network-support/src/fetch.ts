@@ -53,6 +53,7 @@ export function createFetch(
             type: OrderType.fallback,
             runner: 'fallback',
           };
+          logger?.warn(`fallback to ${orderManager.fallbackServiceUrl}`);
         } else {
           throw new FetchError(`no available order`, 'sqn');
         }
