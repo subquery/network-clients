@@ -40,9 +40,12 @@ export function createFetch(
   return async function fetch(init: RequestInit): Promise<Response> {
     const requestId = generateUniqueId();
     const requestResult: () => Promise<Response> = async () => {
-      let requestParams = await orderManager.getRequestParams(requestId);
       if (init.method?.toLowerCase() !== 'post') {
         throw new FetchError(`method not supported`, 'sqn');
+      }
+      let requestParams;
+      if (retries < maxRetries) {
+        requestParams = await orderManager.getRequestParams(requestId);
       }
       if (!requestParams) {
         if (orderManager.fallbackServiceUrl && !triedFallback) {
@@ -101,7 +104,7 @@ export function createFetch(
         } as unknown as Response;
       } catch (e) {
         logger?.warn(e);
-        if (retries < maxRetries) {
+        if (retries < maxRetries || (orderManager.fallbackServiceUrl && !triedFallback)) {
           orderManager.updateScore(runner, ScoreType.RPC);
           retries += 1;
           return requestResult();
