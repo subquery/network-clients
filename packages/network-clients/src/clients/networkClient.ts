@@ -113,17 +113,27 @@ export class NetworkClient {
     return metadata;
   }
 
-  public async maxUnstakeAmount(address: string): Promise<BigNumber> {
+  public async maxUnstakeAmount(address: string, eraNumber?: number): Promise<BigNumber> {
     const leverageLimit = await this._sdk.staking.indexerLeverageLimit();
     const minStakingAmount = await this._sdk.indexerRegistry.minimumStakingAmount();
-    const indexer = await this.getIndexer(address);
 
-    if (!indexer) return BigNumber.from(0);
+    const indexer = await this._gqlClient.getIndexer(address);
+    const delegation = await this._gqlClient.getDelegation(address, address);
 
-    const { totalStake, ownStake } = await indexer;
+    if (!indexer || !delegation) return BigNumber.from(0);
+    const { amount: ownStake } = delegation;
+    const { totalStake } = indexer;
 
-    const totalStakingAmountAfter = BigNumber.from(totalStake?.after ?? 0);
-    const ownStakeAfter = BigNumber.from(ownStake?.after ?? 0);
+    let _eraNumber = eraNumber;
+    if (!_eraNumber) {
+      _eraNumber = await (await this._sdk.eraManager.eraNumber()).toNumber();
+    }
+
+    const sortedTotalStake = parseRawEraValue(totalStake, _eraNumber);
+    const sortedOwnStake = parseRawEraValue(ownStake, _eraNumber);
+
+    const totalStakingAmountAfter = BigNumber.from(sortedTotalStake?.after ?? 0);
+    const ownStakeAfter = BigNumber.from(sortedOwnStake?.after ?? 0);
 
     if (leverageLimit.eq(1)) return ownStakeAfter.sub(minStakingAmount);
 
