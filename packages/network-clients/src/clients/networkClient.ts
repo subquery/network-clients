@@ -10,7 +10,7 @@ import { ContractClient } from './contractClient';
 import { IPFSClient } from './ipfsClient';
 import { GraphqlQueryClient } from './queryClient';
 
-import { isCID, min } from '../utils';
+import { isCID } from '../utils';
 import { DEFAULT_IPFS_URL, NETWORK_CONFIGS } from '@subql/network-config';
 import assert from 'assert';
 import { Indexer, IndexerMetadata } from '../models/indexer';
@@ -114,7 +114,6 @@ export class NetworkClient {
   }
 
   public async maxUnstakeAmount(address: string, eraNumber?: number): Promise<BigNumber> {
-    const leverageLimit = await this._sdk.staking.indexerLeverageLimit();
     const minStakingAmount = await this._sdk.indexerRegistry.minimumStakingAmount();
 
     const indexer = await this._gqlClient.getIndexer(address);
@@ -122,27 +121,17 @@ export class NetworkClient {
 
     if (!indexer || !delegation) return BigNumber.from(0);
     const { amount: ownStake } = delegation;
-    const { totalStake } = indexer;
 
     let _eraNumber = eraNumber;
     if (!_eraNumber) {
       _eraNumber = await (await this._sdk.eraManager.eraNumber()).toNumber();
     }
 
-    const sortedTotalStake = parseRawEraValue(totalStake, _eraNumber);
     const sortedOwnStake = parseRawEraValue(ownStake, _eraNumber);
 
-    const totalStakingAmountAfter = BigNumber.from(sortedTotalStake?.after ?? 0);
     const ownStakeAfter = BigNumber.from(sortedOwnStake?.after ?? 0);
 
-    if (leverageLimit.eq(1)) return ownStakeAfter.sub(minStakingAmount);
-
-    const maxUnstakeAmount = min(
-      ownStakeAfter.sub(minStakingAmount),
-      ownStakeAfter.mul(leverageLimit).sub(totalStakingAmountAfter).div(leverageLimit.sub(1))
-    );
-
-    return maxUnstakeAmount.isNegative() ? BigNumber.from(0) : maxUnstakeAmount;
+    return ownStakeAfter.sub(minStakingAmount);
   }
 
   public async getDelegating(address: string): Promise<BigNumber> {
