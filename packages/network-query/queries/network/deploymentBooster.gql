@@ -1,0 +1,51 @@
+query GetDeploymentBoosterTotalAmountByDeploymentId($deploymentId: String!, $consumer: String!) {
+  deploymentBoosterSummaries(filter: { deploymentId: { equalTo: $deploymentId } }) {
+    aggregates {
+      sum {
+        totalAmount
+      }
+    }
+  }
+
+  deploymentBoosterSummariesByConsumer: deploymentBoosterSummaries(
+    filter: { deploymentId: { equalTo: $deploymentId }, consumer: { equalTo: $consumer } }
+  ) {
+    aggregates {
+      sum {
+        totalAmount
+      }
+    }
+  }
+}
+
+query GetDeploymentBoosterProjectsAndTotalByConsumer(
+  $offset: Int = 0
+  $first: Int = 10
+  $consumer: String!
+) {
+  deploymentBoosterSummaries(
+    filter: { consumer: { equalTo: $consumer } }
+    offset: $offset
+    first: $first
+    orderBy: ID_DESC
+  ) {
+    nodes {
+      consumer
+      deploymentId
+      totalAmount
+      projectId
+      project {
+        metadata
+      }
+    }
+    totalCount
+  }
+
+  totalBoostedAmount: deploymentBoosterSummaries(filter: { consumer: { equalTo: $consumer } }) {
+    aggregates {
+      sum {
+        totalAmount
+      }
+    }
+  }
+}
