@@ -68,6 +68,32 @@ query GetAggregatesEraRewardsByIndexer($indexerId: String!, $eraIds: [String!]) 
       keys
     }
   }
+
+  delegatorTotalRewards: eraRewards(
+    filter: { eraId: { in: $eraIds }, delegatorId: { equalTo: $indexerId } }
+  ) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+
+  delegatorEraReward: eraRewards(
+    filter: {
+      eraId: { in: $eraIds }
+      isIndexer: { equalTo: false }
+      delegatorId: { equalTo: $indexerId }
+    }
+  ) {
+    groupedAggregates(groupBy: ERA_ID) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
 }
 
 query GetEraRewardsByIndexerAndPage(
@@ -104,5 +130,24 @@ query GetEraRewardsByIndexerAndPage(
     filter: { delegatorId: { equalTo: $delegatorId }, claimed: { equalTo: false } }
   ) {
     totalCount
+  }
+}
+
+query GetTotalRewardsAndUnclaimRewards($account: String!) {
+  totalRewards: eraRewards(filter: { delegatorId: { equalTo: $account } }) {
+    aggregates {
+      sum {
+        amount
+      }
+    }
+  }
+  unclaimTotalRewards: eraRewards(
+    filter: { delegatorId: { equalTo: $account }, claimed: { equalTo: false } }
+  ) {
+    aggregates {
+      sum {
+        amount
+      }
+    }
   }
 }
