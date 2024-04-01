@@ -401,6 +401,10 @@ export class OrderManager {
     this.agreements[index].token = token;
   }
 
+  getScore(runner: string) {
+    return this.scoreManager.getScore(runner);
+  }
+
   updateScore(runner: string, errorType: ScoreType) {
     this.scoreManager.updateScore(runner, errorType);
   }
