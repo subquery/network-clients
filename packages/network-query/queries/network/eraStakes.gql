@@ -8,3 +8,29 @@ query GetEraQuery($account: String!) {
     }
   }
 }
+
+query GetEraDelegatorIndexers($account: String!) {
+  eraDelegatorIndexers(first: 1, orderBy: ERA_DESC, filter: { delegator: { equalTo: $account } }) {
+    nodes {
+      era
+      totalStake
+      selfStake
+      delegator
+    }
+  }
+}
+
+query GetEraDelegatorIndexersGraph($account: String!) {
+  eraDelegatorIndexers(
+    orderBy: ERA_DESC
+    filter: { delegator: { equalTo: $account } }
+    distinct: ERA
+  ) {
+    nodes {
+      era
+      totalStake
+      selfStake
+      delegator
+    }
+  }
+}
