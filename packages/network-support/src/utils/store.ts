@@ -4,9 +4,9 @@
 import { LRUCache as LRU } from 'lru-cache';
 
 export interface IStore {
-  get<T>(key: string): T | undefined;
-  set<T>(key: string, value: T): void; // ttl in milliseconds
-  remove(key: string): void;
+  get<T>(key: string): Promise<T | undefined>;
+  set<T>(key: string, value: T): Promise<void>; // ttl in milliseconds
+  remove(key: string): Promise<void>;
 }
 
 interface Options {
@@ -20,7 +20,7 @@ export class LocalStorageCache implements IStore {
     this.ttl = options.ttl;
   }
 
-  get<T>(key: string): T | undefined {
+  async get<T>(key: string): Promise<T | undefined> {
     const data = localStorage.getItem(key);
     if (!data) return undefined;
 
@@ -37,7 +37,7 @@ export class LocalStorageCache implements IStore {
     }
   }
 
-  set<T>(key: string, value: T): void {
+  async set<T>(key: string, value: T): Promise<void> {
     const data = {
       value,
       expiry: this.ttl ? Date.now() + this.ttl : undefined,
@@ -45,7 +45,7 @@ export class LocalStorageCache implements IStore {
     localStorage.setItem(key, JSON.stringify(data));
   }
 
-  remove(key: string): void {
+  async remove(key: string): Promise<void> {
     localStorage.removeItem(key);
   }
 }
@@ -57,17 +57,17 @@ export class LRUCache implements IStore {
     this.cache = new LRU({ max: 1000, ttl: options.ttl });
   }
 
-  get<T>(key: string): T | undefined {
+  async get<T>(key: string): Promise<T | undefined> {
     return this.cache.get(key);
   }
 
-  set<T>(key: string, value: T, ttl?: number): void {
+  async set<T>(key: string, value: T, ttl?: number): Promise<void> {
     // If ttl is defined, it is passed in milliseconds.
     // lru-cache expects ttl in milliseconds as well, so it aligns perfectly.
     this.cache.set(key, value, { ttl });
   }
 
-  remove(key: string): void {
+  async remove(key: string): Promise<void> {
     this.cache.delete(key);
   }
 }

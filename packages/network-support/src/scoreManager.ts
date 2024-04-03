@@ -44,9 +44,9 @@ export class ScoreManager {
     this.projectId = options.projectId;
   }
 
-  getScore(runner: string) {
+  async getScore(runner: string) {
     const key = this.getCacheKey(runner);
-    let score = this.scoreStore.get<number | ScoreStoreType>(key);
+    let score = await this.scoreStore.get<number | ScoreStoreType>(key);
 
     if (score === undefined) {
       score = {
@@ -81,14 +81,14 @@ export class ScoreManager {
     return Math.min(score.score + Math.floor((Date.now() - score.lastUpdate) / 600_000), 100);
   }
 
-  updateScore(runner: string, errorType: ScoreType) {
+  async updateScore(runner: string, errorType: ScoreType) {
     if (!runner) {
       this.logger?.debug('updateScore: runner is empty');
       return;
     }
 
     const key = this.getCacheKey(runner);
-    let score = this.scoreStore.get<number | ScoreStoreType>(key) ?? 100;
+    let score = (await this.scoreStore.get<number | ScoreStoreType>(key)) ?? 100;
 
     if (typeof score === 'number') {
       score = {

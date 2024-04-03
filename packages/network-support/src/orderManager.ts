@@ -44,9 +44,7 @@ function tokenToAuthHeader(token: string) {
 
 export class OrderManager {
   private projectType: ProjectType;
-  private nextAgreementIndex: number | undefined;
 
-  private nextPlanIndex: number | undefined;
   private _agreements: ServiceAgreementOrder[] = [];
   private _plans: FlexPlanOrder[] = [];
 
@@ -60,7 +58,6 @@ export class OrderManager {
   private apikey?: string;
   private projectId: string;
   private interval = 300_000;
-  private minScore = 0;
   private healthy = true;
   private selector?: RunnerSelector;
   private responseFormat?: ResponseFormat;
@@ -156,26 +153,10 @@ export class OrderManager {
     }
   }
 
-  private getRandomStartIndex(n: number) {
-    return Math.floor(Math.random() * n);
-  }
-
-  private getCacheKey(runner: string): string {
-    return `$query-score-${runner}-${this.projectId}`;
-  }
-
-  private filterOrdersByScore(orders: Order[]) {
-    return orders.filter(({ indexer }) => this.scoreManager.getScore(indexer) > this.minScore);
-  }
-
-  private filterOrdersByRequestId(requestId: string, orders: Order[]) {
+  private async filterOrdersByRequestId(requestId: string, orders: Order[]) {
     if (!requestId) return orders;
-    const selected = this.getSelectedRunners(requestId);
+    const selected = await this.getSelectedRunners(requestId);
     return orders.filter(({ indexer }) => !selected.includes(indexer));
-  }
-
-  private getNextOrderIndex(total: number, currentIndex: number) {
-    return currentIndex < total - 1 ? currentIndex + 1 : 0;
   }
 
   async getRequestParams(requestId: string): Promise<RequestParam | undefined> {
@@ -311,47 +292,47 @@ export class OrderManager {
     return undefined;
   }
 
-  protected async getNextAgreement(requestId: string): Promise<ServiceAgreementOrder | undefined> {
+  private async getNextAgreement(requestId: string): Promise<ServiceAgreementOrder | undefined> {
     await this._init;
 
     if (!this.agreements) return;
 
-    const agreements = this.filterOrdersByRequestId(requestId, this.agreements);
+    const agreements = await this.filterOrdersByRequestId(requestId, this.agreements);
     this.logger?.debug(`available agreements count: ${agreements.length}`);
 
     if (!this.healthy || !agreements.length) return;
 
-    const agreement = this.selectRunner(agreements) as ServiceAgreementOrder;
+    const agreement = (await this.selectRunner(agreements)) as ServiceAgreementOrder;
 
     this.logger?.debug(`next agreement: ${JSON.stringify(agreement.indexer)}`);
 
     if (agreement) {
-      this.updateSelectedRunner(requestId, agreement.indexer);
+      await this.updateSelectedRunner(requestId, agreement.indexer);
     }
 
     return agreement;
   }
 
-  protected async getNextPlan(requestId: string): Promise<FlexPlanOrder | undefined> {
+  private async getNextPlan(requestId: string): Promise<FlexPlanOrder | undefined> {
     await this._init;
 
     if (!this.plans) return;
 
-    const plans = this.filterOrdersByRequestId(requestId, this.plans);
+    const plans = await this.filterOrdersByRequestId(requestId, this.plans);
     if (!this.healthy || !plans?.length) return;
 
-    const plan = this.selectRunner(plans);
+    const plan = await this.selectRunner(plans);
 
     if (plan) {
-      this.updateSelectedRunner(requestId, plan.indexer);
+      await this.updateSelectedRunner(requestId, plan.indexer);
     }
 
     return plan;
   }
 
-  private selectRunner(orders: Order[]): Order | undefined {
+  private async selectRunner(orders: Order[]): Promise<Order | undefined> {
     if (!orders.length) return;
-    const scores = orders.map((o) => this.scoreManager.getScore(o.indexer));
+    const scores = await Promise.all(orders.map((o) => this.scoreManager.getScore(o.indexer)));
     const random = Math.random() * scores.reduce((a, b) => a + b, 0);
     this.logger?.debug(`selectRunner: indexers: ${orders.map((o) => o.indexer)}`);
     this.logger?.debug(`selectRunner: scores: ${scores}`);
@@ -381,14 +362,14 @@ export class OrderManager {
     return res.token;
   }
 
-  private getSelectedRunners(requestId: string): string[] {
+  private async getSelectedRunners(requestId: string): Promise<string[]> {
     if (!requestId) return [];
-    return this.selectedRunnersStore.get<string[]>(requestId) || [];
+    return (await this.selectedRunnersStore.get<string[]>(requestId)) || [];
   }
 
-  private updateSelectedRunner(requestId: string, runner: string) {
+  private async updateSelectedRunner(requestId: string, runner: string) {
     if (!requestId || !runner) return;
-    const runners = this.getSelectedRunners(requestId) ?? [];
+    const runners = (await this.getSelectedRunners(requestId)) ?? [];
     if (runners.includes(runner)) return;
     this.selectedRunnersStore.set(requestId, [...runners, runner]);
   }
@@ -401,12 +382,12 @@ export class OrderManager {
     this.agreements[index].token = token;
   }
 
-  getScore(runner: string) {
+  async getScore(runner: string) {
     return this.scoreManager.getScore(runner);
   }
 
-  updateScore(runner: string, errorType: ScoreType) {
-    this.scoreManager.updateScore(runner, errorType);
+  async updateScore(runner: string, errorType: ScoreType) {
+    await this.scoreManager.updateScore(runner, errorType);
   }
 
   cleanup() {
