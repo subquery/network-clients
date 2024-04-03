@@ -65,19 +65,6 @@ export class ScoreManager {
   }
 
   private calculatedScore(score: ScoreStoreType) {
-    // if (score.lastFailed) {
-    //   return Math.min(
-    //     score.score + Math.floor((Date.now() - score.lastFailed) / (600_000)),
-    //     100
-    //   );
-    // }
-
-    // if (score.lastUpdate && Date.now() - score.lastUpdate < 5 * 1000) {
-    //   return Math.max(score.score - 50, this.minScore);
-    // }
-
-    // return score.score;
-
     return Math.min(score.score + Math.floor((Date.now() - score.lastUpdate) / 600_000), 100);
   }
 
