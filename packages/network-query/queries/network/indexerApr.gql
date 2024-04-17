@@ -1,0 +1,40 @@
+# if two same fragment
+fragment IndexerFieldsUsedOnApr on Indexer {
+  id
+  controller
+  commission
+  totalStake
+  selfStake
+  maxUnstakeAmount
+  capacity
+  metadata
+  indexerStakes(orderBy: ERA_ID_DESC) {
+    nodes {
+      indexerStake
+      eraIdx
+      eraId
+    }
+  }
+}
+
+query GetAllIndexerByApr(
+  $first: Int
+  $offset: Int
+  $orderBy: [IndexerAprSummariesOrderBy!] = [INDEXER_APR_DESC]
+  $filter: IndexerAPRSummaryFilter
+) {
+  indexerAPRSummaries(first: $first, offset: $offset, orderBy: $orderBy, filter: $filter) {
+    nodes {
+      eraIdx
+      indexerId
+      indexerApr
+      delegatorApr
+      indexerReward
+      delegatorReward
+      indexer {
+        ...IndexerFieldsUsedOnApr
+      }
+    }
+    totalCount
+  }
+}

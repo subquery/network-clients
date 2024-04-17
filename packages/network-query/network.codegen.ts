@@ -5,7 +5,7 @@ import { CodegenConfig } from '@graphql-codegen/cli';
 import { NETWORK_CONFIGS } from '@subql/network-config';
 
 const config: CodegenConfig = {
-  schema: NETWORK_CONFIGS.mainnet.gql.network,
+  schema: 'http://icewk.local:3000/graphql' || NETWORK_CONFIGS.mainnet.gql.network,
   documents: './queries/network/*.gql',
   config: {
     preResolveTypes: true,

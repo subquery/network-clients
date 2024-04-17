@@ -2,7 +2,7 @@
   "name": "@subql/network-clients",
   "version": "1.1.1-2",
   "description": "SubQuery client sdk for network",
-  "main": "dist/index.js",
+  "main": "src/index.ts",
   "author": "SubQuery Pte Limited",
   "license": "Apache-2.0",
   "scripts": {
@@ -26,7 +26,7 @@
   },
   "peerDependencies": {
     "@apollo/client": "*",
-    "@subql/contract-sdk": "^1.0.0",
+    "@subql/contract-sdk": "^1.0.3",
     "ipfs-http-client": "^53.0.1"
   },
   "stableVersion": "1.1.1-1"

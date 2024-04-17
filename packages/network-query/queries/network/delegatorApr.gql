@@ -1,0 +1,15 @@
+query GetSpecifyDelegatorsIndexerApr($delegator: String!, $indexers: [String!] = [], $era: Int!) {
+  eraDelegatorIndexerAPRs(
+    filter: {
+      delegatorId: { equalTo: $delegator }
+      indexerId: { in: $indexers, notEqualTo: $delegator }
+      eraIdx: { equalTo: $era }
+    }
+  ) {
+    nodes {
+      apr
+      eraIdx
+      indexerId
+    }
+  }
+}

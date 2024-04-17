@@ -10,13 +10,14 @@ import { ContractClient } from './contractClient';
 import { IPFSClient } from './ipfsClient';
 import { GraphqlQueryClient } from './queryClient';
 
-import { isCID } from '../utils';
+import { fetchByCacheFirst, isCID } from '../utils';
 import { DEFAULT_IPFS_URL, NETWORK_CONFIGS } from '@subql/network-config';
 import assert from 'assert';
 import { Indexer, IndexerMetadata } from '../models/indexer';
 import { parseRawEraValue } from '../utils/parseEraValue';
 import { SQNetworks } from '@subql/network-config';
 import { ApolloClient, ApolloClientOptions, NormalizedCacheObject } from '@apollo/client/core';
+import { IndexerFieldsFragment } from '@subql/network-query';
 
 type Provider = AbstractProvider | Signer;
 
@@ -49,16 +50,32 @@ export class NetworkClient {
     return new NetworkClient(sdk, gqlClient, ipfsUrl);
   }
 
-  public async getIndexer(address: string): Promise<Indexer | undefined> {
-    const currentEra = await this._sdk.eraManager.eraNumber();
-    const leverageLimit = await this._sdk.staking.indexerLeverageLimit();
+  public async getIndexer(
+    address: string,
+    era?: BigNumber,
+    indexerInfo?: IndexerFieldsFragment
+  ): Promise<Indexer | undefined> {
+    let currentEra = era;
+    if (!currentEra) {
+      currentEra = await fetchByCacheFirst(this._sdk.eraManager.eraNumber, 'eraNumber', 0);
+    }
+    const leverageLimit = await fetchByCacheFirst(
+      this._sdk.staking.indexerLeverageLimit,
+      'leverageLimit',
+      0
+    );
 
-    const indexer = await this._gqlClient.getIndexer(address);
-    const delegation = await this._gqlClient.getDelegation(address, address);
+    const indexer = indexerInfo || (await this._gqlClient.getIndexer(address));
 
-    if (!indexer || !delegation) return;
-    const { controller, commission, totalStake, metadata: indexerMetadata } = indexer;
-    const { amount: ownStake } = delegation;
+    if (!indexer) return;
+    const {
+      controller,
+      commission,
+      selfStake: ownStake,
+      totalStake,
+      metadata: indexerMetadata,
+    } = indexer;
+
     const metadata = await this._ipfs.getJSON<{
       name: string;
       url: string;
