@@ -65,3 +65,46 @@ query GetDashboard {
     }
   }
 }
+
+query GetDashboardApy($currentEra: Int! = 0, $currentEraIdx: String! = "0x00") {
+  eraRewards(filter: { eraIdx: { lessThan: $currentEra } }) {
+    groupedAggregates(groupBy: ERA_IDX) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+
+  indexerEraReward: eraRewards(
+    filter: { eraIdx: { lessThan: $currentEra }, isIndexer: { equalTo: true } }
+  ) {
+    groupedAggregates(groupBy: ERA_IDX) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+
+  delegationEraReward: eraRewards(
+    filter: { eraIdx: { lessThan: $currentEra }, isIndexer: { equalTo: false } }
+  ) {
+    groupedAggregates(groupBy: ERA_IDX) {
+      sum {
+        amount
+      }
+      keys
+    }
+  }
+  indexerStakes(filter: { id: { equalTo: $currentEraIdx } }) {
+    groupedAggregates(groupBy: ERA_IDX) {
+      keys
+      sum {
+        delegatorStake
+        indexerStake
+        totalStake
+      }
+    }
+  }
+}

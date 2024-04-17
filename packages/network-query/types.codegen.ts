@@ -5,7 +5,11 @@ import { CodegenConfig } from '@graphql-codegen/cli';
 import { NETWORK_CONFIGS } from '@subql/network-config';
 
 const config: CodegenConfig = {
-  schema: [`${NETWORK_CONFIGS.mainnet.gql.network}`, `${NETWORK_CONFIGS.mainnet.gql.leaderboard}`],
+  //| NETWORK_CONFIGS.mainnet.gql.network
+  schema: [
+    `${'https://api.subquery.network/sq/subquery/subquery-mainnet__c3Vic'}`,
+    `${NETWORK_CONFIGS.mainnet.gql.leaderboard}`,
+  ],
   documents: ['./queries/network/*.gql', './queries/leaderboard/*.gql'],
   config: {
     preResolveTypes: true,

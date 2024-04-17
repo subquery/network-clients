@@ -70,6 +70,8 @@ query GetFilteredDelegations($delegator: String!, $filterIndexer: String!, $offs
       indexer {
         metadata
         active
+        commission
+        capacity
       }
     }
   }

@@ -10,13 +10,14 @@ import { ContractClient } from './contractClient';
 import { IPFSClient } from './ipfsClient';
 import { GraphqlQueryClient } from './queryClient';
 
-import { isCID } from '../utils';
+import { fetchByCacheFirst, isCID } from '../utils';
 import { DEFAULT_IPFS_URL, NETWORK_CONFIGS } from '@subql/network-config';
 import assert from 'assert';
 import { Indexer, IndexerMetadata } from '../models/indexer';
 import { parseRawEraValue } from '../utils/parseEraValue';
 import { SQNetworks } from '@subql/network-config';
 import { ApolloClient, ApolloClientOptions, NormalizedCacheObject } from '@apollo/client/core';
+import { IndexerFieldsFragment } from '@subql/network-query';
 
 type Provider = AbstractProvider | Signer;
 
@@ -49,16 +50,32 @@ export class NetworkClient {
     return new NetworkClient(sdk, gqlClient, ipfsUrl);
   }
 
-  public async getIndexer(address: string): Promise<Indexer | undefined> {
-    const currentEra = await this._sdk.eraManager.eraNumber();
-    const leverageLimit = await this._sdk.staking.indexerLeverageLimit();
+  public async getIndexer(
+    address: string,
+    era?: BigNumber,
+    indexerInfo?: IndexerFieldsFragment
+  ): Promise<Indexer | undefined> {
+    let currentEra = era;
+    if (!currentEra) {
+      currentEra = await fetchByCacheFirst(this._sdk.eraManager.eraNumber, 'eraNumber', 0);
+    }
+    const leverageLimit = await fetchByCacheFirst(
+      this._sdk.staking.indexerLeverageLimit,
+      'leverageLimit',
+      0
+    );
 
-    const indexer = await this._gqlClient.getIndexer(address);
-    const delegation = await this._gqlClient.getDelegation(address, address);
+    const indexer = indexerInfo || (await this._gqlClient.getIndexer(address));
 
-    if (!indexer || !delegation) return;
-    const { controller, commission, totalStake, metadata: indexerMetadata } = indexer;
-    const { amount: ownStake } = delegation;
+    if (!indexer) return;
+    const {
+      controller,
+      commission,
+      selfStake: ownStake,
+      totalStake,
+      metadata: indexerMetadata,
+    } = indexer;
+
     const metadata = await this._ipfs.getJSON<{
       name: string;
       url: string;
@@ -134,22 +151,36 @@ export class NetworkClient {
     return ownStakeAfter.sub(minStakingAmount);
   }
 
-  public async getDelegating(address: string): Promise<BigNumber> {
+  public async getDelegating(address: string): Promise<{
+    curEra: BigNumber;
+    nextEra: BigNumber;
+  }> {
     const currentEra = await this._sdk.eraManager.eraNumber();
     const ownDelegation = await this._gqlClient.getDelegation(address, address);
     const delegator = await this._gqlClient.getDelegator(address);
 
-    if (!delegator) return BigNumber.from(0);
+    if (!delegator)
+      return {
+        curEra: BigNumber.from(0),
+        nextEra: BigNumber.from(0),
+      };
 
     const eraNumber = currentEra.toNumber();
     const ownStake = ownDelegation?.amount;
     const { totalDelegations } = delegator;
 
     const sortedOwnStake = ownStake
-      ? parseRawEraValue(ownStake, eraNumber).after
-      : BigNumber.from(0);
-    const sortedTotalDelegations = parseRawEraValue(totalDelegations, eraNumber).after;
-    return sortedTotalDelegations.sub(sortedOwnStake);
+      ? parseRawEraValue(ownStake, eraNumber)
+      : {
+          current: BigNumber.from(0),
+          after: BigNumber.from(0),
+        };
+
+    const sortedTotalDelegations = parseRawEraValue(totalDelegations, eraNumber);
+    return {
+      curEra: sortedTotalDelegations.current.sub(sortedOwnStake.current),
+      nextEra: sortedTotalDelegations.after.sub(sortedOwnStake.after),
+    };
   }
 
   public async projectMetadata(cid: string) {
