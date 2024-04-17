@@ -1,5 +1,5 @@
 # if two same fragment
-fragment IndexerFieldsUsedOnApr on Indexer {
+fragment IndexerFieldsUsedOnApy on Indexer {
   id
   controller
   commission
@@ -17,22 +17,22 @@ fragment IndexerFieldsUsedOnApr on Indexer {
   }
 }
 
-query GetAllIndexerByApr(
+query GetAllIndexerByApy(
   $first: Int
   $offset: Int
-  $orderBy: [IndexerAprSummariesOrderBy!] = [INDEXER_APR_DESC]
-  $filter: IndexerAPRSummaryFilter
+  $orderBy: [IndexerApySummariesOrderBy!] = [INDEXER_APY_DESC]
+  $filter: IndexerAPYSummaryFilter
 ) {
-  indexerAPRSummaries(first: $first, offset: $offset, orderBy: $orderBy, filter: $filter) {
+  indexerAPYSummaries(first: $first, offset: $offset, orderBy: $orderBy, filter: $filter) {
     nodes {
       eraIdx
       indexerId
-      indexerApr
-      delegatorApr
+      indexerApy
+      delegatorApy
       indexerReward
       delegatorReward
       indexer {
-        ...IndexerFieldsUsedOnApr
+        ...IndexerFieldsUsedOnApy
       }
     }
     totalCount

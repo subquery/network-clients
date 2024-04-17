@@ -1,5 +1,5 @@
-query GetSpecifyDelegatorsIndexerApr($delegator: String!, $indexers: [String!] = [], $era: Int!) {
-  eraDelegatorIndexerAPRs(
+query GetSpecifyDelegatorsIndexerApy($delegator: String!, $indexers: [String!] = [], $era: Int!) {
+  eraDelegatorIndexerAPYs(
     filter: {
       delegatorId: { equalTo: $delegator }
       indexerId: { in: $indexers, notEqualTo: $delegator }
@@ -7,7 +7,7 @@ query GetSpecifyDelegatorsIndexerApr($delegator: String!, $indexers: [String!] =
     }
   ) {
     nodes {
-      apr
+      apy
       eraIdx
       indexerId
     }

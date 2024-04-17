@@ -66,7 +66,7 @@ query GetDashboard {
   }
 }
 
-query GetDashboardApr($currentEra: Int! = 0, $currentEraIdx: String! = "0x00") {
+query GetDashboardApy($currentEra: Int! = 0, $currentEraIdx: String! = "0x00") {
   eraRewards(filter: { eraIdx: { lessThan: $currentEra } }) {
     groupedAggregates(groupBy: ERA_IDX) {
       sum {
