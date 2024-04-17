@@ -23,3 +23,13 @@ query GetIndexerStakesByEras($eraIds: [String!]) {
     }
   }
 }
+
+query GetIndexerStakesByIndexerAndEra($indexerId: String!, $eraIdx: Int!) {
+  indexerStakes(filter: { indexerId: { equalTo: $indexerId }, eraIdx: { equalTo: $eraIdx } }) {
+    nodes {
+      delegatorStake
+      indexerStake
+      totalStake
+    }
+  }
+}
