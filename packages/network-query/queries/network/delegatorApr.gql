@@ -1,5 +1,5 @@
 query GetSpecifyDelegatorsIndexerApy($delegator: String!, $indexers: [String!] = [], $era: Int!) {
-  eraDelegatorIndexerAPYs(
+  eraDelegatorIndexerApies(
     filter: {
       delegatorId: { equalTo: $delegator }
       indexerId: { in: $indexers, notEqualTo: $delegator }
@@ -10,6 +10,51 @@ query GetSpecifyDelegatorsIndexerApy($delegator: String!, $indexers: [String!] =
       apy
       eraIdx
       indexerId
+    }
+  }
+}
+
+query GetDelegatorApies($delegator: String!, $era: Int!) {
+  eraDelegatorApies(filter: { delegatorId: { equalTo: $delegator }, eraIdx: { equalTo: $era } }) {
+    nodes {
+      apy
+      eraIdx
+      delegatorId
+    }
+  }
+}
+
+query GetDelegatorTotalAndLastEraDistictiveRewardsByIndexer(
+  $delegator: String!
+  $indexers: [String!] = []
+  $era: Int!
+) {
+  totalRewards: eraDelegatorIndexerApies(
+    filter: {
+      delegatorId: { equalTo: $delegator }
+      indexerId: { in: $indexers, notEqualTo: $delegator }
+    }
+  ) {
+    groupedAggregates(groupBy: INDEXER_ID) {
+      keys
+      sum {
+        reward
+      }
+    }
+  }
+
+  lastEraCollectRewards: eraDelegatorIndexerApies(
+    filter: {
+      delegatorId: { equalTo: $delegator }
+      indexerId: { in: $indexers, notEqualTo: $delegator }
+      eraIdx: { equalTo: $era }
+    }
+  ) {
+    groupedAggregates(groupBy: INDEXER_ID) {
+      keys
+      sum {
+        reward
+      }
     }
   }
 }

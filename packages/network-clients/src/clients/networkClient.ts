@@ -151,22 +151,36 @@ export class NetworkClient {
     return ownStakeAfter.sub(minStakingAmount);
   }
 
-  public async getDelegating(address: string): Promise<BigNumber> {
+  public async getDelegating(address: string): Promise<{
+    curEra: BigNumber;
+    nextEra: BigNumber;
+  }> {
     const currentEra = await this._sdk.eraManager.eraNumber();
     const ownDelegation = await this._gqlClient.getDelegation(address, address);
     const delegator = await this._gqlClient.getDelegator(address);
 
-    if (!delegator) return BigNumber.from(0);
+    if (!delegator)
+      return {
+        curEra: BigNumber.from(0),
+        nextEra: BigNumber.from(0),
+      };
 
     const eraNumber = currentEra.toNumber();
     const ownStake = ownDelegation?.amount;
     const { totalDelegations } = delegator;
 
     const sortedOwnStake = ownStake
-      ? parseRawEraValue(ownStake, eraNumber).after
-      : BigNumber.from(0);
-    const sortedTotalDelegations = parseRawEraValue(totalDelegations, eraNumber).after;
-    return sortedTotalDelegations.sub(sortedOwnStake);
+      ? parseRawEraValue(ownStake, eraNumber)
+      : {
+          current: BigNumber.from(0),
+          after: BigNumber.from(0),
+        };
+
+    const sortedTotalDelegations = parseRawEraValue(totalDelegations, eraNumber);
+    return {
+      curEra: sortedTotalDelegations.current.sub(sortedOwnStake.current),
+      nextEra: sortedTotalDelegations.after.sub(sortedOwnStake.after),
+    };
   }
 
   public async projectMetadata(cid: string) {

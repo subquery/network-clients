@@ -21,9 +21,9 @@ query GetAllIndexerByApy(
   $first: Int
   $offset: Int
   $orderBy: [IndexerApySummariesOrderBy!] = [INDEXER_APY_DESC]
-  $filter: IndexerAPYSummaryFilter
+  $filter: IndexerApySummaryFilter
 ) {
-  indexerAPYSummaries(first: $first, offset: $offset, orderBy: $orderBy, filter: $filter) {
+  indexerApySummaries(first: $first, offset: $offset, orderBy: $orderBy, filter: $filter) {
     nodes {
       eraIdx
       indexerId

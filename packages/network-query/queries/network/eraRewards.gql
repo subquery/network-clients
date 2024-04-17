@@ -96,6 +96,16 @@ query GetAggregatesEraRewardsByIndexer($indexerId: String!, $eraIds: [String!]) 
   }
 }
 
+query GetDelegatorTotalRewards($delegatorId: String!) {
+  eraRewards(filter: { delegatorId: { equalTo: $delegatorId }, isIndexer: { equalTo: false } }) {
+    aggregates {
+      sum {
+        amount
+      }
+    }
+  }
+}
+
 query GetEraRewardsByIndexerAndPage(
   $delegatorId: String!
   $offset: Int = 0
