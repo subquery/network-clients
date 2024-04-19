@@ -189,12 +189,13 @@ export class OrderManager {
               deployment: this.projectId,
               channelId,
               apikey: this.apikey,
+              block: 'multiple',
             });
 
             this.logger?.debug(`request new state signature for runner ${runner} success`);
             const { authorization } = signedState;
-            // TODO: debug to confirm
             headers.authorization = authorization;
+            headers['X-Channel-Block'] = 'multiple';
 
             return {
               type,
