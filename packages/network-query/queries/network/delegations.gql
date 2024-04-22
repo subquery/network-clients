@@ -72,6 +72,8 @@ query GetFilteredDelegations($delegator: String!, $filterIndexer: String!, $offs
         active
         commission
         capacity
+        selfStake
+        totalStake
       }
     }
   }
