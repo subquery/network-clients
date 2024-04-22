@@ -10,7 +10,7 @@ type Options = {
   logger: Logger;
   authUrl: string;
   projectId: string;
-  apikey: string;
+  apikey?: string;
   stateStore?: IStore;
 };
 
@@ -25,7 +25,7 @@ export class StateManager {
   private logger: Logger;
   private authUrl: string;
   private projectId: string;
-  private apikey: string;
+  private apikey?: string;
   private stateStore: IStore;
 
   constructor(options: Options) {
@@ -36,16 +36,16 @@ export class StateManager {
     this.stateStore = options.stateStore ?? createStore({ ttl: 86_400_000 });
   }
 
-  async getSignedState(channelId: string): Promise<string> {
+  async getSignedState(channelId: string): Promise<State> {
     const cachedState = await this.getState(channelId);
     if (cachedState) {
-      return cachedState.authorization;
+      return cachedState;
     }
     const signedState = await this.requestState(channelId);
     if (signedState.authorization) {
       await this.setState(channelId, { authorization: signedState.authorization, active: 0 });
     }
-    return signedState.authorization;
+    return signedState;
   }
 
   async updateState(channelId: string, active: number): Promise<void> {
@@ -63,12 +63,18 @@ export class StateManager {
 
   private async requestState(channelId: string): Promise<State> {
     const tokenUrl = new URL('/channel/auth', this.authUrl);
+    this.logger?.debug(
+      `request new signature for deployment ${this.projectId} and channel ${channelId}`
+    );
     const signedState = await POST<ChannelAuth>(tokenUrl.toString(), {
       deployment: this.projectId,
       channelId,
       apikey: this.apikey,
       block,
     });
+    this.logger?.debug(
+      `request new state signature for deployment ${this.projectId} and channel ${channelId}`
+    );
     return { authorization: signedState.authorization, active: 0 };
   }
 
@@ -88,6 +94,6 @@ export class StateManager {
   }
 
   private getCacheKey(channelId: string) {
-    return `state:${this.projectId}:${channelId}:${computeMD5(this.apikey)}`;
+    return `state:${this.projectId}:${channelId}:${computeMD5(this.apikey ?? '')}`;
   }
 }

@@ -5,7 +5,6 @@ import assert from 'assert';
 import { Base64 } from 'js-base64';
 import { ScoreManager, ScoreType } from './scoreManager';
 import {
-  ChannelAuth,
   ChannelState,
   FlexPlanOrder,
   Order,
@@ -19,6 +18,7 @@ import {
   WrappedResponse,
 } from './types';
 import { createStore, fetchOrders, isTokenExpired, IStore, Logger, POST } from './utils';
+import { StateManager } from './stateManager';
 
 export enum ResponseFormat {
   Inline = 'inline',
@@ -34,6 +34,7 @@ type Options = {
   projectType: ProjectType;
   responseFormat?: ResponseFormat;
   scoreStore?: IStore;
+  stateStore?: IStore;
   selector?: RunnerSelector;
   timeout?: number;
 };
@@ -53,6 +54,7 @@ export class OrderManager {
 
   private selectedRunnersStore: IStore;
   private scoreManager: ScoreManager;
+  private stateManager: StateManager;
 
   private authUrl: string;
   private apikey?: string;
@@ -73,6 +75,7 @@ export class OrderManager {
       logger,
       projectType,
       scoreStore,
+      stateStore,
       selector,
       responseFormat,
       timeout = 60000,
@@ -90,6 +93,13 @@ export class OrderManager {
       projectId,
       fallbackServiceUrl,
       scoreStore,
+    });
+    this.stateManager = new StateManager({
+      logger,
+      authUrl,
+      projectId,
+      apikey,
+      stateStore,
     });
 
     this._init = this.refreshAgreements();
@@ -182,21 +192,10 @@ export class OrderManager {
           const channelId = id;
           headers['X-Indexer-Response-Format'] = this.responseFormat ?? 'inline';
           try {
-            this.logger?.debug(`request new signature for runner ${runner}`);
-
-            const tokenUrl = new URL('/channel/sign', this.authUrl);
-            const signedState = await POST<ChannelAuth>(tokenUrl.toString(), {
-              deployment: this.projectId,
-              channelId,
-              apikey: this.apikey,
-              block: 'multiple',
-            });
-
-            this.logger?.debug(`request new state signature for runner ${runner} success`);
+            const signedState = await this.stateManager.getSignedState(channelId);
             const { authorization } = signedState;
             headers.authorization = authorization;
             headers['X-Channel-Block'] = 'multiple';
-
             return {
               type,
               url,
@@ -389,6 +388,10 @@ export class OrderManager {
 
   async updateScore(runner: string, errorType: ScoreType) {
     await this.scoreManager.updateScore(runner, errorType);
+  }
+
+  async updateState(channelId: string, active: number) {
+    await this.stateManager.updateState(channelId, active);
   }
 
   cleanup() {
