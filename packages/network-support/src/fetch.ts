@@ -6,6 +6,7 @@ import { customFetch, generateUniqueId, Logger } from './utils';
 import { ChannelState, OrderType } from './types';
 import { ScoreType } from './scoreManager';
 import { Base64 } from 'js-base64';
+import { State } from './stateManager';
 
 interface SystemError extends Error {
   code?: string | undefined;
@@ -55,13 +56,14 @@ export function createFetch(
             headers: {},
             type: OrderType.fallback,
             runner: 'fallback',
+            channelId: 'fallback',
           };
           logger?.warn(`fallback to ${orderManager.fallbackServiceUrl}`);
         } else {
           throw new FetchError(`no available order`, 'sqn');
         }
       }
-      const { url, headers, type, runner } = requestParams;
+      const { url, headers, type, runner, channelId } = requestParams;
       try {
         const _res = await customFetch(url, {
           headers: {
@@ -71,7 +73,7 @@ export function createFetch(
           method: 'post',
           body: init.body,
         });
-        let state: ChannelState | undefined, res: object;
+        let state: State | ChannelState | undefined, res: object;
         if (type === OrderType.flexPlan) {
           [res, state] = orderManager.extractChannelState(
             await _res.json(),
@@ -91,8 +93,8 @@ export function createFetch(
         }
 
         orderManager.updateScore(runner, ScoreType.SUCCESS);
-        if (state && type === OrderType.flexPlan) {
-          void orderManager.syncChannelState(state);
+        if (type === OrderType.flexPlan && channelId && state) {
+          void orderManager.syncChannelState(channelId, state);
         }
         return {
           status: _res.status,

@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ChannelAuth } from './types';
+import { ChannelAuth, ChannelState } from './types';
 import { Logger, POST } from './utils';
 import { computeMD5 } from './utils/hash';
 import { IStore, createStore } from './utils/store';
@@ -14,12 +14,20 @@ type Options = {
   stateStore?: IStore;
 };
 
-type State = {
-  authorization: string;
-  active: number;
-};
+export enum BlockType {
+  Single = 'single',
+  Multiple = 'multiple',
+}
 
-const block = 'multiple';
+export enum ActiveType {
+  Active,
+  Inactive1,
+  Inactive2,
+}
+
+export type State = {
+  authorization: string;
+};
 
 export class StateManager {
   private logger: Logger;
@@ -36,32 +44,21 @@ export class StateManager {
     this.stateStore = options.stateStore ?? createStore({ ttl: 86_400_000 });
   }
 
-  async getSignedState(channelId: string): Promise<State> {
+  async getSignedState(channelId: string, block: BlockType): Promise<State> {
     const cachedState = await this.getState(channelId);
     if (cachedState) {
       return cachedState;
     }
-    const signedState = await this.requestState(channelId);
-    if (signedState.authorization) {
-      await this.setState(channelId, { authorization: signedState.authorization, active: 0 });
+    const signedState = await this.requestState(channelId, block);
+    if (block === BlockType.Multiple && signedState.authorization) {
+      await this.setState(channelId, {
+        authorization: signedState.authorization,
+      });
     }
     return signedState;
   }
 
-  async updateState(channelId: string, active: number): Promise<void> {
-    let state = await this.getState(channelId);
-    if (!state) {
-      return;
-    }
-    if (active !== 0) {
-      state.active = active;
-      await this.setState(channelId, state);
-      state = await this.requestState(channelId);
-      await this.setState(channelId, state);
-    }
-  }
-
-  private async requestState(channelId: string): Promise<State> {
+  private async requestState(channelId: string, block: BlockType): Promise<State> {
     const tokenUrl = new URL('/channel/auth', this.authUrl);
     this.logger?.debug(
       `request new signature for deployment ${this.projectId} and channel ${channelId}`
@@ -75,7 +72,65 @@ export class StateManager {
     this.logger?.debug(
       `request new state signature for deployment ${this.projectId} and channel ${channelId}`
     );
-    return { authorization: signedState.authorization, active: 0 };
+    const state: State = {
+      authorization: signedState.authorization,
+    };
+    return state;
+  }
+
+  async syncState(channelId: string, state: State | ChannelState): Promise<void> {
+    if ('consumerSign' in state) {
+      // ChannelState
+      const stateUrl = new URL('/channel/state', this.authUrl);
+      try {
+        const res = await POST<{ consumerSign: string }>(stateUrl.toString(), {
+          ...state,
+          apikey: this.apikey,
+        });
+        if (res.consumerSign) {
+          this.logger?.debug(`syncChannelState succeed`);
+        } else {
+          this.logger?.debug(`syncChannelState failed: ${JSON.stringify(res)}`);
+        }
+      } catch (e) {
+        this.logger?.debug(`syncChannelState failed: ${e}`);
+      }
+    } else {
+      // State
+      if (this.getActiveType(state) === ActiveType.Active) {
+        return;
+      }
+      try {
+        await this.setState(channelId, state);
+        const stateUrl = new URL('/channel/state', this.authUrl);
+        const res = await POST<{ authorization: string }>(
+          stateUrl.toString(),
+          {
+            apikey: this.apikey,
+            auth: state.authorization,
+            block: BlockType.Multiple,
+          },
+          {
+            auth: state.authorization,
+          }
+        );
+        if (res.authorization) {
+          await this.setState(channelId, {
+            authorization: res.authorization,
+          });
+          this.logger?.debug(`syncChannelState succeed`);
+        } else {
+          this.logger?.debug(`syncChannelState failed: ${JSON.stringify(res)}`);
+        }
+      } catch (e) {
+        this.logger?.debug(`syncChannelState failed: ${e}`);
+      }
+    }
+  }
+
+  private getActiveType(state: State): ActiveType {
+    const data = Buffer.from(state.authorization, 'base64');
+    return data[0] as ActiveType;
   }
 
   private async getState(channelId: string): Promise<State | undefined> {

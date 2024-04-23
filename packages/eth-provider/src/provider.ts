@@ -14,6 +14,7 @@ import {
   ProjectType,
   ResponseFormat,
   ScoreType,
+  State,
   generateUniqueId,
   silentLogger,
 } from '@subql/network-support';
@@ -91,8 +92,7 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
     const requestResult: () => Promise<string> = async () => {
       const requestParams = await this.orderManager.getRequestParams(requestId);
       if (requestParams) {
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        const { url, headers, type, runner } = requestParams;
+        const { url, headers, type, runner, channelId } = requestParams;
         try {
           const result = await this._send(
             {
@@ -102,6 +102,7 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
             request,
             {
               type,
+              channelId,
             }
           );
 
@@ -142,13 +143,15 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
   async _send(
     url: string | ConnectionInfo,
     request: unknown,
-    options: {
+    options?: {
       type?: OrderType;
-    } = {}
+      channelId?: string;
+    }
   ): Promise<any> {
-    const { type } = options;
+    const type = options?.type;
+    const channelId = options?.channelId;
     let result;
-    let state: ChannelState | undefined;
+    let state: State | ChannelState | undefined;
     try {
       result = await fetchJson(url, JSON.stringify(request), (payload, resp) => {
         let res = payload;
@@ -186,8 +189,8 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
       });
       throw error;
     }
-    if (state && type === OrderType.flexPlan) {
-      void this.orderManager.syncChannelState(state);
+    if (type === OrderType.flexPlan && channelId && state) {
+      void this.orderManager.syncChannelState(channelId, state);
     }
     return result;
   }

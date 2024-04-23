@@ -1,7 +1,7 @@
 {
   "name": "@subql/network-support",
   "version": "1.1.2",
-  "main": "dist/index.js",
+  "main": "src/index.ts",
   "author": "SubQuery Pte Limited",
   "license": "Apache-2.0",
   "scripts": {
@@ -13,7 +13,8 @@
     "cross-fetch": "^4.0.0",
     "js-base64": "^3.7.5",
     "jwt-decode": "^3.1.2",
-    "lru-cache": "^10.0.1"
+    "lru-cache": "^10.0.1",
+    "semver": "^7.6.0"
   },
   "devDependencies": {
     "@types/node": "18",
