@@ -9,7 +9,7 @@ export class Version {
   }
 
   static gte(version1: string, version2: string): boolean {
-    return new SemVer(version1).compare(version2) >= 1;
+    return new SemVer(version1).compare(version2) >= 0;
   }
 
   static lte(version1: string, version2: string): boolean {
@@ -21,7 +21,7 @@ export class Version {
   }
 
   static gt(version1: string, version2: string): boolean {
-    return new SemVer(version1).compare(version2) === 1;
+    return new SemVer(version1).compare(version2) === 0;
   }
 
   static eq(version1: string, version2: string): boolean {

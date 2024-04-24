@@ -45,12 +45,16 @@ export class StateManager {
   }
 
   async getSignedState(channelId: string, block: BlockType): Promise<State> {
-    const cachedState = await this.getState(channelId);
+    const cachedState = block === BlockType.Multiple ? await this.getState(channelId) : undefined;
     if (cachedState) {
       return cachedState;
     }
     const signedState = await this.requestState(channelId, block);
-    if (block === BlockType.Multiple && signedState.authorization) {
+    if (
+      block === BlockType.Multiple &&
+      signedState.authorization &&
+      !this.tryConvertJson(signedState.authorization).success
+    ) {
       await this.setState(channelId, {
         authorization: signedState.authorization,
       });
@@ -59,7 +63,7 @@ export class StateManager {
   }
 
   private async requestState(channelId: string, block: BlockType): Promise<State> {
-    const tokenUrl = new URL('/channel/auth', this.authUrl);
+    const tokenUrl = new URL('/channel/sign', this.authUrl);
     this.logger?.debug(
       `request new signature for deployment ${this.projectId} and channel ${channelId}`
     );
@@ -98,6 +102,7 @@ export class StateManager {
     } else {
       // State
       if (this.getActiveType(state) === ActiveType.Active) {
+        await this.setState(channelId, state);
         return;
       }
       try {
@@ -125,6 +130,21 @@ export class StateManager {
       } catch (e) {
         this.logger?.debug(`syncChannelState failed: ${e}`);
       }
+    }
+  }
+
+  tryConvertJson(bs64Data: string): { success: boolean; data: any } {
+    const data = Buffer.from(bs64Data, 'base64');
+    try {
+      return {
+        success: true,
+        data: JSON.parse(data.toString('utf-8')),
+      };
+    } catch {
+      return {
+        success: false,
+        data: data,
+      };
     }
   }
 

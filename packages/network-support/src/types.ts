@@ -16,8 +16,8 @@ export type OrderWithType = (Order | ServiceAgreementOrder) & { type: OrderType 
 
 export interface IndexingMetadata {
   subqueryHealthy: boolean;
-  indexerNodeVersion: string;
-  queryNodeVersion: string;
+  coordinatorVersion: string;
+  proxyVersion: string;
   lastHeight: number;
   targetHeight: number;
 }

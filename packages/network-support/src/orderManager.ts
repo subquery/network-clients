@@ -192,10 +192,9 @@ export class OrderManager {
           return { url, runner, channelId, headers, type } as RequestParam;
         } else if (type === OrderType.flexPlan) {
           const channelId = id;
-          // const block
           headers['X-Indexer-Response-Format'] = this.responseFormat ?? 'inline';
           try {
-            const higherVersion = Version.gte(metadata.queryNodeVersion, 'v2.1.0');
+            const higherVersion = Version.gte(metadata.proxyVersion, 'v2.1.0');
             const signedState = await this.stateManager.getSignedState(
               channelId,
               higherVersion ? BlockType.Multiple : BlockType.Single
@@ -203,6 +202,9 @@ export class OrderManager {
             const { authorization } = signedState;
             headers.authorization = authorization;
             headers['X-Channel-Block'] = higherVersion ? 'multiple' : 'single';
+            if (higherVersion && this.stateManager.tryConvertJson(authorization).success) {
+              headers['X-Channel-Block'] = 'single';
+            }
             return {
               type,
               url,
