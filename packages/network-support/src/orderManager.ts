@@ -205,6 +205,9 @@ export class OrderManager {
             if (higherVersion && this.stateManager.tryConvertJson(authorization).success) {
               headers['X-Channel-Block'] = 'single';
             }
+            this.logger?.debug(
+              `requested state of [${headers['X-Channel-Block']}] for runner ${runner}`
+            );
             return {
               type,
               url,
@@ -214,6 +217,7 @@ export class OrderManager {
             } as RequestParam;
           } catch (error) {
             this.logger?.debug(`request new state signature for runner ${runner} failed`);
+            this.logger?.debug(error);
             throw new RequestParamError((error as any).message, runner);
           }
         }

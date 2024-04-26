@@ -65,7 +65,7 @@ export class StateManager {
   private async requestState(channelId: string, block: BlockType): Promise<State> {
     const tokenUrl = new URL('/channel/sign', this.authUrl);
     this.logger?.debug(
-      `request new signature for deployment ${this.projectId} and channel ${channelId}`
+      `requesting new state signature for deployment ${this.projectId} and channel ${channelId}`
     );
     const signedState = await POST<ChannelAuth>(tokenUrl.toString(), {
       deployment: this.projectId,
@@ -74,7 +74,7 @@ export class StateManager {
       block,
     });
     this.logger?.debug(
-      `request new state signature for deployment ${this.projectId} and channel ${channelId}`
+      `requested new state signature for deployment ${this.projectId} and channel ${channelId}`
     );
     const state: State = {
       authorization: signedState.authorization,
@@ -87,11 +87,11 @@ export class StateManager {
       // ChannelState
       const stateUrl = new URL('/channel/state', this.authUrl);
       try {
-        const res = await POST<{ consumerSign: string }>(stateUrl.toString(), {
+        const res = await POST<{ spent: string }>(stateUrl.toString(), {
           ...state,
           apikey: this.apikey,
         });
-        if (res.consumerSign) {
+        if (res.spent) {
           this.logger?.debug(`syncChannelState succeed`);
         } else {
           this.logger?.debug(`syncChannelState failed: ${JSON.stringify(res)}`);
