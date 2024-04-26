@@ -102,7 +102,7 @@ export class StateManager {
     } else {
       // State
       if (this.getActiveType(state) === ActiveType.Active) {
-        await this.setState(channelId, state);
+        // await this.setState(channelId, state);
         return;
       }
       try {
