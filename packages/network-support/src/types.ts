@@ -14,10 +14,19 @@ export enum OrderType {
 
 export type OrderWithType = (Order | ServiceAgreementOrder) & { type: OrderType };
 
+export interface IndexingMetadata {
+  subqueryHealthy: boolean;
+  coordinatorVersion: string;
+  proxyVersion: string;
+  lastHeight: number;
+  targetHeight: number;
+}
+
 export interface Order {
   id: string;
   indexer: string;
   url: string;
+  metadata: IndexingMetadata;
 }
 
 export interface ServiceAgreementOrder extends Order {
@@ -46,6 +55,7 @@ export type RequestParam = {
   headers: { [key: string]: string };
   type: OrderType;
   runner: string;
+  channelId?: string;
 };
 
 export class RequestParamError extends Error {

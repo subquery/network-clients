@@ -4,5 +4,6 @@
 export * from './types';
 export * from './orderManager';
 export * from './scoreManager';
+export * from './stateManager';
 export * from './utils';
 export * from './fetch';

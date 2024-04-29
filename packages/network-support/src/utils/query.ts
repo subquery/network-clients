@@ -30,9 +30,13 @@ export const customFetch = (
 
 export async function POST<T>(
   url: string,
-  body: Record<string, string | number | boolean | undefined>
+  body: Record<string, string | number | boolean | undefined>,
+  headers?: Record<string, string>
 ): Promise<T> {
-  const headers = { 'Content-Type': 'application/json' };
+  if (!headers) {
+    headers = {};
+  }
+  headers['Content-Type'] = 'application/json';
   const res = await customFetch(url, {
     body: JSON.stringify(body),
     method: 'post',
@@ -56,7 +60,7 @@ export async function GET<T>(url: string): Promise<T> {
   return res.json();
 }
 
-interface AgreementsResponse {
+interface OrdersResponse {
   agreements: ServiceAgreementOrder[];
   plans: FlexPlanOrder[];
 }
@@ -68,11 +72,11 @@ export async function fetchOrders(
   apikey?: string
 ) {
   try {
-    const agreementsURL = new URL(`/orders/${projectType}/${projectId}`, authUrl);
+    const ordersURL = new URL(`/orders/${projectType}/${projectId}`, authUrl);
     if (apikey) {
-      agreementsURL.searchParams.append('apikey', apikey);
+      ordersURL.searchParams.append('apikey', apikey);
     }
-    return await GET<AgreementsResponse>(agreementsURL.toString());
+    return await GET<OrdersResponse>(ordersURL.toString());
   } catch {
     return { agreements: [], plans: [] };
   }

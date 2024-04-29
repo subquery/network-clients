@@ -36,8 +36,8 @@ export class ClusterAuthLink extends ApolloLink {
         .getRequestParams(this.getRequestId(operation))
         .then((params) => {
           if (params) {
-            const { headers, url, type, runner } = params;
-            operation.setContext({ url, headers, type, indexer: runner });
+            const { headers, url, type, runner, channelId } = params;
+            operation.setContext({ url, headers, type, indexer: runner, channelId });
             sub = forward(operation).subscribe(observer);
           } else {
             this.logger?.debug('no available orders');

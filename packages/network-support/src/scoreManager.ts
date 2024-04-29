@@ -85,7 +85,9 @@ export class ScoreManager {
       };
     }
 
-    this.logger?.debug(`updateScore type: ${runner} ${errorType}`);
+    if (errorType !== ScoreType.SUCCESS) {
+      this.logger?.debug(`updateScore type: ${runner} ${errorType}`);
+    }
     this.logger?.debug(`updateScore before: ${runner} ${JSON.stringify(score)}`);
 
     const delta = scoresDelta[errorType];

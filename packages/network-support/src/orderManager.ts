@@ -5,7 +5,6 @@ import assert from 'assert';
 import { Base64 } from 'js-base64';
 import { ScoreManager, ScoreType } from './scoreManager';
 import {
-  ChannelAuth,
   ChannelState,
   FlexPlanOrder,
   Order,
@@ -19,6 +18,8 @@ import {
   WrappedResponse,
 } from './types';
 import { createStore, fetchOrders, isTokenExpired, IStore, Logger, POST } from './utils';
+import { BlockType, State, StateManager } from './stateManager';
+import { Version } from './utils/version';
 
 export enum ResponseFormat {
   Inline = 'inline',
@@ -34,6 +35,7 @@ type Options = {
   projectType: ProjectType;
   responseFormat?: ResponseFormat;
   scoreStore?: IStore;
+  stateStore?: IStore;
   selector?: RunnerSelector;
   timeout?: number;
 };
@@ -53,6 +55,7 @@ export class OrderManager {
 
   private selectedRunnersStore: IStore;
   private scoreManager: ScoreManager;
+  private stateManager: StateManager;
 
   private authUrl: string;
   private apikey?: string;
@@ -73,6 +76,7 @@ export class OrderManager {
       logger,
       projectType,
       scoreStore,
+      stateStore,
       selector,
       responseFormat,
       timeout = 60000,
@@ -91,10 +95,17 @@ export class OrderManager {
       fallbackServiceUrl,
       scoreStore,
     });
+    this.stateManager = new StateManager({
+      logger,
+      authUrl,
+      projectId,
+      apikey,
+      stateStore,
+    });
 
-    this._init = this.refreshAgreements();
+    this._init = this.refreshOrders();
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    this.timer = setInterval(() => this.refreshAgreements(), this.interval);
+    this.timer = setInterval(() => this.refreshOrders(), this.interval);
     this.selector = selector;
     this.timeout = timeout;
   }
@@ -136,7 +147,7 @@ export class OrderManager {
     return this.options.fallbackServiceUrl;
   }
 
-  private async refreshAgreements() {
+  private async refreshOrders() {
     try {
       const orders = await fetchOrders(this.authUrl, this.projectId, this.projectType, this.apikey);
       if (orders.agreements) {
@@ -164,8 +175,9 @@ export class OrderManager {
       const order = await this.getNextOrder(requestId);
       const headers: RequestParam['headers'] = {};
       if (order) {
-        const { type, indexer: runner, url, id } = order;
+        const { type, indexer: runner, url, id, metadata } = order;
         if (type === OrderType.agreement) {
+          const channelId = id;
           headers['X-Indexer-Response-Format'] = this.responseFormat ?? 'inline';
           let { token } = order as ServiceAgreementOrder;
           if (isTokenExpired(token)) {
@@ -177,33 +189,41 @@ export class OrderManager {
             }
           }
           headers.authorization = tokenToAuthHeader(token);
-          return { url, runner, headers, type };
+          return { url, runner, channelId, headers, type } as RequestParam;
         } else if (type === OrderType.flexPlan) {
           const channelId = id;
           headers['X-Indexer-Response-Format'] = this.responseFormat ?? 'inline';
           try {
-            this.logger?.debug(`request new signature for runner ${runner}`);
-
-            const tokenUrl = new URL('/channel/sign', this.authUrl);
-            const signedState = await POST<ChannelAuth>(tokenUrl.toString(), {
-              deployment: this.projectId,
+            const higherVersion = Version.gte(metadata.proxyVersion, 'v2.1.0');
+            const signedState = await this.stateManager.getSignedState(
               channelId,
-              apikey: this.apikey,
-            });
-
-            this.logger?.debug(`request new state signature for runner ${runner} success`);
+              higherVersion ? BlockType.Multiple : BlockType.Single
+            );
             const { authorization } = signedState;
-            // TODO: debug to confirm
             headers.authorization = authorization;
-
+            headers['X-Channel-Block'] = higherVersion ? 'multiple' : 'single';
+            const convertResult = this.stateManager.tryConvertJson(authorization);
+            if (convertResult.error) {
+              throw new Error(convertResult.error);
+            }
+            if (higherVersion && this.stateManager.tryConvertJson(authorization).success) {
+              headers['X-Channel-Block'] = 'single';
+            }
+            if (headers['X-Channel-Block'] === 'single') {
+              this.logger?.debug(
+                `requested state signature of [${headers['X-Channel-Block']}] for runner ${runner}`
+              );
+            }
             return {
               type,
               url,
               runner,
+              channelId,
               headers,
-            };
+            } as RequestParam;
           } catch (error) {
-            this.logger?.debug(`request new state signature for runner ${runner} failed`);
+            this.logger?.debug(`request state signature for runner ${runner} failed`);
+            this.logger?.debug(error);
             throw new RequestParamError((error as any).message, runner);
           }
         }
@@ -224,7 +244,10 @@ export class OrderManager {
     return raceAwait;
   }
 
-  extractChannelState(payload: string | object, headers: Headers): [object, ChannelState, string] {
+  extractChannelState(
+    payload: string | object,
+    headers: Headers
+  ): [object, State | ChannelState, string] {
     switch (headers.get('X-Indexer-Response-Format')) {
       case ResponseFormat.Wrapped: {
         const body = (
@@ -241,11 +264,15 @@ export class OrderManager {
         assert(_state, 'invalid response, missing channel state');
         const _signature = headers.get('X-Indexer-Sig');
         assert(_signature, 'invalid response, missing channel signature');
-        return [
-          typeof payload === 'string' ? JSON.parse(payload) : payload,
-          JSON.parse(Base64.decode(_state)),
-          _signature,
-        ];
+        let state: State | ChannelState;
+        try {
+          state = JSON.parse(Base64.decode(_state)) as ChannelState;
+        } catch (e) {
+          state = {
+            authorization: _state,
+          } as State;
+        }
+        return [typeof payload === 'string' ? JSON.parse(payload) : payload, state, _signature];
       }
       case undefined: {
         const body = typeof payload === 'string' ? JSON.parse(payload) : payload;
@@ -261,22 +288,8 @@ export class OrderManager {
     }
   }
 
-  async syncChannelState(state: ChannelState): Promise<void> {
-    try {
-      const stateUrl = new URL('/channel/state', this.authUrl);
-      const res = await POST<{ consumerSign: string }>(stateUrl.toString(), {
-        ...state,
-        apikey: this.apikey,
-      });
-
-      if (res.consumerSign) {
-        this.logger?.debug(`syncChannelState succeed`);
-      } else {
-        this.logger?.debug(`syncChannelState failed: ${JSON.stringify(res)}`);
-      }
-    } catch (e) {
-      this.logger?.debug(`syncChannelState failed: ${e}`);
-    }
+  async syncChannelState(channelId: string, state: State | ChannelState): Promise<void> {
+    await this.stateManager.syncState(channelId, state);
   }
 
   private async getNextOrder(requestId: string): Promise<OrderWithType | undefined> {
