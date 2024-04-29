@@ -50,11 +50,8 @@ export class StateManager {
       return cachedState;
     }
     const signedState = await this.requestState(channelId, block);
-    if (
-      block === BlockType.Multiple &&
-      signedState.authorization &&
-      !this.tryConvertJson(signedState.authorization).success
-    ) {
+    const convertResult = this.tryConvertJson(signedState.authorization);
+    if (block === BlockType.Multiple && signedState.authorization && !convertResult.success) {
       await this.setState(channelId, {
         authorization: signedState.authorization,
       });
@@ -65,7 +62,7 @@ export class StateManager {
   private async requestState(channelId: string, block: BlockType): Promise<State> {
     const tokenUrl = new URL('/channel/sign', this.authUrl);
     this.logger?.debug(
-      `requesting new state signature for deployment ${this.projectId} and channel ${channelId}`
+      `requesting new state signature [${block}] for deployment ${this.projectId} and channel ${channelId}`
     );
     const signedState = await POST<ChannelAuth>(tokenUrl.toString(), {
       deployment: this.projectId,
@@ -74,7 +71,7 @@ export class StateManager {
       block,
     });
     this.logger?.debug(
-      `requested new state signature for deployment ${this.projectId} and channel ${channelId}`
+      `requested new state signature [${block}] for deployment ${this.projectId} and channel ${channelId}`
     );
     const state: State = {
       authorization: signedState.authorization,
@@ -92,12 +89,12 @@ export class StateManager {
           apikey: this.apikey,
         });
         if (res.spent) {
-          this.logger?.debug(`syncChannelState succeed`);
+          this.logger?.debug(`syncChannelState [single] succeed`);
         } else {
-          this.logger?.debug(`syncChannelState failed: ${JSON.stringify(res)}`);
+          this.logger?.debug(`syncChannelState [single] failed: ${JSON.stringify(res)}`);
         }
       } catch (e) {
-        this.logger?.debug(`syncChannelState failed: ${e}`);
+        this.logger?.debug(`syncChannelState [single] failed: ${e}`);
       }
     } else {
       // State
@@ -123,27 +120,30 @@ export class StateManager {
           await this.setState(channelId, {
             authorization: res.authorization,
           });
-          this.logger?.debug(`syncChannelState succeed`);
+          this.logger?.debug(`syncChannelState [multiple] succeed`);
         } else {
-          this.logger?.debug(`syncChannelState failed: ${JSON.stringify(res)}`);
+          this.logger?.debug(`syncChannelState [multiple] failed: ${JSON.stringify(res)}`);
         }
       } catch (e) {
-        this.logger?.debug(`syncChannelState failed: ${e}`);
+        this.logger?.debug(`syncChannelState [multiple] failed: ${e}`);
       }
     }
   }
 
-  tryConvertJson(bs64Data: string): { success: boolean; data: any } {
+  tryConvertJson(bs64Data: string): { success: boolean; data: any; error: any } {
     const data = Buffer.from(bs64Data, 'base64');
     try {
+      const json = JSON.parse(data.toString('utf-8'));
       return {
         success: true,
-        data: JSON.parse(data.toString('utf-8')),
+        data: json,
+        error: json.error,
       };
     } catch {
       return {
         success: false,
         data: data,
+        error: undefined,
       };
     }
   }

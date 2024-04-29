@@ -202,12 +202,18 @@ export class OrderManager {
             const { authorization } = signedState;
             headers.authorization = authorization;
             headers['X-Channel-Block'] = higherVersion ? 'multiple' : 'single';
+            const convertResult = this.stateManager.tryConvertJson(authorization);
+            if (convertResult.error) {
+              throw new Error(convertResult.error);
+            }
             if (higherVersion && this.stateManager.tryConvertJson(authorization).success) {
               headers['X-Channel-Block'] = 'single';
             }
-            this.logger?.debug(
-              `requested state of [${headers['X-Channel-Block']}] for runner ${runner}`
-            );
+            if (headers['X-Channel-Block'] === 'single') {
+              this.logger?.debug(
+                `requested state signature of [${headers['X-Channel-Block']}] for runner ${runner}`
+              );
+            }
             return {
               type,
               url,
@@ -216,7 +222,7 @@ export class OrderManager {
               headers,
             } as RequestParam;
           } catch (error) {
-            this.logger?.debug(`request new state signature for runner ${runner} failed`);
+            this.logger?.debug(`request state signature for runner ${runner} failed`);
             this.logger?.debug(error);
             throw new RequestParamError((error as any).message, runner);
           }
