@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApolloLink, from } from '@apollo/client/core';
-
 import {
   IStore,
   OrderManager,
@@ -28,6 +27,7 @@ interface BaseAuthOptions {
   logger?: Logger; // logger for `AuthLink`
   fallbackServiceUrl?: string; // fall back service url for `AuthLink`
   scoreStore?: IStore; // pass store in, so it doesn't get lost between page refresh
+  stateStore?: IStore;
   selector?: RunnerSelector;
   maxRetries?: number;
   useImmediateFallbackOnError?: boolean;
@@ -68,6 +68,7 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
     authUrl,
     projectType,
     scoreStore,
+    stateStore,
     maxRetries,
     useImmediateFallbackOnError = false,
     logger: _logger,
@@ -84,6 +85,7 @@ function authHttpLink(options: AuthOptions): AuthHttpLink {
     projectType,
     logger,
     scoreStore,
+    stateStore,
     responseFormat: ResponseFormat.Inline,
     selector,
     timeout,

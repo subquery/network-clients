@@ -40,6 +40,7 @@ interface Options {
   logger?: Logger; // logger for `AuthLink`
   fallbackUrl?: string | ConnectionInfo; // fall back service url for `AuthLink`
   scoreStore?: IStore; // pass store in, so it doesn't get lost between page refresh
+  stateStore?: IStore;
   maxRetries?: number;
   network?: Networkish;
 }
@@ -63,6 +64,8 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
       projectType: ProjectType.deployment,
       logger: this.logger,
       responseFormat: ResponseFormat.Wrapped,
+      scoreStore: opt.scoreStore,
+      stateStore: opt.stateStore,
     });
   }
 
