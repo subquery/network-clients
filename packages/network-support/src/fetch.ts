@@ -3,10 +3,9 @@
 
 import { OrderManager } from './orderManager';
 import { customFetch, generateUniqueId, Logger } from './utils';
-import { ChannelState, OrderType } from './types';
+import { OrderType } from './types';
 import { ScoreType } from './scoreManager';
 import { Base64 } from 'js-base64';
-import { State } from './stateManager';
 
 interface SystemError extends Error {
   code?: string | undefined;
@@ -73,9 +72,9 @@ export function createFetch(
           method: 'post',
           body: init.body,
         });
-        let state: State | ChannelState | undefined, res: object;
+        let res: object;
         if (type === OrderType.flexPlan) {
-          [res, state] = orderManager.extractChannelState(
+          [res] = orderManager.extractChannelState(
             await _res.text(),
             new Headers(_res.headers),
             channelId
@@ -94,9 +93,7 @@ export function createFetch(
         }
 
         orderManager.updateScore(runner, ScoreType.SUCCESS);
-        if (type === OrderType.flexPlan && channelId && state) {
-          void orderManager.syncChannelState(channelId, state);
-        }
+
         return {
           status: _res.status,
           headers: _res.headers,

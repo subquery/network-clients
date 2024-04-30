@@ -150,10 +150,10 @@ export class OrderManager {
   private async refreshOrders() {
     try {
       const orders = await fetchOrders(this.authUrl, this.projectId, this.projectType, this.apikey);
-      if (orders.agreements) {
+      if (orders.agreements && orders.agreements.length > 0) {
         this._agreements = orders.agreements;
       }
-      if (orders.plans) {
+      if (orders.plans && orders.plans.length > 0) {
         this._plans = orders.plans;
       }
       this.healthy = true;
@@ -249,48 +249,47 @@ export class OrderManager {
     headers: Headers,
     channelId?: string
   ): [object, State | ChannelState, string] {
-    try {
-      switch (headers.get('X-Indexer-Response-Format')) {
-        case ResponseFormat.Wrapped: {
-          const body = (
-            typeof payload === 'string' ? JSON.parse(payload) : payload
-          ) as WrappedResponse;
-          return [
-            JSON.parse(Base64.decode(body.result)),
-            JSON.parse(Base64.decode(body.state)),
-            body.signature,
-          ];
-        }
-        case ResponseFormat.Inline: {
-          const _state = headers.get('X-Channel-State');
-          assert(_state, 'invalid response, missing channel state');
-          const _signature = headers.get('X-Indexer-Sig') || '';
-          assert(_signature, 'invalid response, missing channel signature');
-          let state: State | ChannelState;
-          try {
-            state = JSON.parse(Base64.decode(_state)) as ChannelState;
-          } catch (e) {
-            state = {
-              authorization: _state,
-            } as State;
-          }
-          return [typeof payload === 'string' ? JSON.parse(payload) : payload, state, _signature];
-        }
-        case undefined: {
-          const body = typeof payload === 'string' ? JSON.parse(payload) : payload;
-          const state = body.state;
-          return [body, state, ''];
-        }
-        default:
-          if (typeof payload === 'object' && (payload as any).code) {
-            throw new Error(JSON.stringify(payload));
-          } else {
-            throw new Error('invalid X-Indexer-Response-Format');
-          }
+    switch (headers.get('X-Indexer-Response-Format')) {
+      case ResponseFormat.Wrapped: {
+        const body = (
+          typeof payload === 'string' ? JSON.parse(payload) : payload
+        ) as WrappedResponse;
+        return [
+          JSON.parse(Base64.decode(body.result)),
+          JSON.parse(Base64.decode(body.state)),
+          body.signature,
+        ];
       }
-    } catch (e) {
-      if (channelId) this.stateManager.invalidateState(channelId);
-      throw e;
+      case ResponseFormat.Inline: {
+        const _state = headers.get('X-Channel-State');
+        assert(_state, 'invalid response, missing channel state');
+        let state: State | ChannelState;
+        try {
+          state = JSON.parse(Base64.decode(_state)) as ChannelState;
+        } catch (e) {
+          state = {
+            authorization: _state,
+          } as State;
+        }
+        if (channelId) this.syncChannelState(channelId, state);
+        const _signature = headers.get('X-Indexer-Sig') || '';
+        assert(_signature, 'invalid response, missing channel signature');
+        return [typeof payload === 'string' ? JSON.parse(payload) : payload, state, _signature];
+      }
+      case undefined: {
+        const body = typeof payload === 'string' ? JSON.parse(payload) : payload;
+        const state = body.state;
+        return [body, state, ''];
+      }
+      default:
+        if (
+          (typeof payload === 'object' && (payload as any).code) ||
+          (typeof payload === 'string' && JSON.parse(payload).code)
+        ) {
+          throw new Error(JSON.stringify(payload));
+        } else {
+          throw new Error('invalid X-Indexer-Response-Format');
+        }
     }
   }
 
@@ -338,6 +337,8 @@ export class OrderManager {
     if (!this.plans) return;
 
     const plans = await this.filterOrdersByRequestId(requestId, this.plans);
+    this.logger?.debug(`available plans count: ${plans.length}`);
+
     if (!this.healthy || !plans?.length) return;
 
     const plan = await this.selectRunner(plans);
