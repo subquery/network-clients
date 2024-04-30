@@ -76,7 +76,7 @@ export function createFetch(
         let state: State | ChannelState | undefined, res: object;
         if (type === OrderType.flexPlan) {
           [res, state] = orderManager.extractChannelState(
-            JSON.parse((await _res.text()) || '{}'),
+            await _res.text(),
             new Headers(_res.headers),
             channelId
           );

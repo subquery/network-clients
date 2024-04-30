@@ -249,44 +249,48 @@ export class OrderManager {
     headers: Headers,
     channelId?: string
   ): [object, State | ChannelState, string] {
-    switch (headers.get('X-Indexer-Response-Format')) {
-      case ResponseFormat.Wrapped: {
-        const body = (
-          typeof payload === 'string' ? JSON.parse(payload) : payload
-        ) as WrappedResponse;
-        return [
-          JSON.parse(Base64.decode(body.result)),
-          JSON.parse(Base64.decode(body.state)),
-          body.signature,
-        ];
-      }
-      case ResponseFormat.Inline: {
-        const _state = headers.get('X-Channel-State');
-        assert(_state, 'invalid response, missing channel state');
-        const _signature = headers.get('X-Indexer-Sig') || '';
-        // assert(_signature, 'invalid response, missing channel signature');
-        let state: State | ChannelState;
-        try {
-          state = JSON.parse(Base64.decode(_state)) as ChannelState;
-        } catch (e) {
-          state = {
-            authorization: _state,
-          } as State;
+    try {
+      switch (headers.get('X-Indexer-Response-Format')) {
+        case ResponseFormat.Wrapped: {
+          const body = (
+            typeof payload === 'string' ? JSON.parse(payload) : payload
+          ) as WrappedResponse;
+          return [
+            JSON.parse(Base64.decode(body.result)),
+            JSON.parse(Base64.decode(body.state)),
+            body.signature,
+          ];
         }
-        return [typeof payload === 'string' ? JSON.parse(payload) : payload, state, _signature];
-      }
-      case undefined: {
-        const body = typeof payload === 'string' ? JSON.parse(payload) : payload;
-        const state = body.state;
-        return [body, state, ''];
-      }
-      default:
-        if (typeof payload === 'object' && (payload as any).code) {
-          if (channelId) this.stateManager.invalidateState(channelId);
-          throw new Error(JSON.stringify(payload));
-        } else {
-          throw new Error('invalid X-Indexer-Response-Format');
+        case ResponseFormat.Inline: {
+          const _state = headers.get('X-Channel-State');
+          assert(_state, 'invalid response, missing channel state');
+          const _signature = headers.get('X-Indexer-Sig') || '';
+          assert(_signature, 'invalid response, missing channel signature');
+          let state: State | ChannelState;
+          try {
+            state = JSON.parse(Base64.decode(_state)) as ChannelState;
+          } catch (e) {
+            state = {
+              authorization: _state,
+            } as State;
+          }
+          return [typeof payload === 'string' ? JSON.parse(payload) : payload, state, _signature];
         }
+        case undefined: {
+          const body = typeof payload === 'string' ? JSON.parse(payload) : payload;
+          const state = body.state;
+          return [body, state, ''];
+        }
+        default:
+          if (typeof payload === 'object' && (payload as any).code) {
+            throw new Error(JSON.stringify(payload));
+          } else {
+            throw new Error('invalid X-Indexer-Response-Format');
+          }
+      }
+    } catch (e) {
+      if (channelId) this.stateManager.invalidateState(channelId);
+      throw e;
     }
   }
 
