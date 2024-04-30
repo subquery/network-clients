@@ -1,6 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { Base64 } from 'js-base64';
 import { ChannelAuth, ChannelState } from './types';
 import { Logger, POST } from './utils';
 import { computeMD5 } from './utils/hash';
@@ -99,27 +100,17 @@ export class StateManager {
     } else {
       // State
       if (this.getActiveType(state) === ActiveType.Active) {
-        // await this.setState(channelId, state);
         return;
       }
       try {
-        await this.setState(channelId, state);
-        const stateUrl = new URL('/channel/state', this.authUrl);
-        const res = await POST<{ authorization: string }>(
-          stateUrl.toString(),
-          {
-            apikey: this.apikey,
-            auth: state.authorization,
-            block: BlockType.Multiple,
-          },
-          {
-            auth: state.authorization,
-          }
-        );
+        const res = await this.requestState(channelId, BlockType.Multiple);
         if (res.authorization) {
-          await this.setState(channelId, {
-            authorization: res.authorization,
-          });
+          const convertResult = this.tryConvertJson(res.authorization);
+          if (!convertResult.success) {
+            await this.setState(channelId, {
+              authorization: res.authorization,
+            });
+          }
           this.logger?.debug(`syncChannelState [multiple] succeed`);
         } else {
           this.logger?.debug(`syncChannelState [multiple] failed: ${JSON.stringify(res)}`);
@@ -130,10 +121,14 @@ export class StateManager {
     }
   }
 
+  async invalidateState(channelId: string) {
+    await this.removeState(channelId);
+    this.logger?.debug(`invalidateState [multiple] for channel ${channelId}`);
+  }
+
   tryConvertJson(bs64Data: string): { success: boolean; data: any; error: any } {
-    const data = Buffer.from(bs64Data, 'base64');
     try {
-      const json = JSON.parse(data.toString('utf-8'));
+      const json = JSON.parse(Base64.decode(bs64Data));
       return {
         success: true,
         data: json,
@@ -142,14 +137,14 @@ export class StateManager {
     } catch {
       return {
         success: false,
-        data: data,
+        data: Base64.toUint8Array(bs64Data),
         error: undefined,
       };
     }
   }
 
   private getActiveType(state: State): ActiveType {
-    const data = Buffer.from(state.authorization, 'base64');
+    const data = Base64.toUint8Array(state.authorization);
     return data[0] as ActiveType;
   }
 

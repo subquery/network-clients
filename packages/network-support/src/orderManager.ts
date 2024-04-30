@@ -246,7 +246,8 @@ export class OrderManager {
 
   extractChannelState(
     payload: string | object,
-    headers: Headers
+    headers: Headers,
+    channelId?: string
   ): [object, State | ChannelState, string] {
     switch (headers.get('X-Indexer-Response-Format')) {
       case ResponseFormat.Wrapped: {
@@ -262,8 +263,8 @@ export class OrderManager {
       case ResponseFormat.Inline: {
         const _state = headers.get('X-Channel-State');
         assert(_state, 'invalid response, missing channel state');
-        const _signature = headers.get('X-Indexer-Sig');
-        assert(_signature, 'invalid response, missing channel signature');
+        const _signature = headers.get('X-Indexer-Sig') || '';
+        // assert(_signature, 'invalid response, missing channel signature');
         let state: State | ChannelState;
         try {
           state = JSON.parse(Base64.decode(_state)) as ChannelState;
@@ -281,6 +282,7 @@ export class OrderManager {
       }
       default:
         if (typeof payload === 'object' && (payload as any).code) {
+          if (channelId) this.stateManager.invalidateState(channelId);
           throw new Error(JSON.stringify(payload));
         } else {
           throw new Error('invalid X-Indexer-Response-Format');
