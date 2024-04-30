@@ -86,14 +86,14 @@ export class StateManager {
       const stateUrl = new URL('/channel/state', this.authUrl);
       try {
         const res = await POST<{ spent: string }>(stateUrl.toString(), {
-          ...state,
-          // channelId,
-          // auth: Base64.encode(JSON.stringify(state)),
-          // block: BlockType.Single,
+          // ...state,
+          channelId,
+          auth: Base64.encode(JSON.stringify(state)),
+          block: BlockType.Single,
           apikey: this.apikey,
         });
         if (res.spent) {
-          this.logger?.debug(`syncChannelState [single] succeed`);
+          // this.logger?.debug(`syncChannelState [single] succeed`);
         } else {
           this.logger?.debug(`syncChannelState [single] failed: ${JSON.stringify(res)}`);
         }
@@ -106,14 +106,14 @@ export class StateManager {
         return;
       }
       try {
-        // const stateUrl = new URL('/channel/state', this.authUrl);
-        // const res = await POST<{ authorization: string }>(stateUrl.toString(), {
-        //   channelId,
-        //   auth: state.authorization,
-        //   block: BlockType.Multiple,
-        //   apikey: this.apikey,
-        // });
-        const res = await this.requestState(channelId, BlockType.Multiple);
+        const stateUrl = new URL('/channel/state', this.authUrl);
+        const res = await POST<{ authorization: string }>(stateUrl.toString(), {
+          channelId,
+          auth: state.authorization,
+          block: BlockType.Multiple,
+          apikey: this.apikey,
+        });
+        // const res = await this.requestState(channelId, BlockType.Multiple);
         if (res.authorization) {
           const convertResult = this.tryConvertJson(res.authorization);
           if (!convertResult.success) {
