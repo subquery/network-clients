@@ -159,7 +159,11 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
       result = await fetchJson(url, JSON.stringify(request), (payload, resp) => {
         let res = payload;
         if (type === OrderType.flexPlan) {
-          [res, state] = this.orderManager.extractChannelState(payload, new Headers(resp.headers));
+          [res, state] = this.orderManager.extractChannelState(
+            payload,
+            new Headers(resp.headers),
+            channelId
+          );
         }
         if (typeof res === 'string') {
           res = JSON.parse(res);
