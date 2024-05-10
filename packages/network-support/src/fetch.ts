@@ -33,7 +33,8 @@ export class FetchError extends Error {
 export function createFetch(
   orderManager: OrderManager,
   maxRetries = 5,
-  logger?: Logger
+  logger?: Logger,
+  fetchFunc?: typeof fetch
 ): (init: RequestInit) => Promise<Response> {
   let retries = 0;
   let triedFallback = false;
@@ -64,14 +65,28 @@ export function createFetch(
       }
       const { url, headers, type, runner, channelId } = requestParams;
       try {
-        const _res = await customFetch(url, {
-          headers: {
+        logger?.debug(` ==== customFetch ==== ${url}`);
+        logger?.debug(
+          `body:${JSON.stringify(init.body)}, headers:${JSON.stringify({
             ...(init.headers || {}),
             ...headers,
+          })}`
+        );
+
+        const _res = await customFetch(
+          url,
+          {
+            headers: {
+              ...(init.headers || {}),
+              ...headers,
+            },
+            method: 'post',
+            body: init.body,
           },
-          method: 'post',
-          body: init.body,
-        });
+          fetchFunc
+        );
+        logger?.debug(` ==== customFetch Done ====`);
+
         let res: object;
         if (type === OrderType.flexPlan) {
           [res] = orderManager.extractChannelState(
