@@ -8,12 +8,15 @@ fragment DelegationFields on Delegation {
   amount
 }
 
-query GetIndexerDelegators($id: String!, $offset: Int, $first: Int = 10) {
+query GetIndexerDelegators($id: String!, $offset: Int, $eraId: Int = 0, $first: Int = 10) {
   indexer(id: $id) {
     delegations(
       offset: $offset
       first: $first
-      filter: { delegatorId: { notEqualTo: $id } }
+      filter: {
+        delegatorId: { notEqualTo: $id }
+        or: [{ exitEra: { isNull: true } }, { exitEra: { equalTo: $eraId } }]
+      }
       orderBy: AMOUNT_DESC
     ) {
       totalCount
