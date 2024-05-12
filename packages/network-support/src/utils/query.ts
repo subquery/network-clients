@@ -21,10 +21,10 @@ export const timeoutController = () => {
 export const customFetch = (
   input: URL | RequestInfo,
   init?: RequestInit | undefined,
-  fetchFunc?: typeof fetch
+  overrideFetch?: typeof fetch
 ): Promise<Response> => {
-  fetchFunc = fetchFunc ?? fetch;
-  return fetchFunc(input, {
+  overrideFetch = overrideFetch ?? fetch;
+  return overrideFetch(input, {
     signal: timeoutController().signal,
     ...init,
   });

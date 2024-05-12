@@ -34,7 +34,7 @@ export function createFetch(
   orderManager: OrderManager,
   maxRetries = 5,
   logger?: Logger,
-  fetchFunc?: typeof fetch
+  overrideFetch?: typeof fetch
 ): (init: RequestInit) => Promise<Response> {
   let retries = 0;
   let triedFallback = false;
@@ -83,7 +83,7 @@ export function createFetch(
             method: 'post',
             body: init.body,
           },
-          fetchFunc
+          overrideFetch
         );
         logger?.debug(` ==== customFetch Done ====`);
 
