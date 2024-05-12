@@ -154,17 +154,19 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
     const type = options?.type;
     const channelId = options?.channelId;
     let result;
-    let state: State | ChannelState | undefined;
     try {
       result = await fetchJson(url, JSON.stringify(request), (payload, resp) => {
         let res = payload;
         if (type === OrderType.flexPlan) {
-          [res, state] = this.orderManager.extractChannelState(payload, new Headers(resp.headers));
+          [res] = this.orderManager.extractChannelState(
+            payload,
+            new Headers(resp.headers),
+            channelId
+          );
         }
         if (typeof res === 'string') {
           res = JSON.parse(res);
         }
-
         // is Agreement
         if (type === OrderType.agreement) {
           res = {
@@ -172,7 +174,6 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
             ...JSON.parse(Base64.decode(res.result)),
           };
         }
-
         return getResult(res);
       }).then((result) => {
         this.emit('debug', {
@@ -191,9 +192,6 @@ export class SubqueryAuthedRpcProvider extends JsonRpcProvider {
         provider: this,
       });
       throw error;
-    }
-    if (type === OrderType.flexPlan && channelId && state) {
-      void this.orderManager.syncChannelState(channelId, state);
     }
     return result;
   }
