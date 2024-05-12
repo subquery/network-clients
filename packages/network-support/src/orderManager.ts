@@ -254,11 +254,9 @@ export class OrderManager {
         const body = (
           typeof payload === 'string' ? JSON.parse(payload) : payload
         ) as WrappedResponse;
-        return [
-          JSON.parse(Base64.decode(body.result)),
-          JSON.parse(Base64.decode(body.state)),
-          body.signature,
-        ];
+        const state = JSON.parse(Base64.decode(body.state)) as ChannelState;
+        if (channelId) this.syncChannelState(channelId, state);
+        return [JSON.parse(Base64.decode(body.result)), state, body.signature];
       }
       case ResponseFormat.Inline: {
         const _state = headers.get('X-Channel-State');
@@ -279,6 +277,7 @@ export class OrderManager {
       case undefined: {
         const body = typeof payload === 'string' ? JSON.parse(payload) : payload;
         const state = body.state;
+        if (channelId) this.syncChannelState(channelId, state);
         return [body, state, ''];
       }
       default:
