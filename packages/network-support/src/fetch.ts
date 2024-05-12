@@ -65,14 +65,6 @@ export function createFetch(
       }
       const { url, headers, type, runner, channelId } = requestParams;
       try {
-        logger?.debug(` ==== customFetch ==== ${url}`);
-        logger?.debug(
-          `body:${JSON.stringify(init.body)}, headers:${JSON.stringify({
-            ...(init.headers || {}),
-            ...headers,
-          })}`
-        );
-
         const _res = await customFetch(
           url,
           {
@@ -85,8 +77,6 @@ export function createFetch(
           },
           overrideFetch
         );
-        logger?.debug(` ==== customFetch Done ====`);
-
         let res: object;
         if (type === OrderType.flexPlan) {
           [res] = orderManager.extractChannelState(
