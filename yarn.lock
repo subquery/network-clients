@@ -3280,6 +3280,7 @@ __metadata:
     "@metamask/eth-sig-util": ^7.0.0
     "@types/node": 18
     cross-fetch: ^4.0.0
+    crypto-js: ^4.2.0
     js-base64: ^3.7.5
     jwt-decode: ^3.1.2
     lru-cache: ^10.0.1
@@ -3304,7 +3305,6 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^5.27.0
     "@typescript-eslint/parser": ^5.27.0
     axios: ^0.27.2
-    crypto-js: ^4.2.0
     ctix: ^1.5.4
     dotenv: ^16.0.3
     eslint: ^8.17.0
