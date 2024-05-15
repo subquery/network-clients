@@ -64,6 +64,8 @@ export function createFetch(
         }
       }
       const { url, headers, type, runner, channelId } = requestParams;
+      let httpVersion = 1;
+
       try {
         const _res = await customFetch(
           url,
@@ -77,6 +79,8 @@ export function createFetch(
           },
           overrideFetch
         );
+
+        httpVersion = Number(_res.headers.get('httpVersion')) || 1;
         let res: object;
         if (type === OrderType.flexPlan) {
           [res] = orderManager.extractChannelState(
@@ -97,7 +101,7 @@ export function createFetch(
           res = await _res.json();
         }
 
-        orderManager.updateScore(runner, ScoreType.SUCCESS);
+        orderManager.updateScore(runner, ScoreType.SUCCESS, httpVersion);
 
         return {
           status: _res.status,
@@ -110,7 +114,7 @@ export function createFetch(
       } catch (e) {
         logger?.warn(e);
         if (retries < maxRetries || (orderManager.fallbackServiceUrl && !triedFallback)) {
-          orderManager.updateScore(runner, ScoreType.RPC);
+          orderManager.updateScore(runner, ScoreType.RPC, httpVersion);
           retries += 1;
           return requestResult();
         }
