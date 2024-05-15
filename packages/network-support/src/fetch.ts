@@ -81,6 +81,7 @@ export function createFetch(
         );
 
         httpVersion = Number(_res.headers.get('httpVersion')) || 1;
+
         let res: object;
         if (type === OrderType.flexPlan) {
           [res] = orderManager.extractChannelState(
@@ -114,7 +115,7 @@ export function createFetch(
       } catch (e) {
         logger?.warn(e);
         if (retries < maxRetries || (orderManager.fallbackServiceUrl && !triedFallback)) {
-          orderManager.updateScore(runner, ScoreType.RPC, httpVersion);
+          orderManager.updateScore(runner, ScoreType.RPC);
           retries += 1;
           return requestResult();
         }
