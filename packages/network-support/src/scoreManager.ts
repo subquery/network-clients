@@ -97,7 +97,6 @@ export class ScoreManager {
 
   async getHttpVersion(runner: string) {
     const key = this.getCacheKey(runner);
-    this.logger.warn(await this.scoreStore.get<ScoreStoreType>(key));
     return (await this.scoreStore.get<ScoreStoreType>(key))?.httpVersion || 1;
   }
 
