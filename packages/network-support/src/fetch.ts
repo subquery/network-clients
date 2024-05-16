@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { OrderManager } from './orderManager';
-import { customFetch, generateUniqueId, Logger } from './utils';
+import { customFetch, generateUniqueId, Logger, safeJSONParse } from './utils';
 import { OrderType } from './types';
 import { ScoreType } from './scoreManager';
 import { Base64 } from 'js-base64';
@@ -115,7 +115,8 @@ export function createFetch(
         logger?.warn(e);
         errorMsg = (e as Error)?.message || '';
         if (retries < maxRetries || (orderManager.fallbackServiceUrl && !triedFallback)) {
-          if (!errorMsg.includes('Invalid request')) {
+          const errorObj = safeJSONParse(errorMsg);
+          if (!(errorObj?.code === 1140 && errorObj?.error === 'Invalid request')) {
             orderManager.updateScore(runner, ScoreType.RPC);
           }
           retries += 1;
