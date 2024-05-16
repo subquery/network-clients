@@ -1,6 +1,6 @@
 {
   "name": "@subql/network-support",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "main": "dist/index.js",
   "author": "SubQuery Pte Limited",
   "license": "Apache-2.0",

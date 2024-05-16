@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.5] 2024-05-16
+
 ## [1.2.4] 2024-05-13
 
 ## [1.2.3] 2024-05-12
@@ -35,7 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - It's a internal library.
 
-[unreleased]: https://github.com/subquery/network-support/compare/v1.2.4...HEAD
+[unreleased]: https://github.com/subquery/network-support/compare/v1.2.5...HEAD
+[1.2.5]: https://github.com/subquery/network-support/releases/tag/v1.2.5
 [1.2.4]: https://github.com/subquery/network-support/releases/tag/v1.2.4
 [1.2.3]: https://github.com/subquery/network-support/releases/tag/v1.2.3
 [1.2.2]: https://github.com/subquery/network-support/releases/tag/v1.2.2
