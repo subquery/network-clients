@@ -62,7 +62,7 @@ export function createFetch(
           logger?.warn(`fallback to ${orderManager.fallbackServiceUrl}`);
         } else {
           throw new FetchError(
-            `no available order. retries:${retries}${errorMsg ? ' error:' + errorMsg : ''}`,
+            `no available order. retries: ${retries}.${errorMsg ? ' error: ' + errorMsg : ''}`,
             'sqn'
           );
         }
@@ -122,7 +122,7 @@ export function createFetch(
           retries += 1;
           return requestResult();
         }
-        throw new FetchError(`reach max retries${errorMsg ? ' error:' + errorMsg : ''}`, 'SQN');
+        throw new FetchError(`reach max retries.${errorMsg ? ' error: ' + errorMsg : ''}`, 'SQN');
       }
     };
 
