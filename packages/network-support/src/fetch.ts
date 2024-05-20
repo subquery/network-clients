@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { OrderManager } from './orderManager';
-import { customFetch, generateUniqueId, Logger } from './utils';
+import { customFetch, generateUniqueId, Logger, safeJSONParse } from './utils';
 import { OrderType } from './types';
 import { ScoreType } from './scoreManager';
 import { Base64 } from 'js-base64';
@@ -38,6 +38,7 @@ export function createFetch(
 ): (init: RequestInit) => Promise<Response> {
   let retries = 0;
   let triedFallback = false;
+  let errorMsg = '';
   return async function fetch(init: RequestInit): Promise<Response> {
     const requestId = generateUniqueId();
     const requestResult: () => Promise<Response> = async () => {
@@ -60,7 +61,10 @@ export function createFetch(
           };
           logger?.warn(`fallback to ${orderManager.fallbackServiceUrl}`);
         } else {
-          throw new FetchError(`no available order`, 'sqn');
+          throw new FetchError(
+            `no available order. retries: ${retries}.${errorMsg ? ' error: ' + errorMsg : ''}`,
+            'sqn'
+          );
         }
       }
       const { url, headers, type, runner, channelId } = requestParams;
@@ -114,12 +118,16 @@ export function createFetch(
         } as unknown as Response;
       } catch (e) {
         logger?.warn(e);
+        errorMsg = (e as Error)?.message || '';
         if (retries < maxRetries || (orderManager.fallbackServiceUrl && !triedFallback)) {
-          orderManager.updateScore(runner, ScoreType.RPC);
+          const errorObj = safeJSONParse(errorMsg);
+          if (!(errorObj?.code === 1140 && errorObj?.error === 'Invalid request')) {
+            orderManager.updateScore(runner, ScoreType.RPC);
+          }
           retries += 1;
           return requestResult();
         }
-        throw new FetchError(`reach max retries`, 'SQN');
+        throw new FetchError(`reach max retries.${errorMsg ? ' error: ' + errorMsg : ''}`, 'SQN');
       }
     };
 
