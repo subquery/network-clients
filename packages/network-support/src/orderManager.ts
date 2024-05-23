@@ -292,6 +292,10 @@ export class OrderManager {
     }
   }
 
+  async getSignedState(channelId: string, block: BlockType): Promise<State> {
+    return this.stateManager.getSignedState(channelId, block);
+  }
+
   async syncChannelState(channelId: string, state: State | ChannelState): Promise<void> {
     await this.stateManager.syncState(channelId, state);
   }
@@ -314,8 +318,9 @@ export class OrderManager {
 
     if (!this.agreements) return;
 
+    this.logger?.debug(`available agreements: ${this.agreements.length}`);
     const agreements = await this.filterOrdersByRequestId(requestId, this.agreements);
-    this.logger?.debug(`available agreements count: ${agreements.length}`);
+    this.logger?.debug(`available agreements after filter: ${agreements.length}`);
 
     if (!this.healthy || !agreements.length) return;
 
@@ -335,8 +340,9 @@ export class OrderManager {
 
     if (!this.plans) return;
 
+    this.logger?.debug(`available plans: ${this.plans.length}`);
     const plans = await this.filterOrdersByRequestId(requestId, this.plans);
-    this.logger?.debug(`available plans count: ${plans.length}`);
+    this.logger?.debug(`available plans after filter: ${plans.length}`);
 
     if (!this.healthy || !plans?.length) return;
 
