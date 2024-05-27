@@ -17,7 +17,7 @@ import {
   ServiceAgreementOrder,
   WrappedResponse,
 } from './types';
-import { createStore, fetchOrders, isTokenExpired, IStore, Logger, POST } from './utils';
+import { createMemoryStore, fetchOrders, isTokenExpired, IStore, Logger, POST } from './utils';
 import { BlockType, State, StateManager } from './stateManager';
 import { Version } from './utils/version';
 
@@ -88,7 +88,7 @@ export class OrderManager {
     this.logger = logger;
     this.responseFormat = responseFormat;
 
-    this.selectedRunnersStore = createStore({ ttl: 600_000 });
+    this.selectedRunnersStore = createMemoryStore({ ttl: 600_000 });
     this.scoreManager = new ScoreManager({
       logger,
       projectId,

@@ -32,7 +32,7 @@ type ScoreStoreType = {
   lastFailed: number;
 };
 
-const HTTP2_BONUS = 2;
+const HTTP2_BONUS = 1.5;
 
 export class ScoreManager {
   private logger: Logger;
@@ -63,9 +63,16 @@ export class ScoreManager {
   }
 
   async getBonusScore(runner: string) {
-    return (
-      (await this.getScore(runner)) * ((await this.getHttpVersion(runner)) == 2 ? HTTP2_BONUS : 1)
-    );
+    const base = await this.getScore(runner);
+    const http2 = (await this.getHttpVersion(runner)) == 2 ? HTTP2_BONUS : 1;
+    const manual = await this.getManualScore(runner);
+    return base * http2 * manual;
+  }
+
+  async getManualScore(runner: string) {
+    const key = this.getManualScoreKey();
+    const manualScore = (await this.scoreStore.get<Record<string, number>>(key)) || {};
+    return manualScore[runner] || 1;
   }
 
   async updateScore(runner: string, errorType: ScoreType, httpVersion?: number) {
@@ -106,5 +113,9 @@ export class ScoreManager {
 
   private getCacheKey(runner: string): string {
     return `$query-score-${runner}-${this.projectId}`;
+  }
+
+  private getManualScoreKey(): string {
+    return `$query-score-manual`;
   }
 }

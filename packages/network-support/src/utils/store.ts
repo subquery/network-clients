@@ -80,6 +80,10 @@ export function createStore(options: Options): IStore {
   return new LRUCache(options);
 }
 
+export function createMemoryStore(options: Options): IStore {
+  return new LRUCache(options);
+}
+
 export function createLocalStorageStore(options: Options): IStore {
   if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
     return new LocalStorageCache(options);
