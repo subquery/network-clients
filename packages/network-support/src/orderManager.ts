@@ -175,6 +175,7 @@ export class OrderManager {
       const order = await this.getNextOrder(requestId);
       const headers: RequestParam['headers'] = {};
       if (order) {
+        headers['X-SQ-No-Resp-Sig'] = 'true';
         const { type, indexer: runner, url, id, metadata } = order;
         if (type === OrderType.agreement) {
           const channelId = id;

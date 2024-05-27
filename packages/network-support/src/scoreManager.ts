@@ -32,6 +32,8 @@ type ScoreStoreType = {
   lastFailed: number;
 };
 
+const HTTP2_BONUS = 2;
+
 export class ScoreManager {
   private logger: Logger;
   private scoreStore: IStore;
@@ -61,7 +63,9 @@ export class ScoreManager {
   }
 
   async getBonusScore(runner: string) {
-    return (await this.getScore(runner)) * ((await this.getHttpVersion(runner)) == 2 ? 10 : 1);
+    return (
+      (await this.getScore(runner)) * ((await this.getHttpVersion(runner)) == 2 ? HTTP2_BONUS : 1)
+    );
   }
 
   async updateScore(runner: string, errorType: ScoreType, httpVersion?: number) {
