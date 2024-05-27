@@ -116,6 +116,6 @@ export class ScoreManager {
   }
 
   private getManualScoreKey(): string {
-    return `$query-score-manual`;
+    return 'score:manual';
   }
 }
