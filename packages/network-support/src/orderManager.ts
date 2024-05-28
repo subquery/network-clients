@@ -195,7 +195,9 @@ export class OrderManager {
           const channelId = id;
           headers['X-Indexer-Response-Format'] = this.responseFormat ?? 'inline';
           try {
-            const higherVersion = Version.gte(metadata.proxyVersion, 'v2.1.0');
+            const higherVersion = metadata?.proxyVersion
+              ? Version.gte(metadata.proxyVersion, 'v2.1.0')
+              : false;
             const signedState = await this.stateManager.getSignedState(
               channelId,
               higherVersion ? BlockType.Multiple : BlockType.Single
