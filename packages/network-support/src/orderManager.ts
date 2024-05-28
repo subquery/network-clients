@@ -274,7 +274,7 @@ export class OrderManager {
         }
         if (channelId) this.syncChannelState(channelId, state);
         const _signature = headers.get('X-Indexer-Sig') || '';
-        assert(_signature, 'invalid response, missing channel signature');
+        // assert(_signature, 'invalid response, missing channel signature');
         return [typeof payload === 'string' ? JSON.parse(payload) : payload, state, _signature];
       }
       case undefined: {
