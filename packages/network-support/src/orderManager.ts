@@ -358,7 +358,9 @@ export class OrderManager {
 
   private async selectRunner(orders: Order[]): Promise<Order | undefined> {
     if (!orders.length) return;
-    const scores = await Promise.all(orders.map((o) => this.scoreManager.getBonusScore(o.indexer)));
+    const scores = await Promise.all(
+      orders.map((o) => this.scoreManager.getAdjustedScore(o.indexer))
+    );
     const random = Math.random() * scores.reduce((a, b) => a + b, 0);
     this.logger?.debug(`selectRunner: indexers: ${orders.map((o) => o.indexer)}`);
     this.logger?.debug(`selectRunner: scores: ${scores}`);
@@ -409,7 +411,7 @@ export class OrderManager {
   }
 
   async getScore(runner: string) {
-    return this.scoreManager.getScore(runner);
+    return this.scoreManager.getAdjustedScore(runner);
   }
 
   async updateScore(runner: string, errorType: ScoreType, httpVersion?: number) {

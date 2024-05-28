@@ -1,8 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Logger } from './utils';
-import { IStore, createStore } from './utils/store';
+import { Logger, IStore, createStore } from './utils';
 
 type Options = {
   logger: Logger;
@@ -34,6 +33,19 @@ type ScoreStoreType = {
 
 const HTTP2_BONUS = 1.5;
 
+const DEFAULT_SCORE = {
+  score: 100,
+  httpVersion: 2,
+  lastUpdate: 0,
+  lastFailed: 0,
+};
+
+enum CurveType {
+  LINEAR = 1,
+  QUADRATIC = 2,
+  CUBIC = 3,
+}
+
 export class ScoreManager {
   private logger: Logger;
   private scoreStore: IStore;
@@ -47,29 +59,25 @@ export class ScoreManager {
     this.projectId = options.projectId;
   }
 
-  async getScore(runner: string) {
+  private async getScore(runner: string): Promise<ScoreStoreType> {
     const key = this.getCacheKey(runner);
-    const score = (await this.scoreStore.get<ScoreStoreType>(key)) || {
-      score: 100,
-      httpVersion: 1,
-      lastUpdate: 0,
-      lastFailed: 0,
-    };
-    return this.calculatedScore(score);
+    const score = await this.scoreStore.get<ScoreStoreType>(key);
+    return score ?? DEFAULT_SCORE;
   }
 
-  private calculatedScore(score: ScoreStoreType) {
+  getAvailabilityScore(score: ScoreStoreType): number {
     return Math.min(score.score + Math.floor((Date.now() - score.lastUpdate) / 600_000), 100);
   }
 
-  async getBonusScore(runner: string) {
-    const base = await this.getScore(runner);
-    const http2 = (await this.getHttpVersion(runner)) == 2 ? HTTP2_BONUS : 1;
-    const manual = await this.getManualScore(runner);
+  async getAdjustedScore(runner: string) {
+    const score = await this.getScore(runner);
+    const base = this.getAvailabilityScore(score);
+    const http2 = this.getHttpVersionWeight(score);
+    const manual = await this.getManualScoreWeight(runner);
     return base * http2 * manual;
   }
 
-  async getManualScore(runner: string) {
+  async getManualScoreWeight(runner: string) {
     const key = this.getManualScoreKey();
     const manualScore = (await this.scoreStore.get<Record<string, number>>(key)) || {};
     return manualScore[runner] || 1;
@@ -82,12 +90,7 @@ export class ScoreManager {
     }
 
     const key = this.getCacheKey(runner);
-    const score = (await this.scoreStore.get<ScoreStoreType>(key)) || {
-      score: 100,
-      httpVersion,
-      lastUpdate: 0,
-      lastFailed: 0,
-    };
+    const score = await this.getScore(runner);
 
     if (errorType !== ScoreType.SUCCESS) {
       this.logger?.debug(`updateScore type: ${runner} ${errorType}`);
@@ -106,9 +109,8 @@ export class ScoreManager {
     this.scoreStore.set(key, score);
   }
 
-  async getHttpVersion(runner: string) {
-    const key = this.getCacheKey(runner);
-    return (await this.scoreStore.get<ScoreStoreType>(key))?.httpVersion || 1;
+  private getHttpVersionWeight(score: ScoreStoreType) {
+    return score.httpVersion == 2 ? HTTP2_BONUS : 1;
   }
 
   private getCacheKey(runner: string): string {
@@ -117,5 +119,35 @@ export class ScoreManager {
 
   private getManualScoreKey(): string {
     return 'score:manual';
+  }
+
+  private scoreMap(
+    input: number,
+    inputRange: [number, number],
+    outputRange: [number, number],
+    curve: CurveType = CurveType.LINEAR
+  ) {
+    const [inputMin, inputMax] = inputRange;
+    const [outputMin, outputMax] = outputRange;
+    if (input < inputMin) {
+      return outputMin;
+    }
+    if (input > inputMax) {
+      return outputMax;
+    }
+    const inputNormalized = (input - inputMin) / (inputMax - inputMin);
+    let outputNormalized = 0;
+    switch (curve) {
+      case CurveType.LINEAR:
+        outputNormalized = inputNormalized;
+        break;
+      case CurveType.QUADRATIC:
+        outputNormalized = Math.pow(inputNormalized, 2);
+        break;
+      case CurveType.CUBIC:
+        outputNormalized = Math.pow(inputNormalized, 3);
+        break;
+    }
+    return outputNormalized * (outputMax - outputMin) + outputMin;
   }
 }
