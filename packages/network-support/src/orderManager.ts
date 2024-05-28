@@ -412,7 +412,10 @@ export class OrderManager {
     this.agreements[index].token = token;
   }
 
-  async getScore(runner: string, proxyVersion?: string) {
+  async getScore(runner: string) {
+    const plans = this._plans || [];
+    const plan = plans.find((p) => p.indexer === runner);
+    const proxyVersion = plan?.metadata?.proxyVersion || '';
     return this.scoreManager.getAdjustedScore(runner, proxyVersion);
   }
 

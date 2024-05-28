@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Logger, IStore, createStore } from './utils';
-import { Order } from './types';
 import { Version } from './utils/version';
 
 type Options = {
