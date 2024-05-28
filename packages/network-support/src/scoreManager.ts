@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Logger, IStore, createStore } from './utils';
+import { Version } from './utils/version';
 
 type Options = {
   logger: Logger;
@@ -15,6 +16,7 @@ export enum ScoreType {
   NETWORK = 'network',
   RPC = 'RPC',
   SUCCESS = 'success',
+  FATAL = 'fatal',
 }
 
 const scoresDelta = {
@@ -22,6 +24,7 @@ const scoresDelta = {
   [ScoreType.NETWORK]: -30,
   [ScoreType.RPC]: -10,
   [ScoreType.SUCCESS]: 50,
+  [ScoreType.FATAL]: -100,
 };
 
 type ScoreStoreType = {
@@ -31,7 +34,10 @@ type ScoreStoreType = {
   lastFailed: number;
 };
 
-const HTTP2_BONUS = 1.5;
+const WEIGHT = {
+  http2: 1.5,
+  multiple: 2,
+};
 
 const DEFAULT_SCORE = {
   score: 100,
@@ -69,18 +75,25 @@ export class ScoreManager {
     return Math.min(score.score + Math.floor((Date.now() - score.lastUpdate) / 600_000), 100);
   }
 
-  async getAdjustedScore(runner: string) {
+  async getAdjustedScore(runner: string, proxyVersion?: string) {
+    proxyVersion = proxyVersion || '';
     const score = await this.getScore(runner);
     const base = this.getAvailabilityScore(score);
     const http2 = this.getHttpVersionWeight(score);
     const manual = await this.getManualScoreWeight(runner);
-    return base * http2 * manual;
+    const multiple = this.getMultipleAuthScoreWeight(proxyVersion);
+    return base * http2 * manual * multiple;
   }
 
   async getManualScoreWeight(runner: string) {
     const key = this.getManualScoreKey();
     const manualScore = (await this.scoreStore.get<Record<string, number>>(key)) || {};
     return manualScore[runner] || 1;
+  }
+
+  getMultipleAuthScoreWeight(proxyVersion: string) {
+    const higherVersion = proxyVersion ? Version.gte(proxyVersion, 'v2.1.0') : false;
+    return higherVersion ? WEIGHT.multiple : 1;
   }
 
   async updateScore(runner: string, errorType: ScoreType, httpVersion?: number) {
@@ -110,7 +123,7 @@ export class ScoreManager {
   }
 
   private getHttpVersionWeight(score: ScoreStoreType) {
-    return score.httpVersion == 2 ? HTTP2_BONUS : 1;
+    return score.httpVersion == 2 ? WEIGHT.http2 : 1;
   }
 
   private getCacheKey(runner: string): string {
