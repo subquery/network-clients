@@ -121,8 +121,8 @@ export function createFetch(
         errorMsg = (e as Error)?.message || '';
         if (retries < maxRetries || (orderManager.fallbackServiceUrl && !triedFallback)) {
           const errorObj = safeJSONParse(errorMsg);
-          if (!(errorObj?.code === 1140 && errorObj?.error === 'Invalid request')) {
-            orderManager.updateScore(runner, ScoreType.RPC);
+          if (errorObj?.code === 1056 && errorObj?.error === 'Query overflow') {
+            orderManager.updateScore(runner, ScoreType.FATAL);
           }
           retries += 1;
           return requestResult();

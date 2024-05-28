@@ -16,6 +16,7 @@ export enum ScoreType {
   NETWORK = 'network',
   RPC = 'RPC',
   SUCCESS = 'success',
+  FATAL = 'fatal',
 }
 
 const scoresDelta = {
@@ -23,6 +24,7 @@ const scoresDelta = {
   [ScoreType.NETWORK]: -30,
   [ScoreType.RPC]: -10,
   [ScoreType.SUCCESS]: 50,
+  [ScoreType.FATAL]: -100,
 };
 
 type ScoreStoreType = {
