@@ -38,15 +38,22 @@ export class LocalStorageCache implements IStore {
   }
 
   async set<T>(key: string, value: T): Promise<void> {
-    const data = {
-      value,
-      expiry: this.ttl ? Date.now() + this.ttl : undefined,
-    };
-    localStorage.setItem(key, JSON.stringify(data));
+    const expiry = this.ttl ? Date.now() + this.ttl : undefined;
+    const data = { value, expiry };
+
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+    } catch {
+      await this.cleanExpiredLocalStorage();
+    }
   }
 
   async remove(key: string): Promise<void> {
     localStorage.removeItem(key);
+  }
+
+  async cleanExpiredLocalStorage(): Promise<void> {
+    await Promise.all(Object.entries(localStorage).map(async ([key]) => this.get(key)));
   }
 }
 
