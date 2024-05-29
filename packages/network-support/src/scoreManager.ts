@@ -39,6 +39,8 @@ const WEIGHT = {
   multiple: 2,
 };
 
+const INDEX_HEIGHT_KEY = 'height';
+
 const DEFAULT_SCORE = {
   score: 100,
   httpVersion: 2,
@@ -82,7 +84,8 @@ export class ScoreManager {
     const http2 = this.getHttpVersionWeight(score);
     const manual = await this.getManualScoreWeight(runner);
     const multiple = this.getMultipleAuthScoreWeight(proxyVersion);
-    return base * http2 * manual * multiple;
+    const block = await this.getBlockScoreWeight(runner);
+    return base * http2 * manual * multiple * block;
   }
 
   async getManualScoreWeight(runner: string) {
@@ -94,6 +97,12 @@ export class ScoreManager {
   getMultipleAuthScoreWeight(proxyVersion: string) {
     const higherVersion = proxyVersion ? Version.gte(proxyVersion, 'v2.1.0') : false;
     return higherVersion ? WEIGHT.multiple : 1;
+  }
+
+  async getBlockScoreWeight(runner: string) {
+    const blockWeight =
+      (await this.scoreStore.get<{ [key: string]: number }>(INDEX_HEIGHT_KEY)) || {};
+    return blockWeight[runner] || 1;
   }
 
   async updateScore(runner: string, errorType: ScoreType, httpVersion?: number) {
