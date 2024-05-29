@@ -3,6 +3,7 @@
 
 import { Logger, IStore, createStore } from './utils';
 import { Version } from './utils/version';
+import { IndexerHeight } from './types';
 
 type Options = {
   logger: Logger;
@@ -38,8 +39,7 @@ const WEIGHT = {
   http2: 1.5,
   multiple: 2,
 };
-
-const INDEX_HEIGHT_KEY = 'height';
+const BLOCK_WEIGHT_OUTPUT_RANGE: [number, number] = [0.2, 1];
 
 const DEFAULT_SCORE = {
   score: 100,
@@ -77,14 +77,17 @@ export class ScoreManager {
     return Math.min(score.score + Math.floor((Date.now() - score.lastUpdate) / 600_000), 100);
   }
 
-  async getAdjustedScore(runner: string, proxyVersion?: string) {
+  async getAdjustedScore(runner: string, proxyVersion?: string, deploymentId?: string) {
     proxyVersion = proxyVersion || '';
+    deploymentId = deploymentId || '';
     const score = await this.getScore(runner);
     const base = this.getAvailabilityScore(score);
     const http2 = this.getHttpVersionWeight(score);
     const manual = await this.getManualScoreWeight(runner);
     const multiple = this.getMultipleAuthScoreWeight(proxyVersion);
-    const block = await this.getBlockScoreWeight(runner);
+    const block = await this.getBlockScoreWeight(runner, deploymentId);
+
+    console.log(runner, base, http2, manual, multiple, block);
     return base * http2 * manual * multiple * block;
   }
 
@@ -99,10 +102,10 @@ export class ScoreManager {
     return higherVersion ? WEIGHT.multiple : 1;
   }
 
-  async getBlockScoreWeight(runner: string) {
-    const blockWeight =
-      (await this.scoreStore.get<{ [key: string]: number }>(INDEX_HEIGHT_KEY)) || {};
-    return blockWeight[runner] || 1;
+  async getBlockScoreWeight(runner: string, deploymentId: string) {
+    const key = `${this.getBlockScoreKey()}:${runner}_${deploymentId}}`;
+    const blockWeight = await this.scoreStore.get<number>(key);
+    return blockWeight || 1;
   }
 
   async updateScore(runner: string, errorType: ScoreType, httpVersion?: number) {
@@ -131,6 +134,27 @@ export class ScoreManager {
     this.scoreStore.set(key, score);
   }
 
+  async updateBlockScoreWeight(deploymentId: string, iheights: IndexerHeight[]) {
+    iheights = iheights || [];
+    let min = iheights[0]?.height || 0;
+    let max = iheights[0]?.height || 0;
+    for (let i = 0; i < iheights.length; i++) {
+      if (iheights[i].height > max) {
+        max = iheights[i].height;
+      } else if (iheights[i].height < min) {
+        min = iheights[i].height;
+      }
+    }
+    console.log(deploymentId, min, max);
+    const key = this.getBlockScoreKey();
+    for (const { indexer, height } of iheights) {
+      let weight = this.scoreMap(height, [min, max], BLOCK_WEIGHT_OUTPUT_RANGE, CurveType.LINEAR);
+      weight = Math.floor(weight * 10) / 10;
+      console.log('update redis, ', indexer, deploymentId, weight);
+      await this.scoreStore.set(`${key}:${indexer}_${deploymentId}`, weight);
+    }
+  }
+
   private getHttpVersionWeight(score: ScoreStoreType) {
     return score.httpVersion == 2 ? WEIGHT.http2 : 1;
   }
@@ -141,6 +165,10 @@ export class ScoreManager {
 
   private getManualScoreKey(): string {
     return 'score:manual';
+  }
+
+  private getBlockScoreKey(): string {
+    return 'score:block';
   }
 
   private scoreMap(
@@ -157,7 +185,9 @@ export class ScoreManager {
     if (input > inputMax) {
       return outputMax;
     }
-    const inputNormalized = (input - inputMin) / (inputMax - inputMin);
+
+    const inputNormalized =
+      inputMax - inputMin === 0 ? 1 : (input - inputMin) / (inputMax - inputMin);
     let outputNormalized = 0;
     switch (curve) {
       case CurveType.LINEAR:

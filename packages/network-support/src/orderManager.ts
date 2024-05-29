@@ -16,6 +16,7 @@ import {
   RunnerSelector,
   ServiceAgreementOrder,
   WrappedResponse,
+  IndexerHeight,
 } from './types';
 import { createMemoryStore, fetchOrders, isTokenExpired, IStore, Logger, POST } from './utils';
 import { BlockType, State, StateManager } from './stateManager';
@@ -38,6 +39,7 @@ type Options = {
   stateStore?: IStore;
   selector?: RunnerSelector;
   timeout?: number;
+  dummy?: boolean;
 };
 
 function tokenToAuthHeader(token: string) {
@@ -80,6 +82,7 @@ export class OrderManager {
       selector,
       responseFormat,
       timeout = 60000,
+      dummy,
     } = this.options;
     this.authUrl = authUrl;
     this.apikey = apikey;
@@ -103,6 +106,10 @@ export class OrderManager {
       stateStore,
     });
 
+    if (dummy) {
+      this._init = Promise.resolve();
+      return;
+    }
     this._init = this.refreshOrders();
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this.timer = setInterval(() => this.refreshOrders(), this.interval);
@@ -416,11 +423,15 @@ export class OrderManager {
     const plans = this._plans || [];
     const plan = plans.find((p) => p.indexer === runner);
     const proxyVersion = plan?.metadata?.proxyVersion || '';
-    return this.scoreManager.getAdjustedScore(runner, proxyVersion);
+    return this.scoreManager.getAdjustedScore(runner, proxyVersion, this.projectId);
   }
 
   async updateScore(runner: string, errorType: ScoreType, httpVersion?: number) {
     await this.scoreManager.updateScore(runner, errorType, httpVersion);
+  }
+
+  async updateBlockScoreWeight(deploymentId: string, iheights: IndexerHeight[]) {
+    await this.scoreManager.updateBlockScoreWeight(deploymentId, iheights);
   }
 
   cleanup() {
