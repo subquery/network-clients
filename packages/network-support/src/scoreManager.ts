@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Logger, IStore, createStore } from './utils';
+import { getBlockScoreWeight } from './utils/score';
 import { Version } from './utils/version';
 
 type Options = {
@@ -77,7 +78,7 @@ export class ScoreManager {
     const http2 = this.getHttpVersionWeight(score);
     const manual = await this.getManualScoreWeight(runner);
     const multiple = this.getMultipleAuthScoreWeight(proxyVersion);
-    const block = await this.getBlockScoreWeight(runner, deploymentId);
+    const block = await getBlockScoreWeight(this.scoreStore, runner, deploymentId);
     return base * http2 * manual * multiple * block;
   }
 
@@ -90,12 +91,6 @@ export class ScoreManager {
   getMultipleAuthScoreWeight(proxyVersion: string) {
     const higherVersion = proxyVersion ? Version.gte(proxyVersion, 'v2.1.0') : false;
     return higherVersion ? WEIGHT.multiple : 1;
-  }
-
-  async getBlockScoreWeight(runner: string, deploymentId: string) {
-    const key = `${this.getBlockScoreKey()}:${runner}_${deploymentId}`;
-    const blockWeight = await this.scoreStore.get<number>(key);
-    return blockWeight || 1;
   }
 
   async updateScore(runner: string, errorType: ScoreType, httpVersion?: number) {
@@ -135,12 +130,4 @@ export class ScoreManager {
   private getManualScoreKey(): string {
     return 'score:manual';
   }
-
-  private getBlockScoreKey(): string {
-    return 'score:block';
-  }
-}
-
-export async function setStoreKV(scoreStore: IStore, key: string, value: any): Promise<void> {
-  await scoreStore.set(key, value);
 }

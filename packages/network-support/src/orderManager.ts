@@ -38,7 +38,6 @@ type Options = {
   stateStore?: IStore;
   selector?: RunnerSelector;
   timeout?: number;
-  dummy?: boolean;
 };
 
 function tokenToAuthHeader(token: string) {
