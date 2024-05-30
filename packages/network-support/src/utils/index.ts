@@ -7,3 +7,4 @@ export * from './store';
 export * from './auth';
 export * from './uniqueId';
 export * from './common';
+export * from './score';

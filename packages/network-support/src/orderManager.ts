@@ -102,7 +102,6 @@ export class OrderManager {
       apikey,
       stateStore,
     });
-
     this._init = this.refreshOrders();
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this.timer = setInterval(() => this.refreshOrders(), this.interval);

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Logger, IStore, createStore } from './utils';
+import { getBlockScoreWeight } from './utils/score';
 import { Version } from './utils/version';
 
 type Options = {
@@ -46,12 +47,6 @@ const DEFAULT_SCORE = {
   lastFailed: 0,
 };
 
-enum CurveType {
-  LINEAR = 1,
-  QUADRATIC = 2,
-  CUBIC = 3,
-}
-
 export class ScoreManager {
   private logger: Logger;
   private scoreStore: IStore;
@@ -82,7 +77,8 @@ export class ScoreManager {
     const http2 = this.getHttpVersionWeight(score);
     const manual = await this.getManualScoreWeight(runner);
     const multiple = this.getMultipleAuthScoreWeight(proxyVersion);
-    return base * http2 * manual * multiple;
+    const block = await getBlockScoreWeight(this.scoreStore, runner, this.projectId);
+    return base * http2 * manual * multiple * block;
   }
 
   async getManualScoreWeight(runner: string) {
@@ -132,35 +128,5 @@ export class ScoreManager {
 
   private getManualScoreKey(): string {
     return 'score:manual';
-  }
-
-  private scoreMap(
-    input: number,
-    inputRange: [number, number],
-    outputRange: [number, number],
-    curve: CurveType = CurveType.LINEAR
-  ) {
-    const [inputMin, inputMax] = inputRange;
-    const [outputMin, outputMax] = outputRange;
-    if (input < inputMin) {
-      return outputMin;
-    }
-    if (input > inputMax) {
-      return outputMax;
-    }
-    const inputNormalized = (input - inputMin) / (inputMax - inputMin);
-    let outputNormalized = 0;
-    switch (curve) {
-      case CurveType.LINEAR:
-        outputNormalized = inputNormalized;
-        break;
-      case CurveType.QUADRATIC:
-        outputNormalized = Math.pow(inputNormalized, 2);
-        break;
-      case CurveType.CUBIC:
-        outputNormalized = Math.pow(inputNormalized, 3);
-        break;
-    }
-    return outputNormalized * (outputMax - outputMin) + outputMin;
   }
 }
