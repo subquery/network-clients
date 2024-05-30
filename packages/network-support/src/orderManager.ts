@@ -360,9 +360,7 @@ export class OrderManager {
   private async selectRunner(orders: Order[]): Promise<Order | undefined> {
     if (!orders.length) return;
     const scores = await Promise.all(
-      orders.map((o) =>
-        this.scoreManager.getAdjustedScore(o.indexer, o.metadata?.proxyVersion, this.projectId)
-      )
+      orders.map((o) => this.scoreManager.getAdjustedScore(o.indexer, o.metadata?.proxyVersion))
     );
     const random = Math.random() * scores.reduce((a, b) => a + b, 0);
     this.logger?.debug(`selectRunner: indexers: ${orders.map((o) => o.indexer)}`);
@@ -417,7 +415,7 @@ export class OrderManager {
     const plans = this._plans || [];
     const plan = plans.find((p) => p.indexer === runner);
     const proxyVersion = plan?.metadata?.proxyVersion || '';
-    return this.scoreManager.getAdjustedScore(runner, proxyVersion, this.projectId);
+    return this.scoreManager.getAdjustedScore(runner, proxyVersion);
   }
 
   async updateScore(runner: string, errorType: ScoreType, httpVersion?: number) {

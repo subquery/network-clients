@@ -70,15 +70,14 @@ export class ScoreManager {
     return Math.min(score.score + Math.floor((Date.now() - score.lastUpdate) / 600_000), 100);
   }
 
-  async getAdjustedScore(runner: string, proxyVersion?: string, deploymentId?: string) {
+  async getAdjustedScore(runner: string, proxyVersion?: string) {
     proxyVersion = proxyVersion || '';
-    deploymentId = deploymentId || '';
     const score = await this.getScore(runner);
     const base = this.getAvailabilityScore(score);
     const http2 = this.getHttpVersionWeight(score);
     const manual = await this.getManualScoreWeight(runner);
     const multiple = this.getMultipleAuthScoreWeight(proxyVersion);
-    const block = await getBlockScoreWeight(this.scoreStore, runner, deploymentId);
+    const block = await getBlockScoreWeight(this.scoreStore, runner, this.projectId);
     return base * http2 * manual * multiple * block;
   }
 
