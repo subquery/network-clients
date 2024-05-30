@@ -75,8 +75,3 @@ export interface RunnerSelector {
   agreements?: string[];
   channelIds?: string[];
 }
-
-export type IndexerHeight = {
-  indexer: string;
-  height: number;
-};

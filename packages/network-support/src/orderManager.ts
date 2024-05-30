@@ -16,7 +16,6 @@ import {
   RunnerSelector,
   ServiceAgreementOrder,
   WrappedResponse,
-  IndexerHeight,
 } from './types';
 import { createMemoryStore, fetchOrders, isTokenExpired, IStore, Logger, POST } from './utils';
 import { BlockType, State, StateManager } from './stateManager';
@@ -82,7 +81,6 @@ export class OrderManager {
       selector,
       responseFormat,
       timeout = 60000,
-      dummy,
     } = this.options;
     this.authUrl = authUrl;
     this.apikey = apikey;
@@ -105,11 +103,6 @@ export class OrderManager {
       apikey,
       stateStore,
     });
-
-    if (dummy) {
-      this._init = Promise.resolve();
-      return;
-    }
     this._init = this.refreshOrders();
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this.timer = setInterval(() => this.refreshOrders(), this.interval);
@@ -430,10 +423,6 @@ export class OrderManager {
 
   async updateScore(runner: string, errorType: ScoreType, httpVersion?: number) {
     await this.scoreManager.updateScore(runner, errorType, httpVersion);
-  }
-
-  async updateBlockScoreWeight(deploymentId: string, iheights: IndexerHeight[]) {
-    await this.scoreManager.updateBlockScoreWeight(deploymentId, iheights);
   }
 
   cleanup() {

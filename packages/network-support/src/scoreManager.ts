@@ -3,7 +3,6 @@
 
 import { Logger, IStore, createStore } from './utils';
 import { Version } from './utils/version';
-import { IndexerHeight } from './types';
 
 type Options = {
   logger: Logger;
@@ -39,7 +38,6 @@ const WEIGHT = {
   http2: 1.5,
   multiple: 2,
 };
-const BLOCK_WEIGHT_OUTPUT_RANGE: [number, number] = [0.2, 1];
 
 const DEFAULT_SCORE = {
   score: 100,
@@ -47,12 +45,6 @@ const DEFAULT_SCORE = {
   lastUpdate: 0,
   lastFailed: 0,
 };
-
-enum CurveType {
-  LINEAR = 1,
-  QUADRATIC = 2,
-  CUBIC = 3,
-}
 
 export class ScoreManager {
   private logger: Logger;
@@ -132,25 +124,6 @@ export class ScoreManager {
     this.scoreStore.set(key, score);
   }
 
-  async updateBlockScoreWeight(deploymentId: string, iheights: IndexerHeight[]) {
-    iheights = iheights || [];
-    let min = iheights[0]?.height || 0;
-    let max = iheights[0]?.height || 0;
-    for (let i = 0; i < iheights.length; i++) {
-      if (iheights[i].height > max) {
-        max = iheights[i].height;
-      } else if (iheights[i].height < min) {
-        min = iheights[i].height;
-      }
-    }
-    const key = this.getBlockScoreKey();
-    for (const { indexer, height } of iheights) {
-      let weight = this.scoreMap(height, [min, max], BLOCK_WEIGHT_OUTPUT_RANGE, CurveType.LINEAR);
-      weight = Math.floor(weight * 10) / 10;
-      await this.scoreStore.set(`${key}:${indexer}_${deploymentId}`, weight);
-    }
-  }
-
   private getHttpVersionWeight(score: ScoreStoreType) {
     return score.httpVersion == 2 ? WEIGHT.http2 : 1;
   }
@@ -166,36 +139,8 @@ export class ScoreManager {
   private getBlockScoreKey(): string {
     return 'score:block';
   }
+}
 
-  private scoreMap(
-    input: number,
-    inputRange: [number, number],
-    outputRange: [number, number],
-    curve: CurveType = CurveType.LINEAR
-  ) {
-    const [inputMin, inputMax] = inputRange;
-    const [outputMin, outputMax] = outputRange;
-    if (input < inputMin) {
-      return outputMin;
-    }
-    if (input > inputMax) {
-      return outputMax;
-    }
-
-    const inputNormalized =
-      inputMax - inputMin === 0 ? 1 : (input - inputMin) / (inputMax - inputMin);
-    let outputNormalized = 0;
-    switch (curve) {
-      case CurveType.LINEAR:
-        outputNormalized = inputNormalized;
-        break;
-      case CurveType.QUADRATIC:
-        outputNormalized = Math.pow(inputNormalized, 2);
-        break;
-      case CurveType.CUBIC:
-        outputNormalized = Math.pow(inputNormalized, 3);
-        break;
-    }
-    return outputNormalized * (outputMax - outputMin) + outputMin;
-  }
+export async function setStoreKV(scoreStore: IStore, key: string, value: any): Promise<void> {
+  await scoreStore.set(key, value);
 }
