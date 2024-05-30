@@ -17,7 +17,15 @@ import {
   ServiceAgreementOrder,
   WrappedResponse,
 } from './types';
-import { createMemoryStore, fetchOrders, isTokenExpired, IStore, Logger, POST } from './utils';
+import {
+  createMemoryStore,
+  fetchOrders,
+  isTokenExpired,
+  IStore,
+  Logger,
+  POST,
+  safeJSONParse,
+} from './utils';
 import { BlockType, State, StateManager } from './stateManager';
 import { Version } from './utils/version';
 
@@ -38,6 +46,11 @@ type Options = {
   stateStore?: IStore;
   selector?: RunnerSelector;
   timeout?: number;
+};
+
+type ErrorJsonResponse = {
+  code: number;
+  error: string;
 };
 
 function tokenToAuthHeader(token: string) {
@@ -287,6 +300,21 @@ export class OrderManager {
           (typeof payload === 'object' && (payload as any).code) ||
           (typeof payload === 'string' && JSON.parse(payload).code)
         ) {
+          if (typeof payload === 'string') {
+            payload = JSON.parse(payload);
+          }
+          if ((payload as any).code === 1050 && (payload as any).error === 'PAYG conflict') {
+            let authorization = headers.get('X-Channel-State');
+            if (authorization) {
+              const buffer = Buffer.from(authorization, 'base64');
+              buffer[0] = 2;
+              authorization = buffer.toString('base64');
+              const state = {
+                authorization,
+              };
+              if (channelId) this.syncChannelState(channelId, state);
+            }
+          }
           throw new Error(JSON.stringify(payload));
         } else {
           throw new Error('invalid X-Indexer-Response-Format');
