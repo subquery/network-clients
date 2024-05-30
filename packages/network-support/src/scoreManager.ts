@@ -86,8 +86,6 @@ export class ScoreManager {
     const manual = await this.getManualScoreWeight(runner);
     const multiple = this.getMultipleAuthScoreWeight(proxyVersion);
     const block = await this.getBlockScoreWeight(runner, deploymentId);
-
-    console.log(runner, base, http2, manual, multiple, block);
     return base * http2 * manual * multiple * block;
   }
 
@@ -103,7 +101,7 @@ export class ScoreManager {
   }
 
   async getBlockScoreWeight(runner: string, deploymentId: string) {
-    const key = `${this.getBlockScoreKey()}:${runner}_${deploymentId}}`;
+    const key = `${this.getBlockScoreKey()}:${runner}_${deploymentId}`;
     const blockWeight = await this.scoreStore.get<number>(key);
     return blockWeight || 1;
   }
@@ -145,12 +143,10 @@ export class ScoreManager {
         min = iheights[i].height;
       }
     }
-    console.log(deploymentId, min, max);
     const key = this.getBlockScoreKey();
     for (const { indexer, height } of iheights) {
       let weight = this.scoreMap(height, [min, max], BLOCK_WEIGHT_OUTPUT_RANGE, CurveType.LINEAR);
       weight = Math.floor(weight * 10) / 10;
-      console.log('update redis, ', indexer, deploymentId, weight);
       await this.scoreStore.set(`${key}:${indexer}_${deploymentId}`, weight);
     }
   }
