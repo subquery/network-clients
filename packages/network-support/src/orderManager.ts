@@ -17,15 +17,7 @@ import {
   ServiceAgreementOrder,
   WrappedResponse,
 } from './types';
-import {
-  createMemoryStore,
-  fetchOrders,
-  isTokenExpired,
-  IStore,
-  Logger,
-  POST,
-  safeJSONParse,
-} from './utils';
+import { createMemoryStore, fetchOrders, isTokenExpired, IStore, Logger, POST } from './utils';
 import { BlockType, State, StateManager } from './stateManager';
 import { Version } from './utils/version';
 
@@ -304,14 +296,15 @@ export class OrderManager {
             payload = JSON.parse(payload);
           }
           if ((payload as any).code === 1050 && (payload as any).error === 'PAYG conflict') {
-            let authorization = headers.get('X-Channel-State');
+            const authorization = headers.get('X-Channel-State');
             if (authorization) {
               const buffer = Buffer.from(authorization, 'base64');
               buffer[0] = 2;
-              authorization = buffer.toString('base64');
+              const newAuthorization = buffer.toString('base64');
               const state = {
-                authorization,
+                authorization: newAuthorization,
               };
+              this.logger?.info(`PAYG conflict, ${authorization} set state to ${authorization}`);
               if (channelId) this.syncChannelState(channelId, state);
             }
           }
