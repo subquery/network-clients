@@ -42,25 +42,53 @@ export async function updateBlockScoreWeight(
       minRequestAt = iheights[i].requestAt;
     }
   }
-  const key = getBlockScoreKey();
-  const span = Math.abs(maxHeightRequestAt - minRequestAt);
-  for (const { indexer, height, requestAt } of iheights) {
-    let compensation = 1;
-    const timeDiff = maxHeightRequestAt - requestAt;
-    if (height && span) {
-      compensation = scoreMap(Math.abs(timeDiff) / span, [0, 1], [1, maxHeight / height]);
+
+  let flag = true;
+  let minRate = 0;
+  let maxRate = 0;
+  for (const { height, requestAt } of iheights) {
+    if (height && requestAt < maxHeightRequestAt) {
+      const rate = -(maxHeight - height) / (maxHeightRequestAt - requestAt);
+      if (flag) {
+        minRate = rate;
+        maxRate = rate;
+        flag = false;
+        continue;
+      }
+      if (rate < minRate) {
+        minRate = rate;
+      } else if (rate > maxRate) {
+        maxRate = rate;
+      }
     }
-    const adjustedHeight = Math.floor(height * compensation);
-    let weight = scoreMap(
-      adjustedHeight,
-      [minHeight, maxHeight],
-      BLOCK_WEIGHT_OUTPUT_RANGE,
-      CurveType.QUADRATIC
-    );
+  }
+
+  const rateSpan = maxRate - minRate;
+  for (const { indexer, height, requestAt } of iheights) {
+    let weight = 1;
+    let rate = -1;
+    let len = 1;
+    let compensation = 1;
+    const timeSpan = maxHeightRequestAt - requestAt || 1;
+    if (timeSpan < 0) {
+      weight = height < maxHeight ? BLOCK_WEIGHT_OUTPUT_RANGE[0] : BLOCK_WEIGHT_OUTPUT_RANGE[1];
+    } else {
+      weight = scoreMap(
+        height,
+        [minHeight, maxHeight],
+        BLOCK_WEIGHT_OUTPUT_RANGE,
+        CurveType.QUADRATIC
+      );
+      rate = -(maxHeight - height) / timeSpan;
+      len = rate - minRate || 1;
+      compensation = (len / rateSpan) * 0.9;
+      weight = Math.min(weight + compensation, 0.9);
+    }
     weight = Math.floor(weight * 10) / 10;
     logger?.debug(
-      `${deploymentId}(maxH: ${maxHeight} minH: ${minHeight} maxHR: ${maxHeightRequestAt} minR: ${minRequestAt} span:${span} ) ${indexer} r: ${requestAt} timeDiff:${timeDiff} height: ${height} compensation: ${compensation} adjustedHeight:${adjustedHeight} weight:${weight}`
+      `${deploymentId}(maxH: ${maxHeight} minH: ${minHeight} maxHR: ${maxHeightRequestAt}) ${indexer} r: ${requestAt} timeSpan:${timeSpan} height: ${height} rate:${rate} len:${len} rateSpan:${rateSpan} compensation: ${compensation} weight:${weight}`
     );
+    const key = getBlockScoreKey();
     await scoreStore.set(`${key}:${indexer}_${deploymentId}`, weight);
   }
 }
