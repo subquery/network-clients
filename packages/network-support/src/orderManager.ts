@@ -40,6 +40,9 @@ type Options = {
   timeout?: number;
 };
 
+const SAMPLE_LIMIT = 1000;
+const SAMPLE_COUNT: { [key: string]: number } = {};
+
 function tokenToAuthHeader(token: string) {
   return `Bearer ${token}`;
 }
@@ -420,6 +423,15 @@ export class OrderManager {
 
   async updateScore(runner: string, errorType: ScoreType, httpVersion?: number) {
     await this.scoreManager.updateScore(runner, errorType, httpVersion);
+  }
+
+  async updateLatency(runner: string, latency: number) {
+    SAMPLE_COUNT[runner] = SAMPLE_COUNT[runner] || 0;
+    SAMPLE_COUNT[runner]++;
+    if (SAMPLE_COUNT[runner] >= SAMPLE_LIMIT) {
+      SAMPLE_COUNT[runner] = 0;
+      // await this.scoreManager.updateLatency(runner, latency);
+    }
   }
 
   cleanup() {

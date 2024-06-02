@@ -34,7 +34,8 @@ export function createFetch(
   orderManager: OrderManager,
   maxRetries = 5,
   logger?: Logger,
-  overrideFetch?: typeof fetch
+  overrideFetch?: typeof fetch,
+  onFetchSuccess?: (indexer: string, latency: number) => void
 ): (init: RequestInit) => Promise<Response> {
   let retries = 0;
   let triedFallback = false;
@@ -71,6 +72,7 @@ export function createFetch(
       let httpVersion = 1;
 
       try {
+        const before = Date.now();
         const _res = await customFetch(
           url,
           {
@@ -83,7 +85,7 @@ export function createFetch(
           },
           overrideFetch
         );
-
+        const after = Date.now();
         httpVersion = Number(_res.headers.get('httpVersion')) || 1;
 
         let res: object;
@@ -106,6 +108,7 @@ export function createFetch(
           res = await _res.json();
         }
 
+        onFetchSuccess?.(runner, after - before);
         orderManager.updateScore(runner, ScoreType.SUCCESS, httpVersion);
 
         return {

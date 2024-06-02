@@ -39,6 +39,15 @@ export async function updateBlockScoreWeight(
   }
 }
 
+export async function updateLatencyScoreWeight(
+  scoreStore: IStore,
+  deploymentId: string,
+  indexer: string,
+  latencies: number[]
+) {
+  //
+}
+
 export async function getBlockScoreWeight(
   scoreStore: IStore,
   runner: string,
