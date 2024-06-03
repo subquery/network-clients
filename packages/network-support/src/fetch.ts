@@ -35,7 +35,7 @@ export function createFetch(
   maxRetries = 5,
   logger?: Logger,
   overrideFetch?: typeof fetch,
-  onFetchSuccess?: (indexer: string, latency: number) => void
+  onFetchSuccess?: (indexer: string, latency: number, size: number) => void
 ): (init: RequestInit) => Promise<Response> {
   let retries = 0;
   let triedFallback = false;
@@ -108,7 +108,7 @@ export function createFetch(
           res = await _res.json();
         }
 
-        onFetchSuccess?.(runner, after - before);
+        onFetchSuccess?.(runner, after - before, Number(_res.headers.get('content-length')) || 1);
         orderManager.updateScore(runner, ScoreType.SUCCESS, httpVersion);
 
         return {

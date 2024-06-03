@@ -14,6 +14,7 @@ export enum CurveType {
 export type IndexerHeight = {
   indexer: string;
   height: number;
+  latency: number[];
 };
 
 export async function updateBlockScoreWeight(
@@ -42,10 +43,31 @@ export async function updateBlockScoreWeight(
 export async function updateLatencyScoreWeight(
   scoreStore: IStore,
   deploymentId: string,
-  indexer: string,
-  latencies: number[]
+  indexerLantency: IndexerHeight[],
+  logger?: any
 ) {
-  //
+  const key = getLatencyScoreKey();
+  let min = 0;
+  let max = 0;
+  const medians = [];
+  for (const { latency } of indexerLantency) {
+    const m = getMedian(latency) || -1;
+    medians.push(m);
+    if (m > max) {
+      max = m;
+    } else if (m < min) {
+      min = m;
+    }
+  }
+
+  for (let i = 0; i < indexerLantency.length; i++) {
+    let weight = scoreMap(medians[i], [min, max], [1, 5]);
+    weight = Math.floor(weight * 10) / 10;
+    await scoreStore.set(`${key}:${indexerLantency[i].indexer}_${deploymentId}`, weight);
+    logger.debug(
+      `updateLatencyScoreWeight: ${indexerLantency[i].indexer} ${deploymentId}(min:${min}, max:${max}) ${medians[i]}ms/b => ${weight}`
+    );
+  }
 }
 
 export async function getBlockScoreWeight(
@@ -58,8 +80,28 @@ export async function getBlockScoreWeight(
   return blockWeight || 1;
 }
 
+export async function getLatencyScoreWeight(
+  scoreStore: IStore,
+  runner: string,
+  deploymentId: string
+) {
+  const key = `${getLatencyScoreKey()}:${runner}_${deploymentId}`;
+  const latencyWeight = await scoreStore.get<number>(key);
+  return latencyWeight || 1;
+}
+
+function getMedian(arr: number[]) {
+  const mid = Math.floor(arr.length / 2);
+  const nums = [...arr].sort((a, b) => a - b);
+  return arr.length % 2 !== 0 ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2;
+}
+
 function getBlockScoreKey(): string {
   return 'score:block';
+}
+
+function getLatencyScoreKey(): string {
+  return 'score:latency';
 }
 
 export function scoreMap(

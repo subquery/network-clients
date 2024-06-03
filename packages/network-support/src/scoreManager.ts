@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Logger, IStore, createStore } from './utils';
-import { getBlockScoreWeight } from './utils/score';
+import { getBlockScoreWeight, getLatencyScoreWeight } from './utils/score';
 import { Version } from './utils/version';
 
 type Options = {
@@ -78,7 +78,8 @@ export class ScoreManager {
     const manual = await this.getManualScoreWeight(runner);
     const multiple = this.getMultipleAuthScoreWeight(proxyVersion);
     const block = await getBlockScoreWeight(this.scoreStore, runner, this.projectId);
-    return base * http2 * manual * multiple * block;
+    const latency = await getLatencyScoreWeight(this.scoreStore, runner, this.projectId);
+    return base * http2 * manual * multiple * block * latency;
   }
 
   async getManualScoreWeight(runner: string) {
