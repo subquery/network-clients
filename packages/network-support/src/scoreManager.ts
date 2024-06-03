@@ -79,6 +79,9 @@ export class ScoreManager {
     const multiple = this.getMultipleAuthScoreWeight(proxyVersion);
     const block = await getBlockScoreWeight(this.scoreStore, runner, this.projectId);
     const latency = await getLatencyScoreWeight(this.scoreStore, runner, this.projectId);
+    this.logger?.debug(
+      `getAdjustedScore: ${runner} ${this.projectId} base:${base} http2:${http2} manua:${manual} multiple:${multiple} block:${block} latency:${latency}`
+    );
     return base * http2 * manual * multiple * block * latency;
   }
 
