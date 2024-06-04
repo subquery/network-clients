@@ -304,7 +304,7 @@ export class OrderManager {
               const state = {
                 authorization: newAuthorization,
               };
-              this.logger?.info(`PAYG conflict, ${authorization} set state to ${authorization}`);
+              this.logger?.info(`PAYG conflict, ${authorization} set state to ${newAuthorization}`);
               if (channelId) this.syncChannelState(channelId, state);
             }
           }
