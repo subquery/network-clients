@@ -26,7 +26,7 @@ export async function updateBlockScoreWeight(
   let minHeight = Number.MAX_SAFE_INTEGER;
   let maxHeight = 0;
   for (const { height } of heights) {
-    minHeight = Math.min(minHeight, height);
+    minHeight = height ? Math.min(minHeight, height) : minHeight;
     maxHeight = Math.max(maxHeight, height);
   }
 
