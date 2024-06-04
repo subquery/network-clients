@@ -14,82 +14,53 @@ export enum CurveType {
 export type IndexerHeight = {
   indexer: string;
   height: number;
-  requestAt: number;
-  responseAt: number;
 };
 
 export async function updateBlockScoreWeight(
   scoreStore: IStore,
   deploymentId: string,
-  iheights: IndexerHeight[],
+  heights: IndexerHeight[][],
   logger?: any
 ) {
-  iheights = iheights || [];
-  let minHeight = iheights[0]?.height || 0;
-  let maxHeight = iheights[0]?.height || 0;
+  const len = heights.length;
 
-  let maxHeightRequestAt = iheights[0]?.requestAt || 0;
-  let minRequestAt = iheights[0]?.requestAt || 0;
-  for (let i = 0; i < iheights.length; i++) {
-    if (!iheights[i].height) continue;
-    if (iheights[i].height > maxHeight) {
-      maxHeight = iheights[i].height;
-      maxHeightRequestAt = iheights[i].requestAt;
-    } else if (iheights[i].height < minHeight) {
-      minHeight = iheights[i].height;
+  const avgs = [];
+  let effectiveAvgIndx = -1;
+  let minHeight = Number.MAX_SAFE_INTEGER;
+  let maxHeight = 0;
+  for (let i = 0; i < len; i++) {
+    const h = heights[i];
+    let sum = 0;
+    for (const { height } of h) {
+      sum += height;
+      minHeight = Math.min(minHeight, height);
+      maxHeight = Math.max(maxHeight, height);
     }
-    if (iheights[i].requestAt < minRequestAt) {
-      minRequestAt = iheights[i].requestAt;
-    }
+    const avg = Math.floor(sum / h.length);
+    avgs.push(avg);
+    effectiveAvgIndx = avg ? i : effectiveAvgIndx;
   }
 
-  let flag = true;
-  let minRate = 0;
-  let maxRate = 0;
-  for (const { height, requestAt } of iheights) {
-    if (height && requestAt < maxHeightRequestAt) {
-      const rate = -(maxHeight - height) / (maxHeightRequestAt - requestAt);
-      if (flag) {
-        minRate = rate;
-        maxRate = rate;
-        flag = false;
-        continue;
-      }
-      if (rate < minRate) {
-        minRate = rate;
-      } else if (rate > maxRate) {
-        maxRate = rate;
-      }
-    }
-  }
-
-  const rateSpan = maxRate - minRate;
-  for (const { indexer, height, requestAt } of iheights) {
-    let weight = 1;
-    let rate = -1;
-    let len = 1;
-    let compensation = 1;
-    const timeSpan = maxHeightRequestAt - requestAt || 1;
-    if (timeSpan < 0) {
-      weight = height < maxHeight ? BLOCK_WEIGHT_OUTPUT_RANGE[0] : BLOCK_WEIGHT_OUTPUT_RANGE[1];
-    } else {
-      weight = scoreMap(
-        height,
+  const key = getBlockScoreKey();
+  for (let i = 0; i < len; i++) {
+    for (const { indexer, height } of heights[i]) {
+      const delta = i < effectiveAvgIndx ? Math.abs(avgs[i] - avgs[effectiveAvgIndx]) : 0;
+      let weight = scoreMap(
+        height + delta,
         [minHeight, maxHeight],
         BLOCK_WEIGHT_OUTPUT_RANGE,
         CurveType.QUADRATIC
       );
-      rate = -(maxHeight - height) / timeSpan;
-      len = rate - minRate || 1;
-      compensation = (len / rateSpan) * 0.9;
-      weight = Math.min(weight + compensation, 0.9);
+      weight = Math.floor(weight * 10) / 10;
+      await scoreStore.set(`${key}:${indexer}_${deploymentId}`, weight);
+      logger?.debug(
+        `${deploymentId}(minH:${minHeight}, maxH:${maxHeight}, batch:${len}, curBatch:${
+          i + 1
+        } effectiveAvgIndx:${effectiveAvgIndx}, effectiveAvg:${
+          avgs[effectiveAvgIndx]
+        }) set ${indexer} height:${height} delta:${delta} to ${weight}`
+      );
     }
-    weight = Math.floor(weight * 10) / 10;
-    logger?.debug(
-      `${deploymentId}(maxH: ${maxHeight} minH: ${minHeight} maxHR: ${maxHeightRequestAt}) ${indexer} r: ${requestAt} timeSpan:${timeSpan} height: ${height} rate:${rate} len:${len} rateSpan:${rateSpan} compensation: ${compensation} weight:${weight}`
-    );
-    const key = getBlockScoreKey();
-    await scoreStore.set(`${key}:${indexer}_${deploymentId}`, weight);
   }
 }
 
@@ -105,6 +76,10 @@ export async function getBlockScoreWeight(
 
 function getBlockScoreKey(): string {
   return 'score:block';
+}
+
+export function avg(arr: number[]) {
+  return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 }
 
 export function scoreMap(
