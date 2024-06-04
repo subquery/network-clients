@@ -36,6 +36,7 @@ export class StateManager {
   private projectId: string;
   private apikey?: string;
   private stateStore: IStore;
+  private channelIdStateTime: Record<string, number>;
 
   constructor(options: Options) {
     this.logger = options.logger;
@@ -43,6 +44,7 @@ export class StateManager {
     this.projectId = options.projectId;
     this.apikey = options.apikey;
     this.stateStore = options.stateStore ?? createStore({ ttl: 86_400_000 });
+    this.channelIdStateTime = {};
   }
 
   async getSignedState(channelId: string, block: BlockType): Promise<State> {
@@ -106,6 +108,13 @@ export class StateManager {
         return;
       }
       try {
+        const now = Date.now();
+        const lastStateTime = this.channelIdStateTime[channelId] || 0;
+        if (now - lastStateTime < 5_000) {
+          this.logger?.debug(`syncChannelState skip. ${channelId}`);
+          return;
+        }
+        this.channelIdStateTime[channelId] = now;
         const stateUrl = new URL('/channel/state', this.authUrl);
         const res = await POST<{ authorization: string }>(stateUrl.toString(), {
           channelId,
