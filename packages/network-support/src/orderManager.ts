@@ -291,17 +291,7 @@ export class OrderManager {
             payload = JSON.parse(payload);
           }
           if ((payload as any).code === 1050 && (payload as any).error === 'PAYG conflict') {
-            const authorization = headers.get('X-Channel-State');
-            if (authorization) {
-              const buffer = Buffer.from(authorization, 'base64');
-              buffer[0] = 2;
-              const newAuthorization = buffer.toString('base64');
-              const state = {
-                authorization: newAuthorization,
-              };
-              this.logger?.info(`PAYG conflict, ${authorization} set state to ${newAuthorization}`);
-              if (channelId) this.syncChannelState(channelId, state);
-            }
+            this.stateManager.forceReportInactiveState(channelId);
           }
           throw new Error(JSON.stringify(payload));
         } else {
