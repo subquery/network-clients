@@ -40,11 +40,6 @@ type Options = {
   timeout?: number;
 };
 
-type ErrorJsonResponse = {
-  code: number;
-  error: string;
-};
-
 function tokenToAuthHeader(token: string) {
   return `Bearer ${token}`;
 }
