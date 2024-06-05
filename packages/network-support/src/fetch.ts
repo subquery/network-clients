@@ -121,11 +121,14 @@ export function createFetch(
         errorMsg = (e as Error)?.message || '';
         if (retries < maxRetries || (orderManager.fallbackServiceUrl && !triedFallback)) {
           const errorObj = safeJSONParse(errorMsg);
-          if (errorObj?.code === 1056 && errorObj?.error === 'Query overflow') {
-            orderManager.updateScore(runner, ScoreType.FATAL);
+          if (errorObj?.code && errorObj?.error) {
+            if (errorObj.code === 1056 && errorObj.error === 'Query overflow') {
+              orderManager.updateScore(runner, ScoreType.FATAL);
+              retries += 1;
+              return requestResult();
+            }
+            throw new FetchError(errorMsg, 'SQN');
           }
-          retries += 1;
-          return requestResult();
         }
         throw new FetchError(`reach max retries.${errorMsg ? ' error: ' + errorMsg : ''}`, 'SQN');
       }
