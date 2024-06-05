@@ -14,28 +14,35 @@ export enum CurveType {
 export type IndexerHeight = {
   indexer: string;
   height: number;
+  rawHeight: number;
 };
 
 export async function updateBlockScoreWeight(
   scoreStore: IStore,
   deploymentId: string,
-  iheights: IndexerHeight[]
+  heights: IndexerHeight[],
+  logger?: any
 ) {
-  iheights = iheights || [];
-  let min = iheights[0]?.height || 0;
-  let max = iheights[0]?.height || 0;
-  for (let i = 0; i < iheights.length; i++) {
-    if (iheights[i].height > max) {
-      max = iheights[i].height;
-    } else if (iheights[i].height < min) {
-      min = iheights[i].height;
-    }
+  let minHeight = Number.MAX_SAFE_INTEGER;
+  let maxHeight = 0;
+  for (const { height } of heights) {
+    minHeight = height ? Math.min(minHeight, height) : minHeight;
+    maxHeight = Math.max(maxHeight, height);
   }
+
   const key = getBlockScoreKey();
-  for (const { indexer, height } of iheights) {
-    let weight = scoreMap(height, [min, max], BLOCK_WEIGHT_OUTPUT_RANGE, CurveType.LINEAR);
+  for (const { indexer, height, rawHeight } of heights) {
+    let weight = scoreMap(
+      height,
+      [minHeight, maxHeight],
+      BLOCK_WEIGHT_OUTPUT_RANGE,
+      CurveType.QUADRATIC
+    );
     weight = Math.floor(weight * 10) / 10;
     await scoreStore.set(`${key}:${indexer}_${deploymentId}`, weight);
+    logger?.debug(
+      `${deploymentId}(minH:${minHeight}, maxH:${maxHeight}) set ${indexer}(rawHeight:${rawHeight}) height:${height} to ${weight}`
+    );
   }
 }
 
@@ -51,6 +58,10 @@ export async function getBlockScoreWeight(
 
 function getBlockScoreKey(): string {
   return 'score:block';
+}
+
+export function avg(arr: number[]) {
+  return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 }
 
 export function scoreMap(
