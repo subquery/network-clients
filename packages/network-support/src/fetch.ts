@@ -129,6 +129,10 @@ export function createFetch(
               needRetry = true;
               scoreType = ScoreType.FATAL;
             }
+            if (errorObj.code === 1050 && errorObj.error === 'PAYG conflict') {
+              needRetry = true;
+              scoreType = ScoreType.RPC;
+            }
           }
           if (needRetry) {
             orderManager.updateScore(runner, scoreType);
