@@ -7,6 +7,9 @@ import { OrderType } from './types';
 import { ScoreType } from './scoreManager';
 import { Base64 } from 'js-base64';
 
+const fatalErrorCodes = [1053, 1054, 1055, 1056, 1058, 1059];
+const rpcErrorCodes = [1050, 1051, 1052, 1057];
+
 interface SystemError extends Error {
   code?: string | undefined;
 }
@@ -124,10 +127,12 @@ export function createFetch(
           let needRetry = true;
           let scoreType = ScoreType.RPC;
           if (errorObj?.code && errorObj?.error) {
-            needRetry = false;
-            if (errorObj.code === 1056 && errorObj.error === 'Query overflow') {
-              needRetry = true;
+            if (fatalErrorCodes.includes(errorObj.code)) {
               scoreType = ScoreType.FATAL;
+            } else if (rpcErrorCodes.includes(errorObj.code)) {
+              scoreType = ScoreType.RPC;
+            } else {
+              needRetry = false;
             }
           }
           if (needRetry) {
