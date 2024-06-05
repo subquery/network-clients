@@ -146,7 +146,7 @@ export class StateManager {
           authorization: newAuthorization,
         };
         this.logger?.info(`PAYG conflict, ${authorization} set state to ${newAuthorization}`);
-        if (channelId) this.syncState(channelId, state);
+        await this.syncState(channelId, state);
       }
     }
   }
