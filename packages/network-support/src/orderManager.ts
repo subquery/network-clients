@@ -287,6 +287,12 @@ export class OrderManager {
           (typeof payload === 'object' && (payload as any).code) ||
           (typeof payload === 'string' && JSON.parse(payload).code)
         ) {
+          if (typeof payload === 'string') {
+            payload = JSON.parse(payload);
+          }
+          if ((payload as any).code === 1050 && (payload as any).error === 'PAYG conflict') {
+            this.stateManager.forceReportInactiveState(channelId);
+          }
           throw new Error(JSON.stringify(payload));
         } else {
           throw new Error('invalid X-Indexer-Response-Format');

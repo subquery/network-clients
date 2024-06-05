@@ -133,6 +133,24 @@ export class StateManager {
     }
   }
 
+  async forceReportInactiveState(channelId: string | undefined): Promise<void> {
+    channelId = channelId || '';
+    const cachedState = await this.getState(channelId);
+    if (cachedState) {
+      const authorization = cachedState.authorization;
+      if (authorization) {
+        const buffer = Buffer.from(authorization, 'base64');
+        buffer[0] = 2;
+        const newAuthorization = buffer.toString('base64');
+        const state = {
+          authorization: newAuthorization,
+        };
+        this.logger?.info(`PAYG conflict, ${authorization} set state to ${newAuthorization}`);
+        await this.syncState(channelId, state);
+      }
+    }
+  }
+
   async invalidateState(channelId: string) {
     await this.removeState(channelId);
     this.logger?.debug(`invalidateState [multiple] for channel ${channelId}`);
