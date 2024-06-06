@@ -122,13 +122,30 @@ export function createFetch(
       } catch (e) {
         logger?.warn(e);
         errorMsg = (e as Error)?.message || '';
-        if (retries < maxRetries || (orderManager.fallbackServiceUrl && !triedFallback)) {
+
+        let allMsg = `${requestId} ${errorMsg}`;
+        if (!triedFallback && (retries < maxRetries || orderManager.fallbackServiceUrl)) {
+          let needRetry = true;
+          let scoreType = ScoreType.RPC;
           const errorObj = safeJSONParse(errorMsg);
-          if (errorObj?.code === 1056 && errorObj?.error === 'Query overflow') {
-            orderManager.updateScore(runner, ScoreType.FATAL);
+
+          if (errorObj?.code && errorObj?.error) {
+            if (fatalErrorCodes.includes(errorObj.code)) {
+              scoreType = ScoreType.FATAL;
+            } else if (rpcErrorCodes.includes(errorObj.code)) {
+              scoreType = ScoreType.RPC;
+            } else {
+              needRetry = false;
+              allMsg += ` /////error not found////`;
+            }
           }
-          retries += 1;
-          return requestResult();
+          if (needRetry) {
+            orderManager.updateScore(runner, scoreType);
+            retries += 1;
+            return requestResult();
+          }
+          logger?.warn(`fetch error: ${allMsg} directly throw`);
+          throw new FetchError(errorMsg, 'SQN');
         }
         throw new FetchError(`reach max retries.${errorMsg ? ' error: ' + errorMsg : ''}`, 'SQN');
       }
