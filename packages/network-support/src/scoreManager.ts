@@ -47,6 +47,8 @@ const DEFAULT_SCORE = {
   lastFailed: 0,
 };
 
+const SCORE_PENALTY_PERIOD = 10_000; // 10s
+
 export class ScoreManager {
   private logger: Logger;
   private scoreStore: IStore;
@@ -101,7 +103,14 @@ export class ScoreManager {
     const key = this.getCacheKey(runner);
     const score = await this.getScore(runner);
 
+    const now = Date.now();
     if (errorType !== ScoreType.SUCCESS) {
+      if (errorType !== ScoreType.FATAL && now - score.lastFailed < SCORE_PENALTY_PERIOD) {
+        this.logger?.debug(
+          `updateScore skip: ${runner} ${errorType} lastFailed:${score.lastFailed}`
+        );
+        return;
+      }
       this.logger?.debug(`updateScore type: ${runner} ${errorType}`);
     }
     this.logger?.debug(`updateScore before: ${runner} ${JSON.stringify(score)}`);
@@ -110,8 +119,8 @@ export class ScoreManager {
 
     score.score = Math.min(Math.max(score.score + delta, this.minScore), 100);
     score.httpVersion = httpVersion || score.httpVersion;
-    score.lastUpdate = Date.now();
-    score.lastFailed = errorType === ScoreType.SUCCESS ? 0 : Date.now();
+    score.lastUpdate = now;
+    score.lastFailed = errorType === ScoreType.SUCCESS ? 0 : now;
 
     this.logger?.debug(`updateScore after: ${runner} ${JSON.stringify(score)}`);
 
