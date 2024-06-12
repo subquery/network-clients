@@ -5,9 +5,11 @@ import { IStore } from './store';
 
 const BLOCK_WEIGHT_OUTPUT_RANGE: [number, number] = [0.2, 1];
 const LATENCY_WEIGHT_THRESHOLD: [threshold: number, weight: number][] = [
-  [300, 6], //  [0, 300ms]: 6
-  [500, 3], //  (300 - 500ms]: 3
-  [2_000, 1], //  (500 - 2000ms]: 1
+  [2_000, 0.2], // >= 2000ms: 0.2
+  [1_000, 0.5], //  [1000ms, 2000ms): 0.5
+  [500, 1], //  [500ms, 1000ms): 1
+  [300, 3], //  [300ms, 500ms): 3
+  [0, 6], //  [0ms, 300ms): 6
 ];
 
 export enum CurveType {
@@ -68,7 +70,7 @@ export async function updateLatencyScoreWeight(
   for (let i = 0; i < indexerLantency.length; i++) {
     let weight = 1;
     for (const [threshold, wt] of LATENCY_WEIGHT_THRESHOLD) {
-      if (medians[i] && medians[i] <= threshold) {
+      if (medians[i] && medians[i] >= threshold) {
         weight = wt;
         break;
       }
