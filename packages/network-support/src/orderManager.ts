@@ -368,14 +368,14 @@ export class OrderManager {
     const scores = await Promise.all(
       orders.map((o) => this.scoreManager.getAdjustedScore(o.indexer, o.metadata?.proxyVersion))
     );
-    const random = Math.random() * scores.reduce((a, b) => a + b, 0);
+    const random = Math.random() * scores.reduce((a, b) => a + b.score, 0);
     this.logger?.debug(`selectRunner: indexers: ${orders.map((o) => o.indexer)}`);
-    this.logger?.debug(`selectRunner: scores: ${scores}`);
+    this.logger?.debug(`selectRunner: scores: ${scores.map((s) => s.score)}`);
     this.logger?.debug(`selectRunner: random: ${random}`);
     let sum = 0;
     for (let i = 0; i < scores.length; i++) {
-      if (scores[i] === 0) continue;
-      sum += scores[i];
+      if (scores[i].score === 0) continue;
+      sum += scores[i].score;
       if (random <= sum) {
         this.logger?.debug(`selectRunner: selected index: ${i}`);
         this.logger?.debug(`selectRunner: selected indexer: ${orders[i].indexer}`);
