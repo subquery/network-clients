@@ -105,7 +105,7 @@ export class ScoreManager {
 
     const now = Date.now();
     if (errorType !== ScoreType.SUCCESS) {
-      if (errorType !== ScoreType.FATAL && now - score.lastFailed < SCORE_PENALTY_PERIOD) {
+      if (this.minScore !== 1 && now - score.lastFailed < SCORE_PENALTY_PERIOD) {
         this.logger?.debug(
           `updateScore skip: ${runner} ${errorType} lastFailed:${score.lastFailed}`
         );
