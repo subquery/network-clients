@@ -47,6 +47,10 @@ const DEFAULT_SCORE = {
   lastFailed: 0,
 };
 
+const SAMPLE_SIZE = 20;
+const SAMPLE_LIMIT = 1000;
+const sampleCount: { [key: string]: number } = {};
+
 export class ScoreManager {
   private logger: Logger;
   private scoreStore: IStore;
@@ -120,6 +124,21 @@ export class ScoreManager {
     this.logger?.debug(`updateScore after: ${runner} ${JSON.stringify(score)}`);
 
     this.scoreStore.set(key, score);
+  }
+
+  async collectLatency(indexer: string, latency: number, size: number): Promise<void> {
+    const isLocal = process.env.NODE_ENV === 'local';
+    sampleCount[indexer] = sampleCount[indexer] || 0;
+    sampleCount[indexer]++;
+    if (isLocal || sampleCount[indexer] >= SAMPLE_LIMIT) {
+      sampleCount[indexer] = 0;
+      const key = `sample:latency:${indexer}_${this.projectId}`;
+      const len = await this.scoreStore.lpush(key, `${size}_${latency}`);
+      await this.scoreStore.expire(key, 60 * 60 * 24);
+      if (len > SAMPLE_SIZE) {
+        await this.scoreStore.ltrim(key, 0, SAMPLE_SIZE - 1);
+      }
+    }
   }
 
   private getHttpVersionWeight(score: ScoreStoreType) {

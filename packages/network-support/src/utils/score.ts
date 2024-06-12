@@ -4,6 +4,11 @@
 import { IStore } from './store';
 
 const BLOCK_WEIGHT_OUTPUT_RANGE: [number, number] = [0.2, 1];
+const LATENCY_WEIGHT_THRESHOLD: [threshold: number, weight: number][] = [
+  [300, 6], //  [0, 300ms]: 6
+  [500, 3], //  (300 - 500ms]: 3
+  [2_000, 1], //  (500 - 2000ms]: 1
+];
 
 export enum CurveType {
   LINEAR = 1,
@@ -47,25 +52,30 @@ export async function updateLatencyScoreWeight(
   logger?: any
 ) {
   const key = getLatencyScoreKey();
-  let min = 0;
+  let min = Number.MAX_SAFE_INTEGER;
   let max = 0;
   const medians = [];
   for (const { latency } of indexerLantency) {
-    const m = getMedian(latency) || -1;
+    const m = getMedian(latency) || 0;
     medians.push(m);
     if (m > max) {
       max = m;
-    } else if (m < min) {
+    } else if (m && m < min) {
       min = m;
     }
   }
 
   for (let i = 0; i < indexerLantency.length; i++) {
-    let weight = scoreMap(medians[i], [min, max], [1, 5]);
-    weight = Math.floor(weight * 10) / 10;
+    let weight = 1;
+    for (const [threshold, wt] of LATENCY_WEIGHT_THRESHOLD) {
+      if (medians[i] && medians[i] <= threshold) {
+        weight = wt;
+        break;
+      }
+    }
     await scoreStore.set(`${key}:${indexerLantency[i].indexer}_${deploymentId}`, weight);
-    logger.debug(
-      `updateLatencyScoreWeight: ${indexerLantency[i].indexer} ${deploymentId}(min:${min}, max:${max}) ${medians[i]}ms/b => ${weight}`
+    logger?.debug(
+      `updateLatencyScoreWeight: ${indexerLantency[i].indexer} ${deploymentId}(min:${min}, max:${max}) ${medians[i]} => ${weight}`
     );
   }
 }
@@ -91,6 +101,7 @@ export async function getLatencyScoreWeight(
 }
 
 function getMedian(arr: number[]) {
+  arr = arr || [];
   const mid = Math.floor(arr.length / 2);
   const nums = [...arr].sort((a, b) => a - b);
   return arr.length % 2 !== 0 ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2;
