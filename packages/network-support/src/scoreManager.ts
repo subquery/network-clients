@@ -47,7 +47,7 @@ const DEFAULT_SCORE = {
   lastFailed: 0,
 };
 
-const SCORE_PENALTY_PERIOD = 10_000; // 10s
+const SCORE_PENALTY_PERIOD = 5_000; // 5s
 
 export class ScoreManager {
   private logger: Logger;
