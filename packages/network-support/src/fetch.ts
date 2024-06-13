@@ -51,7 +51,7 @@ export function createFetch(
       let requestParams;
       const body = init.body ? JSON.parse(init.body as string) : {};
       if (Array.isArray(body)) {
-        logger?.warn(`${requestId} direct to fallback. ${init.body}`);
+        logger?.warn(`${requestId} direct to fallback. ${(init.body as string).substring(0, 20)}`);
         retries = maxRetries;
       }
 
