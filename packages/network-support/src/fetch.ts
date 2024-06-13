@@ -49,6 +49,12 @@ export function createFetch(
         throw new FetchError(`method not supported`, 'sqn');
       }
       let requestParams;
+      const body = init.body ? JSON.parse(init.body as string) : {};
+      if (Array.isArray(body)) {
+        logger?.warn(`${requestId} direct to fallback. ${init.body}`);
+        retries = maxRetries;
+      }
+
       if (retries < maxRetries) {
         requestParams = await orderManager.getRequestParams(requestId);
       }
@@ -62,7 +68,7 @@ export function createFetch(
             runner: 'fallback',
             channelId: 'fallback',
           };
-          logger?.warn(`fallback to ${orderManager.fallbackServiceUrl}`);
+          logger?.warn(`${requestId} fallback to ${orderManager.fallbackServiceUrl}`);
         } else {
           throw new FetchError(
             `no available order. retries: ${retries}.${errorMsg ? ' error: ' + errorMsg : ''}`,
