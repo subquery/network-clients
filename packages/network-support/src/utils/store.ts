@@ -12,6 +12,8 @@ export interface IStore {
   lpush(key: string, value: any): Promise<number>;
   ltrim(key: string, start: number, stop: number): Promise<void>;
   expire(key: string, ttl: number): Promise<void>;
+
+  hincrby(key: string, field: string, value: number): Promise<number>;
 }
 
 export class BaseStorage implements IStore {
@@ -33,6 +35,9 @@ export class BaseStorage implements IStore {
   }
   expire(key: string, ttl: number): Promise<void> {
     return Promise.resolve();
+  }
+  hincrby(key: string, field: string, value: number): Promise<number> {
+    return Promise.resolve(0);
   }
 }
 
