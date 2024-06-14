@@ -90,7 +90,7 @@ export class ScoreManager {
       `getAdjustedScore: ${runner} ${this.projectId} base:${base} http2:${http2} manua:${manual} multiple:${multiple} block:${block} latency:${latency}`
     );
     return {
-      score: Math.floor(base * http2 * manual * multiple * block * 10) / 10,
+      score: Math.floor(base * http2 * manual * multiple * block * latency * 10) / 10,
       scoreDetail: {
         base,
         http2,
