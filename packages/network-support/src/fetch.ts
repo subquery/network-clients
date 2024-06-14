@@ -7,6 +7,9 @@ import { OrderType } from './types';
 import { ScoreType } from './scoreManager';
 import { Base64 } from 'js-base64';
 
+const fatalErrorCodes = [1053, 1054, 1055, 1056, 1058, 1059];
+const rpcErrorCodes = [1050, 1051, 1052, 1057];
+
 interface SystemError extends Error {
   code?: string | undefined;
 }
@@ -46,6 +49,12 @@ export function createFetch(
         throw new FetchError(`method not supported`, 'sqn');
       }
       let requestParams;
+      const body = init.body ? JSON.parse(init.body as string) : {};
+      if (Array.isArray(body)) {
+        logger?.warn(`${requestId} direct to fallback. ${(init.body as string).substring(0, 20)}`);
+        retries = maxRetries;
+      }
+
       if (retries < maxRetries) {
         requestParams = await orderManager.getRequestParams(requestId);
       }
@@ -59,7 +68,7 @@ export function createFetch(
             runner: 'fallback',
             channelId: 'fallback',
           };
-          logger?.warn(`fallback to ${orderManager.fallbackServiceUrl}`);
+          logger?.warn(`${requestId} fallback to ${orderManager.fallbackServiceUrl}`);
         } else {
           throw new FetchError(
             `no available order. retries: ${retries}.${errorMsg ? ' error: ' + errorMsg : ''}`,
@@ -125,13 +134,30 @@ export function createFetch(
       } catch (e) {
         logger?.warn(e);
         errorMsg = (e as Error)?.message || '';
-        if (retries < maxRetries || (orderManager.fallbackServiceUrl && !triedFallback)) {
+
+        let allMsg = `${requestId} ${errorMsg}`;
+        if (!triedFallback && (retries < maxRetries || orderManager.fallbackServiceUrl)) {
+          let needRetry = true;
+          let scoreType = ScoreType.RPC;
           const errorObj = safeJSONParse(errorMsg);
-          if (errorObj?.code === 1056 && errorObj?.error === 'Query overflow') {
-            orderManager.updateScore(runner, ScoreType.FATAL);
+
+          if (errorObj?.code && errorObj?.error) {
+            if (fatalErrorCodes.includes(errorObj.code)) {
+              scoreType = ScoreType.FATAL;
+            } else if (rpcErrorCodes.includes(errorObj.code)) {
+              scoreType = ScoreType.RPC;
+            } else {
+              needRetry = false;
+              allMsg += ` /////error not found////`;
+            }
           }
-          retries += 1;
-          return requestResult();
+          if (needRetry) {
+            orderManager.updateScore(runner, scoreType);
+            retries += 1;
+            return requestResult();
+          }
+          logger?.warn(`fetch error: ${allMsg} directly throw`);
+          throw new FetchError(errorMsg, 'SQN');
         }
         throw new FetchError(`reach max retries.${errorMsg ? ' error: ' + errorMsg : ''}`, 'SQN');
       }

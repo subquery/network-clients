@@ -1,6 +1,7 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { ScoreWithDetail } from './types';
 import { Logger, IStore, createStore } from './utils';
 import { getBlockScoreWeight, getLatencyScoreWeight } from './utils/score';
 import { Version } from './utils/version';
@@ -47,6 +48,8 @@ const DEFAULT_SCORE = {
   lastFailed: 0,
 };
 
+const SCORE_PENALTY_PERIOD = 5_000; // 5s
+
 const SAMPLE_SIZE = 20;
 const SAMPLE_LIMIT = 1000;
 const sampleCount: { [key: string]: number } = {};
@@ -74,7 +77,7 @@ export class ScoreManager {
     return Math.min(score.score + Math.floor((Date.now() - score.lastUpdate) / 600_000), 100);
   }
 
-  async getAdjustedScore(runner: string, proxyVersion?: string) {
+  async getAdjustedScore(runner: string, proxyVersion?: string): Promise<ScoreWithDetail> {
     proxyVersion = proxyVersion || '';
     const score = await this.getScore(runner);
     const base = this.getAvailabilityScore(score);
@@ -86,7 +89,18 @@ export class ScoreManager {
     this.logger?.debug(
       `getAdjustedScore: ${runner} ${this.projectId} base:${base} http2:${http2} manua:${manual} multiple:${multiple} block:${block} latency:${latency}`
     );
-    return base * http2 * manual * multiple * block * latency;
+    return {
+      score: Math.floor(base * http2 * manual * multiple * block * 10) / 10,
+      scoreDetail: {
+        base,
+        http2,
+        manual,
+        multiple,
+        block,
+        latency,
+      },
+    };
+    // return base * http2 * manual * multiple * block;
   }
 
   async getManualScoreWeight(runner: string) {
@@ -109,7 +123,14 @@ export class ScoreManager {
     const key = this.getCacheKey(runner);
     const score = await this.getScore(runner);
 
+    const now = Date.now();
     if (errorType !== ScoreType.SUCCESS) {
+      if (this.minScore !== 1 && now - score.lastFailed < SCORE_PENALTY_PERIOD) {
+        this.logger?.debug(
+          `updateScore skip: ${runner} ${errorType} lastFailed:${score.lastFailed}`
+        );
+        return;
+      }
       this.logger?.debug(`updateScore type: ${runner} ${errorType}`);
     }
     this.logger?.debug(`updateScore before: ${runner} ${JSON.stringify(score)}`);
@@ -118,8 +139,8 @@ export class ScoreManager {
 
     score.score = Math.min(Math.max(score.score + delta, this.minScore), 100);
     score.httpVersion = httpVersion || score.httpVersion;
-    score.lastUpdate = Date.now();
-    score.lastFailed = errorType === ScoreType.SUCCESS ? 0 : Date.now();
+    score.lastUpdate = now;
+    score.lastFailed = errorType === ScoreType.SUCCESS ? 0 : now;
 
     this.logger?.debug(`updateScore after: ${runner} ${JSON.stringify(score)}`);
 

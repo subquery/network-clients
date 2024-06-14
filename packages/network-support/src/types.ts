@@ -75,3 +75,10 @@ export interface RunnerSelector {
   agreements?: string[];
   channelIds?: string[];
 }
+
+type SCORE_DETAIL_TYPE = 'base' | 'http2' | 'manual' | 'multiple' | 'block' | 'latency';
+
+export type ScoreWithDetail = {
+  score: number;
+  scoreDetail: Record<SCORE_DETAIL_TYPE, number>;
+};
