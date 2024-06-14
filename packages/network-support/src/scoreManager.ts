@@ -3,7 +3,7 @@
 
 import { ScoreWithDetail } from './types';
 import { Logger, IStore, createStore } from './utils';
-import { getBlockScoreWeight } from './utils/score';
+import { getBlockScoreWeight, getLatencyScoreWeight } from './utils/score';
 import { Version } from './utils/version';
 
 type Options = {
@@ -50,6 +50,10 @@ const DEFAULT_SCORE = {
 
 const SCORE_PENALTY_PERIOD = 5_000; // 5s
 
+const SAMPLE_SIZE = 20;
+const SAMPLE_LIMIT = 1000;
+const sampleCount: { [key: string]: number } = {};
+
 export class ScoreManager {
   private logger: Logger;
   private scoreStore: IStore;
@@ -81,15 +85,19 @@ export class ScoreManager {
     const manual = await this.getManualScoreWeight(runner);
     const multiple = this.getMultipleAuthScoreWeight(proxyVersion);
     const block = await getBlockScoreWeight(this.scoreStore, runner, this.projectId);
+    const latency = await getLatencyScoreWeight(this.scoreStore, runner, this.projectId);
+    this.logger?.debug(
+      `getAdjustedScore: ${runner} ${this.projectId} base:${base} http2:${http2} manua:${manual} multiple:${multiple} block:${block} latency:${latency}`
+    );
     return {
-      score: Math.floor(base * http2 * manual * multiple * block * 10) / 10,
+      score: Math.floor(base * http2 * manual * multiple * block * latency * 10) / 10,
       scoreDetail: {
         base,
         http2,
         manual,
         multiple,
         block,
-        latency: 1,
+        latency,
       },
     };
     // return base * http2 * manual * multiple * block;
@@ -137,6 +145,21 @@ export class ScoreManager {
     this.logger?.debug(`updateScore after: ${runner} ${JSON.stringify(score)}`);
 
     this.scoreStore.set(key, score);
+  }
+
+  async collectLatency(indexer: string, latency: number, size: number): Promise<void> {
+    const isLocal = process.env.NODE_ENV === 'local';
+    sampleCount[indexer] = sampleCount[indexer] || 0;
+    sampleCount[indexer]++;
+    if (isLocal || sampleCount[indexer] >= SAMPLE_LIMIT) {
+      sampleCount[indexer] = 0;
+      const key = `sample:latency:${indexer}_${this.projectId}`;
+      const len = await this.scoreStore.lpush(key, `${size}_${latency}`);
+      await this.scoreStore.expire(key, 60 * 60 * 24);
+      if (len > SAMPLE_SIZE) {
+        await this.scoreStore.ltrim(key, 0, SAMPLE_SIZE - 1);
+      }
+    }
   }
 
   private getHttpVersionWeight(score: ScoreStoreType) {

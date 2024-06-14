@@ -80,6 +80,7 @@ export function createFetch(
       let httpVersion = 1;
 
       try {
+        const before = Date.now();
         const _res = await customFetch(
           url,
           {
@@ -92,7 +93,7 @@ export function createFetch(
           },
           overrideFetch
         );
-
+        const after = Date.now();
         httpVersion = Number(_res.headers.get('httpVersion')) || 1;
 
         let res: object;
@@ -116,6 +117,11 @@ export function createFetch(
         }
 
         orderManager.updateScore(runner, ScoreType.SUCCESS, httpVersion);
+        void orderManager.collectLatency(
+          runner,
+          after - before,
+          Number(_res.headers.get('Content-Length')) || 1
+        );
 
         return {
           status: _res.status,

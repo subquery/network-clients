@@ -428,6 +428,10 @@ export class OrderManager {
     await this.scoreManager.updateScore(runner, errorType, httpVersion);
   }
 
+  async collectLatency(indexer: string, latency: number, size: number): Promise<void> {
+    await this.scoreManager.collectLatency(indexer, latency, size);
+  }
+
   cleanup() {
     if (this.timer) {
       clearInterval(this.timer);

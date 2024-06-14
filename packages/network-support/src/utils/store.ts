@@ -3,24 +3,52 @@
 
 import { LRUCache as LRU } from 'lru-cache';
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 export interface IStore {
   get<T>(key: string): Promise<T | undefined>;
   set<T>(key: string, value: T): Promise<void>; // ttl in milliseconds
   remove(key: string): Promise<void>;
+
+  lpush(key: string, value: any): Promise<number>;
+  ltrim(key: string, start: number, stop: number): Promise<void>;
+  expire(key: string, ttl: number): Promise<void>;
+}
+
+export class BaseStorage implements IStore {
+  get<T>(key: string): Promise<T | undefined> {
+    return Promise.resolve(undefined);
+  }
+  set<T>(key: string, value: T): Promise<void> {
+    return Promise.resolve();
+  }
+  remove(key: string): Promise<void> {
+    return Promise.resolve();
+  }
+
+  lpush(key: string, value: any): Promise<number> {
+    return Promise.resolve(0);
+  }
+  ltrim(key: string, start: number, stop: number): Promise<void> {
+    return Promise.resolve();
+  }
+  expire(key: string, ttl: number): Promise<void> {
+    return Promise.resolve();
+  }
 }
 
 interface Options {
   ttl: number;
 }
 
-export class LocalStorageCache implements IStore {
+export class LocalStorageCache extends BaseStorage {
   private ttl: number;
 
   constructor(options: Options) {
+    super();
     this.ttl = options.ttl;
   }
 
-  async get<T>(key: string): Promise<T | undefined> {
+  override async get<T>(key: string): Promise<T | undefined> {
     const data = localStorage.getItem(key);
     if (!data) return undefined;
 
@@ -37,7 +65,7 @@ export class LocalStorageCache implements IStore {
     }
   }
 
-  async set<T>(key: string, value: T): Promise<void> {
+  override async set<T>(key: string, value: T): Promise<void> {
     const expiry = this.ttl ? Date.now() + this.ttl : undefined;
     const data = { value, expiry };
 
@@ -48,7 +76,7 @@ export class LocalStorageCache implements IStore {
     }
   }
 
-  async remove(key: string): Promise<void> {
+  override async remove(key: string): Promise<void> {
     localStorage.removeItem(key);
   }
 
@@ -57,24 +85,25 @@ export class LocalStorageCache implements IStore {
   }
 }
 
-export class LRUCache implements IStore {
+export class LRUCache extends BaseStorage {
   private cache: LRU<string, any>;
 
   constructor(options: Options) {
+    super();
     this.cache = new LRU({ max: 1000, ttl: options.ttl });
   }
 
-  async get<T>(key: string): Promise<T | undefined> {
+  override async get<T>(key: string): Promise<T | undefined> {
     return this.cache.get(key);
   }
 
-  async set<T>(key: string, value: T, ttl?: number): Promise<void> {
+  override async set<T>(key: string, value: T, ttl?: number): Promise<void> {
     // If ttl is defined, it is passed in milliseconds.
     // lru-cache expects ttl in milliseconds as well, so it aligns perfectly.
     this.cache.set(key, value, { ttl });
   }
 
-  async remove(key: string): Promise<void> {
+  override async remove(key: string): Promise<void> {
     this.cache.delete(key);
   }
 }
