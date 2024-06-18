@@ -1,9 +1,9 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ScoreWithDetail } from './types';
+import { Order, ScoreWithDetail } from './types';
 import { Logger, IStore, createStore } from './utils';
-import { getBlockScoreWeight, getLatencyScoreWeight } from './utils/score';
+import { getBlockScoreWeight, getLatencyScoreWeight, scoreMap } from './utils/score';
 import { Version } from './utils/version';
 
 type Options = {
@@ -98,9 +98,27 @@ export class ScoreManager {
         multiple,
         block,
         latency,
+        price: 1,
       },
     };
     // return base * http2 * manual * multiple * block;
+  }
+
+  async adjustPriceScore(orders: Order[], scores: ScoreWithDetail[]) {
+    let minPrice = BigInt(`-${orders[0].price}`);
+    let maxPrice = BigInt(`-${orders[0].price}`);
+    for (const o of orders) {
+      const p = BigInt(`-${o.price}`);
+      if (p < minPrice) minPrice = p;
+      if (p > maxPrice) maxPrice = p;
+    }
+
+    for (let i = 0; i < orders.length; i++) {
+      const price = BigInt(`-${orders[i].price}`);
+      const weight = scoreMap(price, [minPrice, maxPrice], [1, 2]);
+      scores[i].score *= weight;
+      scores[i].scoreDetail.price = weight;
+    }
   }
 
   async getManualScoreWeight(runner: string) {

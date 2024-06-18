@@ -25,6 +25,7 @@ export interface IndexingMetadata {
 export interface Order {
   id: string;
   indexer: string;
+  price: string;
   url: string;
   metadata: IndexingMetadata;
 }
@@ -76,7 +77,7 @@ export interface RunnerSelector {
   channelIds?: string[];
 }
 
-type SCORE_DETAIL_TYPE = 'base' | 'http2' | 'manual' | 'multiple' | 'block' | 'latency';
+type SCORE_DETAIL_TYPE = 'base' | 'http2' | 'manual' | 'multiple' | 'block' | 'latency' | 'price';
 
 export type ScoreWithDetail = {
   score: number;

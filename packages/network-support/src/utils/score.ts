@@ -128,10 +128,10 @@ export function avg(arr: number[]) {
   return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 }
 
-export function scoreMap(
-  input: number,
-  inputRange: [number, number],
-  outputRange: [number, number],
+export function scoreMap<T extends bigint | number = number, U extends number = number>(
+  input: T,
+  inputRange: [T, T],
+  outputRange: [U, U],
   curve: CurveType = CurveType.LINEAR
 ) {
   const [inputMin, inputMax] = inputRange;
@@ -143,8 +143,7 @@ export function scoreMap(
     return outputMax;
   }
 
-  const inputNormalized =
-    inputMax - inputMin === 0 ? 1 : (input - inputMin) / (inputMax - inputMin);
+  const inputNormalized = inputMax === inputMin ? 1 : (input - inputMin) / (inputMax - inputMin);
   let outputNormalized = 0;
   switch (curve) {
     case CurveType.LINEAR:
