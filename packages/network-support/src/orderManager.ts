@@ -169,9 +169,16 @@ export class OrderManager {
     return orders.filter(({ indexer }) => !selected.includes(indexer));
   }
 
-  async getRequestParams(requestId: string): Promise<RequestParam | undefined> {
+  filterOrdersByProxyVersion(orders: Order[], proxyVersion: string) {
+    if (!proxyVersion) return orders;
+    return orders.filter(({ metadata }) => {
+      return metadata ? Version.gte(metadata.proxyVersion, proxyVersion) : false;
+    });
+  }
+
+  async getRequestParams(requestId: string, proxyVersion = ''): Promise<RequestParam | undefined> {
     const innerRequest = async () => {
-      const order = await this.getNextOrder(requestId);
+      const order = await this.getNextOrder(requestId, proxyVersion);
       const headers: RequestParam['headers'] = {};
       if (order) {
         headers['X-SQ-No-Resp-Sig'] = 'true';
@@ -308,13 +315,16 @@ export class OrderManager {
     await this.stateManager.syncState(channelId, state);
   }
 
-  private async getNextOrder(requestId: string): Promise<OrderWithType | undefined> {
+  private async getNextOrder(
+    requestId: string,
+    proxyVersion = ''
+  ): Promise<OrderWithType | undefined> {
     await this._init;
     const agreementsOrders = await this.getNextAgreement(requestId);
     if (agreementsOrders) {
       return { ...agreementsOrders, type: OrderType.agreement };
     }
-    const flexPlanOrders = await this.getNextPlan(requestId);
+    const flexPlanOrders = await this.getNextPlan(requestId, proxyVersion);
     if (flexPlanOrders) {
       return { ...flexPlanOrders, type: OrderType.flexPlan };
     }
@@ -343,16 +353,22 @@ export class OrderManager {
     return agreement;
   }
 
-  private async getNextPlan(requestId: string): Promise<FlexPlanOrder | undefined> {
+  private async getNextPlan(
+    requestId: string,
+    proxyVersion = ''
+  ): Promise<FlexPlanOrder | undefined> {
     await this._init;
 
     if (!this.plans) return;
 
     this.logger?.debug(`available plans: ${this.plans.length}`);
-    const plans = await this.filterOrdersByRequestId(requestId, this.plans);
+    let plans = await this.filterOrdersByRequestId(requestId, this.plans);
     this.logger?.debug(`available plans after filter: ${plans.length}`);
 
     if (!this.healthy || !plans?.length) return;
+
+    plans = this.filterOrdersByProxyVersion(plans, proxyVersion);
+    this.logger?.debug(`available plans after batch filter: ${plans.length}`);
 
     const plan = await this.selectRunner(plans);
 
