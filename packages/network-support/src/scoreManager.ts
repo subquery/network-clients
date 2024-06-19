@@ -162,6 +162,11 @@ export class ScoreManager {
     }
   }
 
+  async incrSelectCount(indexer: string) {
+    const key = this.getSelectCountKey();
+    await this.scoreStore.hincrby(`${key}:${this.projectId}`, indexer, 1);
+  }
+
   private getHttpVersionWeight(score: ScoreStoreType) {
     return score.httpVersion == 2 ? WEIGHT.http2 : 1;
   }
@@ -172,5 +177,9 @@ export class ScoreManager {
 
   private getManualScoreKey(): string {
     return 'score:manual';
+  }
+
+  private getSelectCountKey(): string {
+    return 'sample:select';
   }
 }

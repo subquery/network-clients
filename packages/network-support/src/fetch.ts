@@ -124,6 +124,7 @@ export function createFetch(
           after - before,
           Number(_res.headers.get('Content-Length')) || 1
         );
+        void orderManager.incrSelectCount(runner);
 
         return {
           status: _res.status,

@@ -461,6 +461,10 @@ export class OrderManager {
     await this.scoreManager.collectLatency(indexer, latency, size);
   }
 
+  async incrSelectCount(indexer: string) {
+    await this.scoreManager.incrSelectCount(indexer);
+  }
+
   cleanup() {
     if (this.timer) {
       clearInterval(this.timer);
