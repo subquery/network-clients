@@ -86,8 +86,9 @@ export class ScoreManager {
     const multiple = this.getMultipleAuthScoreWeight(proxyVersion);
     const block = await getBlockScoreWeight(this.scoreStore, runner, this.projectId);
     const latency = await getLatencyScoreWeight(this.scoreStore, runner, this.projectId);
+    const price = await this.getPriceScoreWeight(runner);
     this.logger?.debug(
-      `getAdjustedScore: ${runner} ${this.projectId} base:${base} http2:${http2} manua:${manual} multiple:${multiple} block:${block} latency:${latency}`
+      `getAdjustedScore: ${runner} ${this.projectId} base:${base} http2:${http2} manua:${manual} multiple:${multiple} block:${block} latency:${latency} price:${price}`
     );
     return {
       score: Math.floor(base * http2 * manual * multiple * block * latency * 10) / 10,
@@ -98,27 +99,10 @@ export class ScoreManager {
         multiple,
         block,
         latency,
-        price: 1,
+        price,
       },
     };
     // return base * http2 * manual * multiple * block;
-  }
-
-  async adjustPriceScore(orders: Order[], scores: ScoreWithDetail[]) {
-    let minPrice = BigInt(`-${orders[0].price}`);
-    let maxPrice = BigInt(`-${orders[0].price}`);
-    for (const o of orders) {
-      const p = BigInt(`-${o.price}`);
-      if (p < minPrice) minPrice = p;
-      if (p > maxPrice) maxPrice = p;
-    }
-
-    for (let i = 0; i < orders.length; i++) {
-      const price = BigInt(`-${orders[i].price}`);
-      const weight = scoreMap(price, [minPrice, maxPrice], [1, 2]);
-      scores[i].score *= weight;
-      scores[i].scoreDetail.price = weight;
-    }
   }
 
   async getManualScoreWeight(runner: string) {
@@ -130,6 +114,11 @@ export class ScoreManager {
   getMultipleAuthScoreWeight(proxyVersion: string) {
     const higherVersion = proxyVersion ? Version.gte(proxyVersion, 'v2.1.0') : false;
     return higherVersion ? WEIGHT.multiple : 1;
+  }
+
+  async getPriceScoreWeight(runner: string) {
+    const key = this.getPriceScoreKey();
+    return (await this.scoreStore.get<number>(`${key}:${runner}_${this.projectId}`)) || 1;
   }
 
   async updateScore(runner: string, errorType: ScoreType, httpVersion?: number) {
@@ -180,6 +169,23 @@ export class ScoreManager {
     }
   }
 
+  async updatePriceScore(orders: Order[]) {
+    let minPrice = BigInt(`-${orders[0].price}`);
+    let maxPrice = BigInt(`-${orders[0].price}`);
+    for (const o of orders) {
+      const p = BigInt(`-${o.price}`);
+      if (p < minPrice) minPrice = p;
+      if (p > maxPrice) maxPrice = p;
+    }
+    const key = this.getPriceScoreKey();
+    for (const { indexer, price } of orders) {
+      const p = BigInt(`-${price}`);
+      let weight = scoreMap(p, [minPrice, maxPrice], [1, 2]);
+      weight = Math.floor(weight * 10) / 10;
+      await this.scoreStore.set(`${key}:${indexer}_${this.projectId}`, weight);
+    }
+  }
+
   private getHttpVersionWeight(score: ScoreStoreType) {
     return score.httpVersion == 2 ? WEIGHT.http2 : 1;
   }
@@ -190,5 +196,9 @@ export class ScoreManager {
 
   private getManualScoreKey(): string {
     return 'score:manual';
+  }
+
+  private getPriceScoreKey(): string {
+    return 'score:price';
   }
 }

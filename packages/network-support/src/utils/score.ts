@@ -128,10 +128,10 @@ export function avg(arr: number[]) {
   return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 }
 
-export function scoreMap<T extends bigint | number = number, U extends number = number>(
+export function scoreMap<T extends bigint | number = number>(
   input: T,
   inputRange: [T, T],
-  outputRange: [U, U],
+  outputRange: [number, number],
   curve: CurveType = CurveType.LINEAR
 ) {
   const [inputMin, inputMax] = inputRange;
@@ -156,6 +156,9 @@ export function scoreMap<T extends bigint | number = number, U extends number = 
       outputNormalized = Math.pow(inputNormalized, 3);
       break;
     default:
+  }
+  if (typeof input === 'bigint') {
+    return Number(BigInt(outputNormalized) * BigInt(outputMax - outputMin) + BigInt(outputMin));
   }
   return outputNormalized * (outputMax - outputMin) + outputMin;
 }
