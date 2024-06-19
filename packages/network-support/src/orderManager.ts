@@ -169,14 +169,17 @@ export class OrderManager {
     return orders.filter(({ indexer }) => !selected.includes(indexer));
   }
 
-  filterOrdersByProxyVersion(orders: Order[], proxyVersion: string) {
+  filterOrdersByProxyVersion(orders: Order[], proxyVersion?: string) {
     if (!proxyVersion) return orders;
     return orders.filter(({ metadata }) => {
       return metadata ? Version.gte(metadata.proxyVersion, proxyVersion) : false;
     });
   }
 
-  async getRequestParams(requestId: string, proxyVersion = ''): Promise<RequestParam | undefined> {
+  async getRequestParams(
+    requestId: string,
+    proxyVersion?: string
+  ): Promise<RequestParam | undefined> {
     const innerRequest = async () => {
       const order = await this.getNextOrder(requestId, proxyVersion);
       const headers: RequestParam['headers'] = {};
@@ -317,10 +320,10 @@ export class OrderManager {
 
   private async getNextOrder(
     requestId: string,
-    proxyVersion = ''
+    proxyVersion?: string
   ): Promise<OrderWithType | undefined> {
     await this._init;
-    const agreementsOrders = await this.getNextAgreement(requestId);
+    const agreementsOrders = await this.getNextAgreement(requestId, proxyVersion);
     if (agreementsOrders) {
       return { ...agreementsOrders, type: OrderType.agreement };
     }
@@ -331,16 +334,24 @@ export class OrderManager {
     return undefined;
   }
 
-  private async getNextAgreement(requestId: string): Promise<ServiceAgreementOrder | undefined> {
+  private async getNextAgreement(
+    requestId: string,
+    proxyVersion?: string
+  ): Promise<ServiceAgreementOrder | undefined> {
     await this._init;
 
     if (!this.agreements) return;
 
     this.logger?.debug(`available agreements: ${this.agreements.length}`);
-    const agreements = await this.filterOrdersByRequestId(requestId, this.agreements);
+    let agreements = await this.filterOrdersByRequestId(requestId, this.agreements);
     this.logger?.debug(`available agreements after filter: ${agreements.length}`);
 
-    if (!this.healthy || !agreements.length) return;
+    if (proxyVersion && agreements?.length) {
+      agreements = this.filterOrdersByProxyVersion(agreements, proxyVersion);
+      this.logger?.debug(`available agreements after proxy version filter: ${agreements.length}`);
+    }
+
+    if (!agreements.length) return;
 
     const agreement = (await this.selectRunner(agreements)) as ServiceAgreementOrder;
 
@@ -355,7 +366,7 @@ export class OrderManager {
 
   private async getNextPlan(
     requestId: string,
-    proxyVersion = ''
+    proxyVersion?: string
   ): Promise<FlexPlanOrder | undefined> {
     await this._init;
 
@@ -365,10 +376,12 @@ export class OrderManager {
     let plans = await this.filterOrdersByRequestId(requestId, this.plans);
     this.logger?.debug(`available plans after filter: ${plans.length}`);
 
-    if (!this.healthy || !plans?.length) return;
+    if (proxyVersion && plans?.length) {
+      plans = this.filterOrdersByProxyVersion(plans, proxyVersion);
+      this.logger?.debug(`available plans after proxy version filter: ${plans.length}`);
+    }
 
-    plans = this.filterOrdersByProxyVersion(plans, proxyVersion);
-    this.logger?.debug(`available plans after batch filter: ${plans.length}`);
+    if (!plans?.length) return;
 
     const plan = await this.selectRunner(plans);
 
