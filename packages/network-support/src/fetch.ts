@@ -44,19 +44,21 @@ export function createFetch(
   let errorMsg = '';
   return async function fetch(init: RequestInit): Promise<Response> {
     const requestId = generateUniqueId();
+
+    let proxyVersion = '';
+    const body = init.body ? JSON.parse(init.body as string) : {};
+    if (Array.isArray(body)) {
+      logger?.warn(`${requestId} batch ${(init.body as string).substring(0, 20)}`);
+      proxyVersion = 'v2.3.0';
+    }
+
     const requestResult: () => Promise<Response> = async () => {
       if (init.method?.toLowerCase() !== 'post') {
         throw new FetchError(`method not supported`, 'sqn');
       }
       let requestParams;
-      const body = init.body ? JSON.parse(init.body as string) : {};
-      if (Array.isArray(body)) {
-        logger?.warn(`${requestId} direct to fallback. ${(init.body as string).substring(0, 20)}`);
-        retries = maxRetries;
-      }
-
       if (retries < maxRetries) {
-        requestParams = await orderManager.getRequestParams(requestId);
+        requestParams = await orderManager.getRequestParams(requestId, proxyVersion);
       }
       if (!requestParams) {
         if (orderManager.fallbackServiceUrl && !triedFallback) {
