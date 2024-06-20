@@ -154,6 +154,8 @@ export class OrderManager {
       }
       if (orders.plans && orders.plans.length > 0) {
         this._plans = orders.plans;
+
+        void this.updatePriceScore(orders.plans);
       }
       this.healthy = true;
     } catch (e) {
@@ -459,6 +461,10 @@ export class OrderManager {
 
   async collectLatency(indexer: string, latency: number, size: number): Promise<void> {
     await this.scoreManager.collectLatency(indexer, latency, size);
+  }
+
+  async updatePriceScore(orders: FlexPlanOrder[]) {
+    await this.scoreManager.updatePriceScore(orders);
   }
 
   cleanup() {
