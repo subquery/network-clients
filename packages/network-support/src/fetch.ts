@@ -7,8 +7,14 @@ import { OrderType } from './types';
 import { ScoreType } from './scoreManager';
 import { Base64 } from 'js-base64';
 
-const fatalErrorCodes = [1053, 1054, 1055, 1056, 1058, 1059];
-const rpcErrorCodes = [1050, 1051, 1052, 1057];
+// prettier-ignore
+const fatalErrorCodes = new Set([
+  1010, 1011, 1012, 1021,
+  1053, 1054, 1055, 1056, 1058, 1059,
+  1200, 1201, 1202, 1203,
+  1302, 1308, 1312, 1314
+]);
+const rpcErrorCodes = new Set([1050, 1051, 1052, 1057]);
 
 interface SystemError extends Error {
   code?: string | undefined;
@@ -144,9 +150,9 @@ export function createFetch(
           const errorObj = safeJSONParse(errorMsg);
 
           if (errorObj?.code && errorObj?.error) {
-            if (fatalErrorCodes.includes(errorObj.code)) {
+            if (fatalErrorCodes.has(errorObj.code)) {
               scoreType = ScoreType.FATAL;
-            } else if (rpcErrorCodes.includes(errorObj.code)) {
+            } else if (rpcErrorCodes.has(errorObj.code)) {
               scoreType = ScoreType.RPC;
             } else {
               needRetry = false;
