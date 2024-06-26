@@ -1,4 +1,4 @@
-query GetDashboard {
+query GetDashboard($nextEra: Int! = 0) {
   eraRewards {
     aggregates {
       sum {
@@ -57,12 +57,11 @@ query GetDashboard {
     totalCount
   }
 
-  delegations {
-    aggregates {
-      distinctCount {
-        delegatorId
-      }
-    }
+  delegators(
+    distinct: ID
+    filter: { or: [{ exitEra: { equalTo: -1 } }, { exitEra: { equalTo: $nextEra } }] }
+  ) {
+    totalCount
   }
 }
 
