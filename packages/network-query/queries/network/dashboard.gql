@@ -59,7 +59,10 @@ query GetDashboard($nextEra: Int! = 0) {
 
   delegators(
     distinct: ID
-    filter: { or: [{ exitEra: { equalTo: -1 } }, { exitEra: { equalTo: $nextEra } }] }
+    filter: {
+      startEra: { lessThan: $nextEra }
+      or: [{ exitEra: { equalTo: -1 } }, { exitEra: { equalTo: $nextEra } }]
+    }
   ) {
     totalCount
   }
