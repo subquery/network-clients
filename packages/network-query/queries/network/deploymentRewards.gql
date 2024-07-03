@@ -1,0 +1,11 @@
+query GetEraDeploymentRewards($deploymentId: String!, $eraIds: [Int!]) {
+  eraDeploymentRewards(
+    filter: { deploymentId: { equalTo: $deploymentId }, eraIdx: { in: $eraIds } }
+  ) {
+    nodes {
+      totalRewards
+      allocationRewards
+      eraIdx
+    }
+  }
+}
