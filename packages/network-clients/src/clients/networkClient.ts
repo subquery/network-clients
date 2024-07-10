@@ -53,7 +53,8 @@ export class NetworkClient {
   public async getIndexer(
     address: string,
     era?: BigNumber,
-    indexerInfo?: IndexerFieldsFragment
+    indexerInfo?: IndexerFieldsFragment,
+    getMetadataMethod?: (cid: string) => Promise<any>
   ): Promise<Indexer | undefined> {
     let currentEra = era;
     if (!currentEra) {
@@ -76,10 +77,9 @@ export class NetworkClient {
       metadata: indexerMetadata,
     } = indexer;
 
-    const metadata = await this._ipfs.getJSON<{
-      name: string;
-      url: string;
-    }>(indexerMetadata);
+    const catMethod = getMetadataMethod || this._ipfs.getJSON;
+
+    const metadata = await catMethod(indexerMetadata);
 
     const sortedTotalStake = parseRawEraValue(totalStake, currentEra.toNumber());
     const sortedOwnStake = parseRawEraValue(ownStake, currentEra.toNumber());
