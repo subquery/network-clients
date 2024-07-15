@@ -295,14 +295,19 @@ export class OrderManager {
         return [body, state, ''];
       }
       default:
-        if (
-          (typeof payload === 'object' && (payload as any).code) ||
-          (typeof payload === 'string' && JSON.parse(payload).code)
-        ) {
-          if (typeof payload === 'string') {
-            payload = JSON.parse(payload);
-          }
-          if ((payload as any).code === 1050 && (payload as any).error === 'PAYG conflict') {
+        if (typeof payload === 'string') {
+          payload = JSON.parse(payload);
+        }
+        if ((payload as any).error && typeof (payload as any).error === 'object') {
+          payload = (payload as any).error as { code: number; message: string };
+        }
+
+        if ((payload as any).code) {
+          if (
+            (payload as any).code === 1050 &&
+            ((payload as any).error === 'PAYG conflict' ||
+              (payload as any).message === 'PAYG conflict')
+          ) {
             this.stateManager.forceReportInactiveState(channelId);
           }
           throw new Error(JSON.stringify(payload));

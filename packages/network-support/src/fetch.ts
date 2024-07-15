@@ -149,7 +149,7 @@ export function createFetch(
           let scoreType = ScoreType.RPC;
           const errorObj = safeJSONParse(errorMsg);
 
-          if (errorObj?.code && errorObj?.error) {
+          if (errorObj?.code && (errorObj?.error || errorObj?.message)) {
             if (fatalErrorCodes.has(errorObj.code)) {
               scoreType = ScoreType.FATAL;
             } else if (rpcErrorCodes.has(errorObj.code)) {
