@@ -298,7 +298,7 @@ export class OrderManager {
         if (typeof payload === 'string') {
           payload = JSON.parse(payload);
         }
-        if ((payload as any).error) {
+        if ((payload as any).error && typeof (payload as any).error === 'object') {
           payload = (payload as any).error as { code: number; message: string };
         }
 
