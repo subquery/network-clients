@@ -56,6 +56,15 @@ export function createFetch(
     if (Array.isArray(body)) {
       logger?.warn(`${requestId} batch ${(init.body as string).substring(0, 20)}`);
       proxyVersion = 'v2.3.0';
+      for (const b of body) {
+        if (b.id) {
+          b.id = isNaN(Number(b.id)) ? b.id : Number(b.id);
+        }
+      }
+    } else {
+      if (body.id) {
+        body.id = isNaN(Number(body.id)) ? body.id : Number(body.id);
+      }
     }
 
     const requestResult: () => Promise<Response> = async () => {
@@ -97,7 +106,7 @@ export function createFetch(
               ...headers,
             },
             method: 'post',
-            body: init.body,
+            body: JSON.stringify(body),
           },
           overrideFetch
         );
