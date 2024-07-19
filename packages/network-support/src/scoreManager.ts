@@ -140,6 +140,7 @@ export class ScoreManager {
       }
       this.logger?.debug(`updateScore type: ${runner} ${errorType}`);
     }
+    const before = score.score;
     this.logger?.debug(`updateScore before: ${runner} ${JSON.stringify(score)}`);
 
     const delta = scoresDelta[errorType];
@@ -152,6 +153,17 @@ export class ScoreManager {
     this.logger?.debug(`updateScore after: ${runner} ${JSON.stringify(score)}`);
 
     this.scoreStore.set(key, score);
+
+    this.logger.info({
+      type: 'updateScore',
+      target: 'base',
+      deploymentId: this.projectId,
+      indexer: runner,
+      deltaType: errorType,
+      deltaValue: delta,
+      from: before,
+      to: score.score,
+    });
   }
 
   async collectLatency(indexer: string, latency: number, size: number): Promise<void> {
@@ -183,6 +195,14 @@ export class ScoreManager {
       let weight = scoreMap(p, [minPrice, maxPrice], [1, 2]);
       weight = Math.floor(weight * 10) / 10;
       await this.scoreStore.set(`${key}:${indexer}_${this.projectId}`, weight);
+
+      this.logger?.info({
+        type: 'updateScore',
+        target: 'priceWeight',
+        deploymentId: this.projectId,
+        indexer: indexer,
+        to: weight,
+      });
     }
   }
 

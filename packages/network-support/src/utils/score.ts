@@ -51,6 +51,13 @@ export async function updateBlockScoreWeight(
     logger?.debug(
       `${deploymentId}(minH:${minHeight}, maxH:${maxHeight}) set ${indexer}(rawHeight:${rawHeight}) height:${height} to ${weight}`
     );
+    logger?.info({
+      type: 'updateScore',
+      target: 'blockWeight',
+      deploymentId,
+      indexer,
+      to: weight,
+    });
   }
 }
 
@@ -86,6 +93,13 @@ export async function updateLatencyScoreWeight(
     logger?.debug(
       `updateLatencyScoreWeight: ${indexerLantency[i].indexer} ${deploymentId}(min:${min}, max:${max}) ${medians[i]} => ${weight}`
     );
+    logger?.info({
+      type: 'updateScore',
+      target: 'latencyWeight',
+      deploymentId,
+      indexer: indexerLantency[i].indexer,
+      to: weight,
+    });
   }
 }
 
