@@ -154,7 +154,7 @@ export class ScoreManager {
 
     this.scoreStore.set(key, score);
 
-    this.logger.info({
+    this.logger?.info({
       type: 'updateScore',
       target: 'base',
       deploymentId: this.projectId,

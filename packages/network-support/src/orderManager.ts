@@ -415,7 +415,7 @@ export class OrderManager {
       if (random <= sum) {
         this.logger?.debug(`selectRunner: selected index: ${i}`);
         this.logger?.debug(`selectRunner: selected indexer: ${orders[i].indexer}`);
-        this.logger.info({
+        this.logger?.info({
           type: 'selectRunner',
           deploymentId: this.projectId,
           indexer: orders[i].indexer,
