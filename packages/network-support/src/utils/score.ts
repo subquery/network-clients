@@ -132,6 +132,7 @@ function getMedian(arr: number[]) {
 }
 
 export function calculateBigIntPercentile(arr: BigNumber[], percentile: number): BigNumber {
+  if (arr.length === 0) return new BigNumber(0);
   const sortedArr = arr.slice().sort((a, b) => (a.lt(b) ? -1 : 1));
   // const sortedArr = arr.slice().sort((a, b) => (a < b ? -1 : 1));
   const index = Math.floor((percentile / 100) * (sortedArr.length - 1) + 0.5);
