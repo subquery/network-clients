@@ -194,16 +194,16 @@ export class ScoreManager {
       const blockWeight = await getBlockScoreWeight(this.scoreStore, o.indexer, this.projectId);
       const latencyWeight = await getLatencyScoreWeight(this.scoreStore, o.indexer, this.projectId);
 
-      let factor = 5;
+      let factor = 4;
       if (blockWeight >= 1 && latencyWeight >= 1) {
-        factor = 10;
+        factor = 9;
       }
       let weight = 1;
       const diff = percenTile.minus(new BigNumber(o.price));
       if (diff.gt(0)) {
-        weight = 1 + Math.ceil(diff.dividedBy(percenTile).times(factor).toNumber());
+        weight = 1 + diff.dividedBy(percenTile).times(factor).toNumber();
+        weight = Number(weight.toFixed(2));
       }
-
       this.logger?.info({
         type: 'updateScore',
         target: 'priceWeight',
