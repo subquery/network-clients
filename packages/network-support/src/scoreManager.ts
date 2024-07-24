@@ -1,9 +1,14 @@
 // Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import BigNumber from 'bignumber.js';
 import { Order, ScoreWithDetail } from './types';
 import { Logger, IStore, createStore } from './utils';
-import { getBlockScoreWeight, getLatencyScoreWeight, scoreMap } from './utils/score';
+import {
+  calculateBigIntPercentile,
+  getBlockScoreWeight,
+  getLatencyScoreWeight,
+} from './utils/score';
 import { Version } from './utils/version';
 
 type Options = {
@@ -182,26 +187,33 @@ export class ScoreManager {
   }
 
   async updatePriceScore(orders: Order[]) {
-    let minPrice = BigInt(`-${orders[0].price}`);
-    let maxPrice = BigInt(`-${orders[0].price}`);
+    const prices = orders.map((o) => BigNumber(o.price));
+    const percenTile = calculateBigIntPercentile(prices, 95);
+
     for (const o of orders) {
-      const p = BigInt(`-${o.price}`);
-      if (p < minPrice) minPrice = p;
-      if (p > maxPrice) maxPrice = p;
-    }
-    const key = this.getPriceScoreKey();
-    for (const { indexer, price } of orders) {
-      const p = BigInt(`-${price}`);
-      let weight = scoreMap(p, [minPrice, maxPrice], [1, 2]);
-      weight = Math.floor(weight * 10) / 10;
-      await this.scoreStore.set(`${key}:${indexer}_${this.projectId}`, weight);
+      const blockWeight = await getBlockScoreWeight(this.scoreStore, o.indexer, this.projectId);
+      const latencyWeight = await getLatencyScoreWeight(this.scoreStore, o.indexer, this.projectId);
+
+      let factor = 5;
+      if (blockWeight >= 1 && latencyWeight >= 1) {
+        factor = 10;
+      }
+      let weight = 1;
+      const diff = percenTile.minus(new BigNumber(o.price));
+      if (diff.gt(0)) {
+        weight = 1 + Math.ceil(diff.dividedBy(percenTile).times(factor).toNumber());
+      }
 
       this.logger?.info({
         type: 'updateScore',
         target: 'priceWeight',
         deploymentId: this.projectId,
-        indexer: indexer,
+        indexer: o.indexer,
+        price: o.price,
         to: weight,
+        percenTile: percenTile.toString(),
+        factor,
+        diff: diff.toString(),
       });
     }
   }
