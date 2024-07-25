@@ -189,7 +189,7 @@ export class ScoreManager {
   async updatePriceScore(orders: Order[]) {
     const prices = orders.map((o) => BigNumber(o.price));
     const percenTile = calculateBigIntPercentile(prices, 95);
-
+    const key = this.getPriceScoreKey();
     for (const o of orders) {
       const blockWeight = await getBlockScoreWeight(this.scoreStore, o.indexer, this.projectId);
       const latencyWeight = await getLatencyScoreWeight(this.scoreStore, o.indexer, this.projectId);
@@ -204,6 +204,7 @@ export class ScoreManager {
         weight = 1 + diff.dividedBy(percenTile).times(factor).toNumber();
         weight = Number(weight.toFixed(2));
       }
+      await this.scoreStore.set(`${key}:${o.indexer}_${this.projectId}`, weight);
       this.logger?.info({
         type: 'updateScore',
         target: 'priceWeight',
@@ -214,6 +215,8 @@ export class ScoreManager {
         percenTile: percenTile.toString(),
         factor,
         diff: diff.toString(),
+        blockWeight,
+        latencyWeight,
       });
     }
   }
