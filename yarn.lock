@@ -3280,6 +3280,7 @@ __metadata:
     "@metamask/eth-sig-util": ^7.0.0
     "@types/crypto-js": ^4.2.2
     "@types/node": 18
+    bignumber.js: ^9.1.2
     cross-fetch: ^4.0.0
     crypto-js: ^4.2.0
     js-base64: ^3.7.5
