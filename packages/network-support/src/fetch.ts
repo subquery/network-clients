@@ -121,17 +121,6 @@ export function createFetch(
             channelId
           );
         }
-        if (type === OrderType.agreement) {
-          const data = await _res.json();
-          // todo: need to confirm
-          res = {
-            ...data,
-            ...JSON.parse(Base64.decode(data.result)),
-          };
-        }
-        if (type === OrderType.fallback) {
-          res = await _res.json();
-        }
 
         orderManager.updateScore(runner, ScoreType.SUCCESS, httpVersion);
         void orderManager.collectLatency(
@@ -139,6 +128,19 @@ export function createFetch(
           after - before,
           Number(_res.headers.get('Content-Length')) || 1
         );
+
+        if (_res.body && _res?.body instanceof ReadableStream) {
+          return _res;
+        } else if (type === OrderType.agreement) {
+          const data = await _res.json();
+          // todo: need to confirm
+          res = {
+            ...data,
+            ...JSON.parse(Base64.decode(data.result)),
+          };
+        } else if (type === OrderType.fallback) {
+          res = await _res.json();
+        }
 
         return {
           status: _res.status,
