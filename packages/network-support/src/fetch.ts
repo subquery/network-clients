@@ -114,23 +114,43 @@ export function createFetch(
         httpVersion = Number(_res.headers.get('httpVersion')) || 1;
 
         let res: object;
-        if (type === OrderType.flexPlan) {
+        let stream: ReadableStream | null = null;
+
+        if (_res.body && _res.body instanceof ReadableStream) {
+          stream = new ReadableStream({
+            start(controller) {
+              let timeout: any = null;
+              _res.body?.pipeTo(
+                new WritableStream({
+                  write(chunk) {
+                    controller.enqueue(chunk);
+                    // TODO handle special message proxy provided
+                  },
+                  close() {
+                    // controller.close();
+                    clearTimeout(timeout);
+                  },
+                  abort(reason) {
+                    controller.error(reason);
+                    clearTimeout(timeout);
+                  },
+                })
+              );
+              init?.signal?.addEventListener('abort', () => {
+                controller.error(new Error('Request stream aborted'));
+                clearTimeout(timeout);
+              });
+              timeout = setTimeout(() => {
+                controller.error(new Error('Request timeout'));
+              }, 120_000);
+            },
+          });
+        } else if (type === OrderType.flexPlan) {
           [res] = orderManager.extractChannelState(
             await _res.text(),
             new Headers(_res.headers),
             channelId
           );
-        }
-
-        orderManager.updateScore(runner, ScoreType.SUCCESS, httpVersion);
-        void orderManager.collectLatency(
-          runner,
-          after - before,
-          Number(_res.headers.get('Content-Length')) || 1
-        );
-
-        if (_res.body && _res?.body instanceof ReadableStream) {
-          return _res;
         } else if (type === OrderType.agreement) {
           const data = await _res.json();
           // todo: need to confirm
@@ -142,11 +162,18 @@ export function createFetch(
           res = await _res.json();
         }
 
+        orderManager.updateScore(runner, ScoreType.SUCCESS, httpVersion);
+        void orderManager.collectLatency(
+          runner,
+          after - before,
+          Number(_res.headers.get('Content-Length')) || 1
+        );
+
         return {
           status: _res.status,
           headers: _res.headers,
           ok: _res.ok,
-          body: null,
+          body: stream,
           json: () => res,
           text: () => undefined,
         } as unknown as Response;
