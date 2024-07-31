@@ -125,6 +125,9 @@ export function createFetch(
 
         if (stream) {
           orderManager.extractChannelState({}, new Headers(_res.headers), channelId);
+          _res.headers.set('Content-Type', 'text/event-stream');
+          _res.headers.set('X-Response-Format', 'stream');
+          _res.headers.set('Transfer-Encoding', 'chunked');
           readableStream = handleStreamResponse(orderManager, type, channelId, _res, init.signal);
         } else {
           res = await handleJsonResponse(orderManager, type, channelId, _res);
