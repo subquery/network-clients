@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { OrderManager } from './orderManager';
-import { customFetch, generateUniqueId, Logger, safeJSONParse } from './utils';
-import { OrderType } from './types';
+import { customFetch, generateUniqueId, Logger, safeJSONParse, tryUint8ArrayToJSON } from './utils';
+import { ChannelState, OrderType } from './types';
 import { ScoreType } from './scoreManager';
 import { Base64 } from 'js-base64';
 
@@ -43,7 +43,8 @@ export function createFetch(
   orderManager: OrderManager,
   maxRetries = 5,
   logger?: Logger,
-  overrideFetch?: typeof fetch
+  overrideFetch?: typeof fetch,
+  stream?: boolean
 ): (init: RequestInit) => Promise<Response> {
   let retries = 0;
   let triedFallback = false;
@@ -94,7 +95,6 @@ export function createFetch(
         }
       }
       const { url, headers, type, runner, channelId } = requestParams;
-      let httpVersion = 1;
 
       try {
         const before = Date.now();
@@ -111,57 +111,26 @@ export function createFetch(
           overrideFetch
         );
         const after = Date.now();
-        httpVersion = Number(_res.headers.get('httpVersion')) || 1;
 
         let res: object;
-        let stream: ReadableStream | null = null;
+        let readableStream: ReadableStream | null = null;
+        stream =
+          stream ||
+          headers['X-Response-Format'] === 'stream' ||
+          headers['x-response-format'] === 'stream' ||
+          headers['Content-Type']?.includes('text/event-stream') ||
+          headers['content-type']?.includes('text/event-stream') ||
+          headers['Content-Type']?.includes('application/x-ndjson') ||
+          headers['content-type']?.includes('application/x-ndjson');
 
-        if (_res.body && _res.body instanceof ReadableStream) {
-          stream = new ReadableStream({
-            start(controller) {
-              let timeout: any = null;
-              _res.body?.pipeTo(
-                new WritableStream({
-                  write(chunk) {
-                    controller.enqueue(chunk);
-                    // TODO handle special message proxy provided
-                  },
-                  close() {
-                    // controller.close();
-                    clearTimeout(timeout);
-                  },
-                  abort(reason) {
-                    controller.error(reason);
-                    clearTimeout(timeout);
-                  },
-                })
-              );
-              init?.signal?.addEventListener('abort', () => {
-                controller.error(new Error('Request stream aborted'));
-                clearTimeout(timeout);
-              });
-              timeout = setTimeout(() => {
-                controller.error(new Error('Request timeout'));
-              }, 120_000);
-            },
-          });
-        } else if (type === OrderType.flexPlan) {
-          [res] = orderManager.extractChannelState(
-            await _res.text(),
-            new Headers(_res.headers),
-            channelId
-          );
-        } else if (type === OrderType.agreement) {
-          const data = await _res.json();
-          // todo: need to confirm
-          res = {
-            ...data,
-            ...JSON.parse(Base64.decode(data.result)),
-          };
-        } else if (type === OrderType.fallback) {
-          res = await _res.json();
+        if (stream) {
+          orderManager.extractChannelState({}, new Headers(_res.headers), channelId);
+          readableStream = handleStreamResponse(orderManager, type, channelId, _res, init.signal);
+        } else {
+          res = await handleJsonResponse(orderManager, type, channelId, _res);
         }
 
+        const httpVersion = Number(_res.headers.get('httpVersion')) || 1;
         orderManager.updateScore(runner, ScoreType.SUCCESS, httpVersion);
         void orderManager.collectLatency(
           runner,
@@ -173,7 +142,7 @@ export function createFetch(
           status: _res.status,
           headers: _res.headers,
           ok: _res.ok,
-          body: stream,
+          body: readableStream,
           json: () => res,
           text: () => undefined,
         } as unknown as Response;
@@ -181,7 +150,7 @@ export function createFetch(
         logger?.warn(e);
         errorMsg = (e as Error)?.message || '';
 
-        let allMsg = `${requestId} ${errorMsg}`;
+        const allMsg = `${requestId} ${errorMsg}`;
         if (!triedFallback && (retries < maxRetries || orderManager.fallbackServiceUrl)) {
           let needRetry = true;
           let scoreType = ScoreType.RPC;
@@ -194,7 +163,7 @@ export function createFetch(
               scoreType = ScoreType.RPC;
             } else {
               needRetry = false;
-              allMsg += ` /////error not found////`;
+              // allMsg += ` /////error not found////`;
             }
           }
           if (needRetry) {
@@ -211,4 +180,76 @@ export function createFetch(
 
     return requestResult();
   };
+}
+
+function handleStreamResponse(
+  orderManager: OrderManager,
+  type: OrderType,
+  channelId: string | undefined,
+  _res: Response,
+  signal?: AbortSignal | null
+) {
+  return new ReadableStream({
+    start(controller) {
+      let timeout: any = null;
+      _res.body?.pipeTo(
+        new WritableStream({
+          write(chunk) {
+            if (type === OrderType.flexPlan) {
+              const { success, result } = tryUint8ArrayToJSON(chunk);
+              if (success && channelId && result.state) {
+                orderManager.syncChannelState(
+                  channelId,
+                  JSON.parse(Base64.decode(result.state)) as ChannelState
+                );
+                return;
+              }
+            }
+            controller.enqueue(chunk);
+          },
+          close() {
+            // controller.close();
+            clearTimeout(timeout);
+          },
+          abort(reason) {
+            controller.error(reason);
+            clearTimeout(timeout);
+          },
+        })
+      );
+      signal?.addEventListener('abort', () => {
+        controller.error(new Error('Request stream aborted'));
+        clearTimeout(timeout);
+      });
+      timeout = setTimeout(() => {
+        controller.error(new Error('Request timeout'));
+      }, 120000);
+    },
+  });
+}
+
+async function handleJsonResponse(
+  orderManager: OrderManager,
+  type: OrderType,
+  channelId: string | undefined,
+  _res: Response
+) {
+  let res: any;
+  if (type === OrderType.flexPlan) {
+    [res] = orderManager.extractChannelState(
+      await _res.text(),
+      new Headers(_res.headers),
+      channelId
+    );
+  } else if (type === OrderType.agreement) {
+    const data = await _res.json();
+    // todo: need to confirm
+    res = {
+      ...data,
+      ...JSON.parse(Base64.decode(data.result)),
+    };
+  } else if (type === OrderType.fallback) {
+    res = await _res.json();
+  }
+  return res;
 }
