@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { OrderManager } from './orderManager';
-import { customFetch, generateUniqueId, Logger, safeJSONParse, tryUint8ArrayToJSON } from './utils';
+import {
+  customFetch,
+  generateUniqueId,
+  Logger,
+  safeJSONParse,
+  setFetchTimeout,
+  tryUint8ArrayToJSON,
+} from './utils';
 import { ChannelState, OrderType } from './types';
 import { ScoreType } from './scoreManager';
 import { Base64 } from 'js-base64';
@@ -116,15 +123,15 @@ export function createFetch(
         let readableStream: ReadableStream | null = null;
         stream =
           stream ||
-          headers['X-Response-Format'] === 'stream' ||
-          headers['x-response-format'] === 'stream' ||
-          headers['Content-Type']?.includes('text/event-stream') ||
-          headers['content-type']?.includes('text/event-stream') ||
-          headers['Content-Type']?.includes('application/x-ndjson') ||
-          headers['content-type']?.includes('application/x-ndjson');
+          _res.headers.get('X-Response-Format') === 'stream' ||
+          _res.headers.get('x-response-format') === 'stream' ||
+          _res.headers.get('Content-Type')?.includes('text/event-stream') ||
+          _res.headers.get('content-type')?.includes('text/event-stream') ||
+          _res.headers.get('Content-Type')?.includes('application/x-ndjson') ||
+          _res.headers.get('content-type')?.includes('application/x-ndjson');
 
         if (stream) {
-          orderManager.extractChannelState({}, new Headers(_res.headers), channelId);
+          // orderManager.extractChannelState({}, new Headers(_res.headers), channelId);
           _res.headers.set('Content-Type', 'text/event-stream');
           _res.headers.set('X-Response-Format', 'stream');
           _res.headers.set('Transfer-Encoding', 'chunked');
@@ -212,6 +219,7 @@ function handleStreamResponse(
           },
           close() {
             // controller.close();
+            controller.enqueue(null);
             clearTimeout(timeout);
           },
           abort(reason) {
@@ -227,6 +235,7 @@ function handleStreamResponse(
       timeout = setTimeout(() => {
         controller.error(new Error('Request timeout'));
       }, 120000);
+      setFetchTimeout(120000);
     },
   });
 }
