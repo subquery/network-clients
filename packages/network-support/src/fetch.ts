@@ -131,6 +131,7 @@ export function createFetch(
           _res.headers.get('content-type')?.includes('application/x-ndjson');
 
         if (stream) {
+          // setFetchTimeout(120000); // TODO: can only work after first request
           // orderManager.extractChannelState({}, new Headers(_res.headers), channelId);
           _res.headers.set('Content-Type', 'text/event-stream');
           _res.headers.set('X-Response-Format', 'stream');
@@ -206,12 +207,16 @@ function handleStreamResponse(
         new WritableStream({
           write(chunk) {
             if (type === OrderType.flexPlan) {
-              const { success, result } = tryUint8ArrayToJSON(chunk);
+              const { success, result } = tryUint8ArrayToJSON(chunk, /^data: /);
               if (success && channelId && result.state) {
                 orderManager.syncChannelState(
                   channelId,
                   JSON.parse(Base64.decode(result.state)) as ChannelState
                 );
+                return;
+              }
+              if (success && result.code && result.error) {
+                //
                 return;
               }
             }
@@ -235,7 +240,6 @@ function handleStreamResponse(
       timeout = setTimeout(() => {
         controller.error(new Error('Request timeout'));
       }, 120000);
-      setFetchTimeout(120000);
     },
   });
 }

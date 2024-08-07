@@ -9,8 +9,14 @@ export function safeJSONParse(json: string) {
   }
 }
 
-export function tryUint8ArrayToJSON(input: Uint8Array) {
-  const str = new TextDecoder().decode(input);
+export function tryUint8ArrayToJSON(
+  input: Uint8Array,
+  pattern?: RegExp | string
+): { success: boolean; result: any } {
+  let str = new TextDecoder().decode(input);
+  if (pattern) {
+    str = str.replace(pattern, '');
+  }
   try {
     return {
       success: true,
