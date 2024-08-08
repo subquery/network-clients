@@ -1,18 +1,13 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { OrderManager } from './orderManager';
-import {
-  customFetch,
-  generateUniqueId,
-  Logger,
-  safeJSONParse,
-  setFetchTimeout,
-  tryUint8ArrayToJSON,
-} from './utils';
-import { ChannelState, OrderType } from './types';
+import { OrderManager, ResponseFormat } from './orderManager';
+import { customFetch, generateUniqueId, Logger, safeJSONParse, tryUint8ArrayToJSON } from './utils';
+import { ChannelState, OrderType, WrappedResponse } from './types';
 import { ScoreType } from './scoreManager';
 import { Base64 } from 'js-base64';
+import assert from 'assert';
+import { State } from './stateManager';
 
 // prettier-ignore
 const fatalErrorCodes = new Set([
@@ -136,7 +131,14 @@ export function createFetch(
           _res.headers.set('Content-Type', 'text/event-stream');
           _res.headers.set('X-Response-Format', 'stream');
           _res.headers.set('Transfer-Encoding', 'chunked');
-          readableStream = handleStreamResponse(orderManager, type, channelId, _res, init.signal);
+          readableStream = handleStreamResponse(
+            runner,
+            orderManager,
+            type,
+            channelId,
+            _res,
+            init.signal
+          );
         } else {
           res = await handleJsonResponse(orderManager, type, channelId, _res);
         }
@@ -163,19 +165,11 @@ export function createFetch(
 
         const allMsg = `${requestId} ${errorMsg}`;
         if (!triedFallback && (retries < maxRetries || orderManager.fallbackServiceUrl)) {
-          let needRetry = true;
-          let scoreType = ScoreType.RPC;
           const errorObj = safeJSONParse(errorMsg);
 
+          let [scoreType, needRetry] = [ScoreType.RPC, true];
           if (errorObj?.code && (errorObj?.error || errorObj?.message)) {
-            if (fatalErrorCodes.has(errorObj.code)) {
-              scoreType = ScoreType.FATAL;
-            } else if (rpcErrorCodes.has(errorObj.code)) {
-              scoreType = ScoreType.RPC;
-            } else {
-              needRetry = false;
-              // allMsg += ` /////error not found////`;
-            }
+            [scoreType, needRetry] = parseErrorObj(errorObj);
           }
           if (needRetry) {
             orderManager.updateScore(runner, scoreType);
@@ -194,12 +188,14 @@ export function createFetch(
 }
 
 function handleStreamResponse(
+  runner: string,
   orderManager: OrderManager,
   type: OrderType,
   channelId: string | undefined,
   _res: Response,
   signal?: AbortSignal | null
 ) {
+  handleInline(_res, channelId, orderManager);
   return new ReadableStream({
     start(controller) {
       let timeout: any = null;
@@ -208,6 +204,7 @@ function handleStreamResponse(
           write(chunk) {
             if (type === OrderType.flexPlan) {
               const { success, result } = tryUint8ArrayToJSON(chunk, /^data: /);
+
               if (success && channelId && result.state) {
                 orderManager.syncChannelState(
                   channelId,
@@ -215,8 +212,51 @@ function handleStreamResponse(
                 );
                 return;
               }
-              if (success && result.code && result.error) {
-                //
+
+              if (success && _res.headers) {
+                let payload = result;
+                switch (_res.headers.get('X-Indexer-Response-Format')) {
+                  case ResponseFormat.Wrapped: {
+                    if ('result' in result && 'signature' in result && 'state' in result) {
+                      const body = result as WrappedResponse;
+                      const state = JSON.parse(Base64.decode(body.state)) as ChannelState;
+                      if (channelId) orderManager.syncChannelState(channelId, state);
+                      // return [JSON.parse(Base64.decode(body.result)), state, body.signature];
+                    }
+                    break;
+                  }
+                  case undefined: {
+                    const body = result;
+                    const state = body.state;
+                    if (channelId && state) orderManager.syncChannelState(channelId, state);
+                    // return [body, state, ''];
+                    break;
+                  }
+                  default:
+                    if ((result as any).error && typeof (result as any).error === 'object') {
+                      payload = (payload as any).error as { code: number; message: string };
+                    }
+
+                    if ((payload as any).code) {
+                      if (
+                        (payload as any).code === 1050 &&
+                        ((payload as any).error === 'PAYG conflict' ||
+                          (payload as any).message === 'PAYG conflict')
+                      ) {
+                        orderManager.getStateManager().forceReportInactiveState(channelId);
+                      }
+                      controller.error(new Error(JSON.stringify(payload)));
+                    } else {
+                      controller.error(new Error('invalid X-Indexer-Response-Format'));
+                    }
+                    return;
+                }
+              }
+
+              if (success && result?.code && (result?.error || result?.message)) {
+                let [scoreType] = [ScoreType.RPC];
+                [scoreType] = parseErrorObj(result);
+                orderManager.updateScore(runner, scoreType);
                 return;
               }
             }
@@ -268,4 +308,37 @@ async function handleJsonResponse(
     res = await _res.json();
   }
   return res;
+}
+
+function parseErrorObj(errorObj: any): [ScoreType, boolean] {
+  let needRetry = true;
+  let scoreType = ScoreType.RPC;
+
+  if (fatalErrorCodes.has(errorObj.code)) {
+    scoreType = ScoreType.FATAL;
+  } else if (rpcErrorCodes.has(errorObj.code)) {
+    scoreType = ScoreType.RPC;
+  } else {
+    needRetry = false;
+  }
+  return [scoreType, needRetry];
+}
+
+function handleInline(_res: Response, channelId: string | undefined, orderManager: OrderManager) {
+  if (_res.headers.get('X-Indexer-Response-Format') === ResponseFormat.Inline) {
+    const _state = _res.headers.get('X-Channel-State');
+    assert(_state, 'invalid response, missing channel state');
+    let state: State | ChannelState;
+    try {
+      state = JSON.parse(Base64.decode(_state)) as ChannelState;
+    } catch (e) {
+      state = {
+        authorization: _state,
+      } as State;
+    }
+    if (channelId) orderManager.syncChannelState(channelId, state);
+    // const _signature = headers.get('X-Indexer-Sig') || '';
+    // assert(_signature, 'invalid response, missing channel signature');
+    // return [typeof payload === 'string' ? JSON.parse(payload) : payload, state, _signature];
+  }
 }
