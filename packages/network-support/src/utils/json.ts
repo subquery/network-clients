@@ -29,3 +29,23 @@ export function tryUint8ArrayToJSON(
     };
   }
 }
+
+export function tryStringToJSON(
+  input: string,
+  pattern?: RegExp | string
+): { success: boolean; result: any } {
+  if (pattern) {
+    input = input.replace(pattern, '');
+  }
+  try {
+    return {
+      success: true,
+      result: JSON.parse(input),
+    };
+  } catch (e) {
+    return {
+      success: false,
+      result: input,
+    };
+  }
+}

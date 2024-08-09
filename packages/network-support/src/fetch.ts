@@ -1,12 +1,11 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { OrderManager, ResponseFormat } from './orderManager';
-import { customFetch, generateUniqueId, Logger, safeJSONParse, tryUint8ArrayToJSON } from './utils';
-import { ChannelState, OrderType, WrappedResponse } from './types';
+import { OrderManager } from './orderManager';
+import { customFetch, generateUniqueId, Logger, safeJSONParse, tryStringToJSON } from './utils';
+import { ChannelState, OrderType } from './types';
 import { ScoreType } from './scoreManager';
 import { Base64 } from 'js-base64';
-import assert from 'assert';
 import { State } from './stateManager';
 
 // prettier-ignore
@@ -46,7 +45,8 @@ export function createFetch(
   maxRetries = 5,
   logger?: Logger,
   overrideFetch?: typeof fetch,
-  stream?: boolean
+  stream?: boolean,
+  abortController?: AbortController
 ): (init: RequestInit) => Promise<Response> {
   let retries = 0;
   let triedFallback = false;
@@ -131,14 +131,17 @@ export function createFetch(
           _res.headers.set('Content-Type', 'text/event-stream');
           _res.headers.set('X-Response-Format', 'stream');
           _res.headers.set('Transfer-Encoding', 'chunked');
-          readableStream = handleStreamResponse(
+          const ts = handleStreamResponse(
             runner,
             orderManager,
             type,
             channelId,
             _res,
-            init.signal
+            // init.signal
+            abortController,
+            logger
           );
+          readableStream = ts.readable;
         } else {
           res = await handleJsonResponse(orderManager, type, channelId, _res);
         }
@@ -193,95 +196,15 @@ function handleStreamResponse(
   type: OrderType,
   channelId: string | undefined,
   _res: Response,
-  signal?: AbortSignal | null
+  // signal?: AbortSignal | null
+  abortController?: AbortController,
+  logger?: Logger
 ) {
-  handleInline(_res, channelId, orderManager);
-  return new ReadableStream({
-    start(controller) {
-      let timeout: any = null;
-      _res.body?.pipeTo(
-        new WritableStream({
-          write(chunk) {
-            if (type === OrderType.flexPlan) {
-              const { success, result } = tryUint8ArrayToJSON(chunk, /^data: /);
-
-              if (success && channelId && result.state) {
-                orderManager.syncChannelState(
-                  channelId,
-                  JSON.parse(Base64.decode(result.state)) as ChannelState
-                );
-                return;
-              }
-
-              if (success && _res.headers) {
-                let payload = result;
-                switch (_res.headers.get('X-Indexer-Response-Format')) {
-                  case ResponseFormat.Wrapped: {
-                    if ('result' in result && 'signature' in result && 'state' in result) {
-                      const body = result as WrappedResponse;
-                      const state = JSON.parse(Base64.decode(body.state)) as ChannelState;
-                      if (channelId) orderManager.syncChannelState(channelId, state);
-                      // return [JSON.parse(Base64.decode(body.result)), state, body.signature];
-                    }
-                    break;
-                  }
-                  case undefined: {
-                    const body = result;
-                    const state = body.state;
-                    if (channelId && state) orderManager.syncChannelState(channelId, state);
-                    // return [body, state, ''];
-                    break;
-                  }
-                  default:
-                    if ((result as any).error && typeof (result as any).error === 'object') {
-                      payload = (payload as any).error as { code: number; message: string };
-                    }
-
-                    if ((payload as any).code) {
-                      if (
-                        (payload as any).code === 1050 &&
-                        ((payload as any).error === 'PAYG conflict' ||
-                          (payload as any).message === 'PAYG conflict')
-                      ) {
-                        orderManager.getStateManager().forceReportInactiveState(channelId);
-                      }
-                      controller.error(new Error(JSON.stringify(payload)));
-                    } else {
-                      controller.error(new Error('invalid X-Indexer-Response-Format'));
-                    }
-                    return;
-                }
-              }
-
-              if (success && result?.code && (result?.error || result?.message)) {
-                let [scoreType] = [ScoreType.RPC];
-                [scoreType] = parseErrorObj(result);
-                orderManager.updateScore(runner, scoreType);
-                return;
-              }
-            }
-            controller.enqueue(chunk);
-          },
-          close() {
-            // controller.close();
-            controller.enqueue(null);
-            clearTimeout(timeout);
-          },
-          abort(reason) {
-            controller.error(reason);
-            clearTimeout(timeout);
-          },
-        })
-      );
-      signal?.addEventListener('abort', () => {
-        controller.error(new Error('Request stream aborted'));
-        clearTimeout(timeout);
-      });
-      timeout = setTimeout(() => {
-        controller.error(new Error('Request timeout'));
-      }, 120000);
-    },
-  });
+  const ts = new TransformStream(
+    new ProxyTransformer(runner, type, channelId, orderManager, _res, abortController, logger)
+  );
+  _res.body?.pipeThrough(ts, { signal: abortController?.signal });
+  return ts;
 }
 
 async function handleJsonResponse(
@@ -324,21 +247,152 @@ function parseErrorObj(errorObj: any): [ScoreType, boolean] {
   return [scoreType, needRetry];
 }
 
-function handleInline(_res: Response, channelId: string | undefined, orderManager: OrderManager) {
-  if (_res.headers.get('X-Indexer-Response-Format') === ResponseFormat.Inline) {
-    const _state = _res.headers.get('X-Channel-State');
-    assert(_state, 'invalid response, missing channel state');
-    let state: State | ChannelState;
-    try {
-      state = JSON.parse(Base64.decode(_state)) as ChannelState;
-    } catch (e) {
-      state = {
-        authorization: _state,
-      } as State;
+const OLLAMA_TIIMEOUT = 120 * 1000;
+
+class ProxyTransformer {
+  runner: string;
+  type: OrderType;
+  channelId: string | undefined;
+  orderManager: OrderManager;
+  res: Response;
+  buffer: string;
+  abortController?: AbortController;
+  errored: boolean;
+  erroredMsg: string;
+  timeoutHandler: any;
+  logger?: Logger;
+
+  constructor(
+    runner: string,
+    type: OrderType,
+    channelId: string | undefined,
+    orderManager: OrderManager,
+    res: Response,
+    abortController?: AbortController,
+    logger?: Logger
+  ) {
+    this.runner = runner;
+    this.type = type;
+    this.channelId = channelId;
+    this.orderManager = orderManager;
+    this.res = res;
+    this.buffer = '';
+    this.abortController = abortController;
+    this.errored = false;
+    this.erroredMsg = '';
+    this.logger = logger;
+    this.timeoutHandler = setTimeout(this.timeoutFunc.bind(this), OLLAMA_TIIMEOUT);
+  }
+
+  transform(chunk: Uint8Array, controller: TransformStreamDefaultController) {
+    // console.log(
+    //   ' ============ Received chunk with %d bytes.',
+    //   chunk.byteLength,
+    //   'error:',
+    //   this.errored
+    // );
+    if (this.errored) return;
+
+    if (this.type === OrderType.flexPlan) {
+      const str = new TextDecoder().decode(chunk);
+      this.buffer += str;
+      const parts = this.buffer.split('\n\n');
+      this.buffer = parts.pop() ?? '';
+      for (const part of parts) {
+        let errorMsg = '';
+        try {
+          this.handleMessage(part);
+        } catch (err) {
+          errorMsg = (err as Error)?.message || '';
+          console.log('--- errorMsg:', errorMsg, part);
+        }
+        if (errorMsg) {
+          this.setError(errorMsg);
+          return;
+        }
+      }
     }
-    if (channelId) orderManager.syncChannelState(channelId, state);
-    // const _signature = headers.get('X-Indexer-Sig') || '';
-    // assert(_signature, 'invalid response, missing channel signature');
-    // return [typeof payload === 'string' ? JSON.parse(payload) : payload, state, _signature];
+    controller.enqueue(chunk);
+  }
+
+  private checkSuccess(success: boolean, message: string) {
+    if (!success) {
+      throw new Error(`invalid json: ${message}`);
+    }
+  }
+
+  private checkState(result: any) {
+    if (this.channelId && result.state) {
+      let state: State | ChannelState;
+      try {
+        state = JSON.parse(Base64.decode(result.state)) as ChannelState;
+      } catch (e) {
+        state = {
+          authorization: result.state,
+        } as State;
+      }
+      this.orderManager.syncChannelState(this.channelId, state);
+      throw new Error('');
+    }
+  }
+
+  private checkError(result: any) {
+    if (result?.error && typeof result?.error === 'object') {
+      result = result.error as { code: number; message: string };
+    }
+    if (result?.code && (result?.error || result?.message)) {
+      let [scoreType] = [ScoreType.RPC];
+      [scoreType] = parseErrorObj(result);
+      this.orderManager.updateScore(this.runner, scoreType);
+      if (result.code === 1050 && [result?.error, result?.message].includes('PAYG conflict')) {
+        this.orderManager.getStateManager().forceReportInactiveState(this.channelId);
+      }
+      throw new Error(JSON.stringify(result));
+    }
+  }
+
+  handleMessage(message: string) {
+    const { success, result } = tryStringToJSON(message.slice(5));
+
+    // console.log('success:', success, ' result:', result);
+    this.checkSuccess(success, message);
+    this.checkState(result);
+    this.checkError(result);
+  }
+
+  setError(msg: string) {
+    this.errored = true;
+    this.erroredMsg = msg;
+  }
+
+  flush(controller: TransformStreamDefaultController) {
+    // console.log('------- flush ------ ', 'error:', this.errored);
+
+    if (!this.errored) {
+      for (const part of this.buffer.split('\r\r').filter((p) => p !== '')) {
+        let errorMsg = '';
+        try {
+          this.handleMessage(part);
+        } catch (err) {
+          errorMsg = (err as Error)?.message || '';
+        }
+        if (errorMsg) {
+          this.setError(errorMsg);
+          break;
+        }
+      }
+    }
+
+    if (!this.errored) {
+      controller.enqueue(new TextEncoder().encode(this.buffer));
+      controller.enqueue(null);
+      return;
+    }
+    this.abortController?.abort(this.erroredMsg);
+  }
+
+  timeoutFunc() {
+    clearTimeout(this.timeoutHandler);
+    this.abortController?.abort(`aborted. duration over ${OLLAMA_TIIMEOUT}s`);
   }
 }
