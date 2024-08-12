@@ -1,7 +1,7 @@
 undecided:
+  - "@subql/apollo-links"
   - "@subql/eth-provider"
   - "@subql/network-clients"
   - "@subql/network-config"
   - "@subql/network-query"
-  - "@subql/network-support"
   - "@subql/react-hooks"
