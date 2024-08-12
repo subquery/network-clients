@@ -300,15 +300,18 @@ class ProxyTransformer {
       this.buffer = parts.pop() ?? '';
       for (const part of parts) {
         let errorMsg = '';
+        let stop = false;
         try {
           this.handleMessage(part);
         } catch (err) {
           errorMsg = (err as Error)?.message || '';
+          stop = true;
         }
         if (errorMsg) {
           this.setError(errorMsg);
           return;
         }
+        if (stop) return;
       }
     }
     controller.enqueue(chunk);
@@ -370,13 +373,18 @@ class ProxyTransformer {
     if (!this.errored) {
       for (const part of this.buffer.split('\r\r').filter((p) => p !== '')) {
         let errorMsg = '';
+        let stop = false;
         try {
           this.handleMessage(part);
         } catch (err) {
           errorMsg = (err as Error)?.message || '';
+          stop = true;
         }
         if (errorMsg) {
           this.setError(errorMsg);
+          break;
+        }
+        if (stop) {
           break;
         }
       }
