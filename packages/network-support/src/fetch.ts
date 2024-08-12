@@ -113,6 +113,7 @@ export function createFetch(
           overrideFetch
         );
         const after = Date.now();
+        const httpVersion = Number(_res.headers.get('httpVersion')) || 1;
 
         let res: object;
         let readableStream: ReadableStream | null = null;
@@ -144,10 +145,9 @@ export function createFetch(
           readableStream = ts.readable;
         } else {
           res = await handleJsonResponse(orderManager, type, channelId, _res);
+          orderManager.updateScore(runner, ScoreType.SUCCESS, httpVersion);
         }
 
-        const httpVersion = Number(_res.headers.get('httpVersion')) || 1;
-        orderManager.updateScore(runner, ScoreType.SUCCESS, httpVersion);
         void orderManager.collectLatency(
           runner,
           after - before,
@@ -261,6 +261,8 @@ class ProxyTransformer {
   erroredMsg: string;
   timeoutHandler: any;
   logger?: Logger;
+  testSplit: boolean;
+  testSplitBuffer: any[];
 
   constructor(
     runner: string,
@@ -282,6 +284,9 @@ class ProxyTransformer {
     this.erroredMsg = '';
     this.logger = logger;
     this.timeoutHandler = setTimeout(this.timeoutFunc.bind(this), OLLAMA_TIIMEOUT);
+
+    this.testSplit = false;
+    this.testSplitBuffer = [];
   }
 
   transform(chunk: Uint8Array, controller: TransformStreamDefaultController) {
@@ -298,6 +303,14 @@ class ProxyTransformer {
       this.buffer += str;
       const parts = this.buffer.split('\n\n');
       this.buffer = parts.pop() ?? '';
+
+      if (this.testSplit && !this.errored) {
+        for (const buffer of this.testSplitBuffer) {
+          controller.enqueue(buffer);
+        }
+        this.testSplitBuffer = [];
+      }
+
       for (const part of parts) {
         let errorMsg = '';
         let stop = false;
@@ -311,10 +324,30 @@ class ProxyTransformer {
           this.setError(errorMsg);
           return;
         }
-        if (stop) return;
+        if (stop) continue;
+
+        if (this.testSplit) {
+          const pivot = Math.floor(part.length / 2);
+          controller.enqueue(new TextEncoder().encode(`${part.slice(0, pivot)}`));
+          // controller.enqueue(new TextEncoder().encode(`${part.slice(pivot)}\n\n`));
+          // console.log(
+          //   'i:',
+          //   i,
+          //   ' len:',
+          //   len,
+          //   'split:',
+          //   ' before:',
+          //   part.slice(0, pivot),
+          //   ' split after:',
+          //   part.slice(pivot)
+          // );
+          this.testSplitBuffer.push(new TextEncoder().encode(`${part.slice(pivot)}\n\n`));
+          continue;
+        }
+        controller.enqueue(new TextEncoder().encode(`${part}\n\n`));
       }
     }
-    controller.enqueue(chunk);
+    // controller.enqueue(chunk);
   }
 
   private checkSuccess(success: boolean, message: string) {
@@ -371,6 +404,12 @@ class ProxyTransformer {
     // console.log('------- flush ------ ', 'error:', this.errored);
 
     if (!this.errored) {
+      if (this.testSplit) {
+        for (const buffer of this.testSplitBuffer) {
+          controller.enqueue(buffer);
+        }
+        this.testSplitBuffer = [];
+      }
       for (const part of this.buffer.split('\r\r').filter((p) => p !== '')) {
         let errorMsg = '';
         let stop = false;
@@ -384,15 +423,17 @@ class ProxyTransformer {
           this.setError(errorMsg);
           break;
         }
-        if (stop) {
-          break;
-        }
+        if (stop) continue;
+        controller.enqueue(new TextEncoder().encode(`${part}\n\n`));
       }
     }
 
     if (!this.errored) {
-      controller.enqueue(new TextEncoder().encode(this.buffer));
       controller.enqueue(null);
+
+      const httpVersion = Number(this.res.headers.get('httpVersion')) || 1;
+      this.orderManager.updateScore(this.runner, ScoreType.SUCCESS, httpVersion);
+
       return;
     }
     this.abortController?.abort(this.erroredMsg);
