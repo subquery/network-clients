@@ -4,7 +4,7 @@
 import fetch from 'cross-fetch';
 import { ServiceAgreementOrder, FlexPlanOrder, ProjectType } from '../types';
 
-let timeout = 20_000;
+let timeout = 10_000;
 
 export const setFetchTimeout = (newVal: number) => {
   timeout = newVal;
