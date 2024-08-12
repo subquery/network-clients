@@ -311,9 +311,12 @@ class ProxyTransformer {
         this.testSplitBuffer = [];
       }
 
+      let i = 0;
+      const len = parts.length;
       for (const part of parts) {
         let errorMsg = '';
         let stop = false;
+        i++;
         try {
           this.handleMessage(part);
         } catch (err) {
@@ -326,21 +329,18 @@ class ProxyTransformer {
         }
         if (stop) continue;
 
-        if (this.testSplit) {
+        if (this.testSplit && i === len) {
           const pivot = Math.floor(part.length / 2);
           controller.enqueue(new TextEncoder().encode(`${part.slice(0, pivot)}`));
           // controller.enqueue(new TextEncoder().encode(`${part.slice(pivot)}\n\n`));
           // console.log(
-          //   'i:',
-          //   i,
-          //   ' len:',
-          //   len,
           //   'split:',
           //   ' before:',
           //   part.slice(0, pivot),
           //   ' split after:',
           //   part.slice(pivot)
           // );
+          // this.testSplitBuffer.push(new TextEncoder().encode(`${part.slice(0, pivot)}`));
           this.testSplitBuffer.push(new TextEncoder().encode(`${part.slice(pivot)}\n\n`));
           continue;
         }
@@ -410,7 +410,7 @@ class ProxyTransformer {
         }
         this.testSplitBuffer = [];
       }
-      for (const part of this.buffer.split('\r\r').filter((p) => p !== '')) {
+      for (const part of this.buffer.split('\n\n').filter((p) => p !== '')) {
         let errorMsg = '';
         let stop = false;
         try {
