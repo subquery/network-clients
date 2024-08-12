@@ -304,7 +304,6 @@ class ProxyTransformer {
           this.handleMessage(part);
         } catch (err) {
           errorMsg = (err as Error)?.message || '';
-          console.log('--- errorMsg:', errorMsg, part);
         }
         if (errorMsg) {
           this.setError(errorMsg);
