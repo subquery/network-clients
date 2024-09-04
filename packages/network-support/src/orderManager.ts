@@ -479,6 +479,10 @@ export class OrderManager {
     await this.scoreManager.updatePriceScore(orders);
   }
 
+  getProjectId() {
+    return this.projectId;
+  }
+
   cleanup() {
     if (this.timer) {
       clearInterval(this.timer);

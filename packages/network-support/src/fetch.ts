@@ -150,9 +150,21 @@ export function createFetch(
           json: () => res,
           text: () => undefined,
         } as unknown as Response;
-      } catch (e) {
+      } catch (e: any) {
         logger?.warn(e);
         errorMsg = (e as Error)?.message || '';
+
+        logger?.error({
+          type: 'retry',
+          deploymentId: orderManager.getProjectId(),
+          indexer: runner,
+          requestId,
+          triedFallback,
+          retry: retries,
+          error: errorMsg,
+          stack: e.stack,
+          fallbackServiceUrl: orderManager.fallbackServiceUrl,
+        });
 
         let allMsg = `${requestId} ${errorMsg}`;
         if (!triedFallback && (retries < maxRetries || orderManager.fallbackServiceUrl)) {
