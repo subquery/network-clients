@@ -3,7 +3,7 @@
 
 import BigNumber from 'bignumber.js';
 import { Order, ScoreWithDetail } from './types';
-import { Logger, IStore, createStore, POST } from './utils';
+import { Logger, IStore, createStore, notifySlack } from './utils';
 import {
   calculateBigIntPercentile,
   getBlockScoreWeight,
@@ -160,18 +160,14 @@ export class ScoreManager {
 
     this.scoreStore.set(key, score);
 
-    if (score.score === 0 && process.env.ENABLE_ZERO_NOTIFY && process.env.ZERO_NOTIFY_URL) {
+    if (score.score <= 1 && process.env.ENABLE_ZERO_NOTIFY && process.env.ZERO_NOTIFY_URL) {
       const inserted = timeBarrier.set(`${this.projectId}_${runner}`);
       if (inserted) {
-        try {
-          POST(process.env.ZERO_NOTIFY_URL, {
-            text: `${
-              this.projectId
-            } ${runner} (${errorType}) score down to 0. ${timeBarrier.inspect()}`,
-          });
-        } catch (_) {
-          _;
-        }
+        notifySlack(process.env.ZERO_NOTIFY_URL, {
+          text: `[${new Date().toISOString()}] ${
+            this.projectId
+          } ${runner} (${errorType}) score down to ${score.score}. ${timeBarrier.inspect()}`,
+        });
       }
     }
 

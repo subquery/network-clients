@@ -14,10 +14,9 @@ class TimeBarrier {
     if (this.timers.has(key)) {
       return false;
     }
-    const expiry = this.ttl ? Date.now() + this.ttl : undefined;
     this.timers.set(
       key,
-      setTimeout(() => this.timers.delete(key), expiry)
+      setTimeout(() => this.timers.delete(key), this.ttl)
     );
     return true;
   }
@@ -27,7 +26,7 @@ class TimeBarrier {
   }
 }
 
-export default new TimeBarrier(1000 * 10);
+export default new TimeBarrier(1000 * 60 * 5);
 
 export function createTimeBarrier(ttl: number) {
   return new TimeBarrier(ttl);
