@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import BigNumber from 'bignumber.js';
-import { Order, ScoreWithDetail } from './types';
-import { Logger, IStore, createStore, notifySlack } from './utils';
+import { NotifyScoreFunc, Order, ScoreWithDetail } from './types';
+import { Logger, IStore, createStore } from './utils';
 import {
   calculateBigIntPercentile,
   getBlockScoreWeight,
@@ -17,6 +17,7 @@ type Options = {
   projectId: string;
   fallbackServiceUrl?: string;
   scoreStore?: IStore;
+  notifyFunc?: NotifyScoreFunc;
 };
 
 export enum ScoreType {
@@ -65,12 +66,14 @@ export class ScoreManager {
   private scoreStore: IStore;
   private minScore: number;
   private projectId: string;
+  private notifyFunc?: NotifyScoreFunc;
 
   constructor(options: Options) {
     this.logger = options.logger;
     this.scoreStore = options.scoreStore ?? createStore({ ttl: 86_400_000 });
     this.minScore = options.fallbackServiceUrl ? 0 : 1;
     this.projectId = options.projectId;
+    this.notifyFunc = options.notifyFunc;
   }
 
   private async getScore(runner: string): Promise<ScoreStoreType> {
@@ -159,19 +162,51 @@ export class ScoreManager {
     this.logger?.debug(`updateScore after: ${runner} ${JSON.stringify(score)}`);
 
     this.scoreStore.set(key, score);
+    extraLog = extraLog || {};
 
-    if (score.score <= 1 && process.env.ENABLE_ZERO_NOTIFY && process.env.ZERO_NOTIFY_URL) {
+    if (score.score <= 1) {
       const inserted = timeBarrier.set(`${this.projectId}_${runner}`);
-      if (inserted) {
-        notifySlack(process.env.ZERO_NOTIFY_URL, {
-          text: `[${new Date().toISOString()}] ${
-            this.projectId
-          } ${runner} (${errorType}) score down to ${score.score}. ${timeBarrier.inspect()}`,
+      if (inserted && this.notifyFunc) {
+        this.notifyFunc({
+          text: `indexer score down to ${score.score}`,
+          blocks: [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: `*:tada: indexer score down to ${score.score}`,
+              },
+            },
+            {
+              type: 'section',
+              fields: [
+                {
+                  type: 'mrkdwn',
+                  text: `*DeploymentId:* ${this.projectId}`,
+                },
+                {
+                  type: 'mrkdwn',
+                  text: `*Indexer:* ${runner}`,
+                },
+                {
+                  type: 'mrkdwn',
+                  text: `*Info:* ${JSON.stringify(extraLog)}`,
+                },
+                {
+                  type: 'mrkdwn',
+                  text: `*TimeBarrier:* ${timeBarrier.inspect()}`,
+                },
+                {
+                  type: 'mrkdwn',
+                  text: `*Time:* ${new Date().toISOString()}`,
+                },
+              ],
+            },
+          ],
         });
       }
     }
 
-    extraLog = extraLog || {};
     this.logger?.info({
       type: 'updateScore',
       target: 'base',

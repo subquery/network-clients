@@ -20,6 +20,7 @@ import {
 import { createMemoryStore, fetchOrders, isTokenExpired, IStore, Logger, POST } from './utils';
 import { BlockType, State, StateManager } from './stateManager';
 import { Version } from './utils/version';
+import { NotifyScoreFunc } from './types';
 
 export enum ResponseFormat {
   Inline = 'inline',
@@ -38,6 +39,7 @@ type Options = {
   stateStore?: IStore;
   selector?: RunnerSelector;
   timeout?: number;
+  notifyFunc?: NotifyScoreFunc;
 };
 
 function tokenToAuthHeader(token: string) {
@@ -79,6 +81,7 @@ export class OrderManager {
       stateStore,
       selector,
       responseFormat,
+      notifyFunc,
       timeout = 60000,
     } = this.options;
     this.authUrl = authUrl;
@@ -94,6 +97,7 @@ export class OrderManager {
       projectId,
       fallbackServiceUrl,
       scoreStore,
+      notifyFunc,
     });
     this.stateManager = new StateManager({
       logger,
