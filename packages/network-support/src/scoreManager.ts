@@ -190,7 +190,7 @@ export class ScoreManager {
                 },
                 {
                   type: 'mrkdwn',
-                  text: `*Info:* ${JSON.stringify(extraLog)}`,
+                  text: `*Info:* ${errorType} - ${JSON.stringify(extraLog)}`,
                 },
                 {
                   type: 'mrkdwn',
