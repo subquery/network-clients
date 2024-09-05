@@ -127,7 +127,7 @@ export class ScoreManager {
     return (await this.scoreStore.get<number>(`${key}:${runner}_${this.projectId}`)) || 1;
   }
 
-  async updateScore(runner: string, errorType: ScoreType, httpVersion?: number) {
+  async updateScore(runner: string, errorType: ScoreType, httpVersion?: number, extraLog?: any) {
     if (!runner) {
       this.logger?.debug('updateScore: runner is empty');
       return;
@@ -171,6 +171,7 @@ export class ScoreManager {
       }
     }
 
+    extraLog = extraLog || {};
     this.logger?.info({
       type: 'updateScore',
       target: 'base',
@@ -180,6 +181,8 @@ export class ScoreManager {
       deltaValue: delta,
       from: before,
       to: score.score,
+      direction: delta > 0 ? 'add' : 'minus',
+      ...extraLog,
     });
   }
 

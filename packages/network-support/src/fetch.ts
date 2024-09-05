@@ -153,19 +153,6 @@ export function createFetch(
         logger?.warn(e);
         errorMsg = (e as Error)?.message || '';
 
-        logger?.error({
-          type: 'retry',
-          deploymentId: orderManager.getProjectId(),
-          indexer: runner,
-          requestId,
-          triedFallback,
-          retry: retries,
-          error: errorMsg,
-          stack: e.stack,
-          fallbackServiceUrl: orderManager.fallbackServiceUrl,
-        });
-
-        let allMsg = `${requestId} ${errorMsg}`;
         if (!triedFallback && (retries < maxRetries || orderManager.fallbackServiceUrl)) {
           let needRetry = true;
           let scoreType = ScoreType.RPC;
@@ -178,17 +165,59 @@ export function createFetch(
               scoreType = ScoreType.RPC;
             } else {
               needRetry = false;
-              allMsg += ` /////error not found////`;
             }
           }
           if (needRetry) {
-            orderManager.updateScore(runner, scoreType);
+            logger?.error({
+              type: 'retry',
+              deploymentId: orderManager.getProjectId(),
+              indexer: runner,
+              requestId,
+              triedFallback,
+              retry: retries,
+              error: errorMsg,
+              stack: e.stack,
+              fallbackServiceUrl: orderManager.fallbackServiceUrl,
+            });
+
+            const extraLog = {
+              requestId,
+              retry: retries,
+              error: errorMsg,
+            };
+
+            orderManager.updateScore(runner, scoreType, 0, extraLog);
             retries += 1;
             return requestResult();
           }
-          logger?.warn(`fetch error: ${allMsg} directly throw`);
+
+          logger?.error({
+            type: 'throw',
+            deploymentId: orderManager.getProjectId(),
+            indexer: runner,
+            requestId,
+            triedFallback,
+            retry: retries,
+            error: errorMsg,
+            stack: e.stack,
+            fallbackServiceUrl: orderManager.fallbackServiceUrl,
+          });
+
           throw new FetchError(errorMsg, 'SQN');
         }
+
+        logger?.error({
+          type: 'throwOut',
+          deploymentId: orderManager.getProjectId(),
+          indexer: runner,
+          requestId,
+          triedFallback,
+          retry: retries,
+          error: errorMsg,
+          stack: e.stack,
+          fallbackServiceUrl: orderManager.fallbackServiceUrl,
+        });
+
         throw new FetchError(`reach max retries.${errorMsg ? ' error: ' + errorMsg : ''}`, 'SQN');
       }
     };

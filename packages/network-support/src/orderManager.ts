@@ -467,8 +467,8 @@ export class OrderManager {
     return this.scoreManager.getAdjustedScore(runner, proxyVersion);
   }
 
-  async updateScore(runner: string, errorType: ScoreType, httpVersion?: number) {
-    await this.scoreManager.updateScore(runner, errorType, httpVersion);
+  async updateScore(runner: string, errorType: ScoreType, httpVersion?: number, extraLog?: any) {
+    await this.scoreManager.updateScore(runner, errorType, httpVersion, extraLog);
   }
 
   async collectLatency(indexer: string, latency: number, size: number): Promise<void> {
