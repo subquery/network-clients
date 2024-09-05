@@ -3,13 +3,14 @@
 
 import BigNumber from 'bignumber.js';
 import { Order, ScoreWithDetail } from './types';
-import { Logger, IStore, createStore } from './utils';
+import { Logger, IStore, createStore, POST } from './utils';
 import {
   calculateBigIntPercentile,
   getBlockScoreWeight,
   getLatencyScoreWeight,
 } from './utils/score';
 import { Version } from './utils/version';
+import timeBarrier from './utils/timeBarer';
 
 type Options = {
   logger: Logger;
@@ -158,6 +159,21 @@ export class ScoreManager {
     this.logger?.debug(`updateScore after: ${runner} ${JSON.stringify(score)}`);
 
     this.scoreStore.set(key, score);
+
+    if (score.score === 0 && process.env.ENABLE_ZERO_NOTIFY && process.env.ZERO_NOTIFY_URL) {
+      const inserted = timeBarrier.set(`${this.projectId}_${runner}`);
+      if (inserted) {
+        try {
+          POST(process.env.ZERO_NOTIFY_URL, {
+            text: `${
+              this.projectId
+            } ${runner} (${errorType}) score down to 0. ${timeBarrier.inspect()}`,
+          });
+        } catch (_) {
+          _;
+        }
+      }
+    }
 
     this.logger?.info({
       type: 'updateScore',
