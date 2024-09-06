@@ -10,7 +10,6 @@ import {
   getLatencyScoreWeight,
 } from './utils/score';
 import { Version } from './utils/version';
-import timeBarrier from './utils/timeBarer';
 
 type Options = {
   logger: Logger;
@@ -164,17 +163,14 @@ export class ScoreManager {
     this.scoreStore.set(key, score);
     extraLog = extraLog || {};
 
-    if (score.score <= 1) {
-      const inserted = timeBarrier.set(`${this.projectId}_${runner}`);
-      if (inserted && this.notifyFunc) {
-        this.notifyFunc({
-          text: `*Title*: score down from ${before} to ${score.score}\n*DeploymentId*: ${
-            this.projectId
-          }\n*Indexer*: ${runner}\n*Info*: ${errorType} - ${JSON.stringify(
-            extraLog
-          )}\n*TimeBarrier*: ${timeBarrier.inspect()}\n*Time*: ${new Date().toISOString()}`,
-        });
-      }
+    if (score.score <= 1 && this.notifyFunc) {
+      this.notifyFunc(`${this.projectId}_${runner}`, {
+        text: `*Title*: score down from ${before} to ${score.score}\n*DeploymentId*: ${
+          this.projectId
+        }\n*Indexer*: ${runner}\n*Info*: ${errorType} - ${JSON.stringify(
+          extraLog
+        )}\n*Time*: ${new Date().toISOString()}`,
+      });
     }
 
     this.logger?.info({
