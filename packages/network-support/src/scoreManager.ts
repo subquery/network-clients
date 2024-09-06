@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import BigNumber from 'bignumber.js';
-import { NotifyScoreFunc, Order, ScoreWithDetail } from './types';
+import { NotifyFunc, Order, ScoreWithDetail } from './types';
 import { Logger, IStore, createStore } from './utils';
 import {
   calculateBigIntPercentile,
@@ -17,7 +17,7 @@ type Options = {
   projectId: string;
   fallbackServiceUrl?: string;
   scoreStore?: IStore;
-  notifyFunc?: NotifyScoreFunc;
+  notifyFunc?: NotifyFunc;
 };
 
 export enum ScoreType {
@@ -66,7 +66,7 @@ export class ScoreManager {
   private scoreStore: IStore;
   private minScore: number;
   private projectId: string;
-  private notifyFunc?: NotifyScoreFunc;
+  private notifyFunc?: NotifyFunc;
 
   constructor(options: Options) {
     this.logger = options.logger;
@@ -168,13 +168,13 @@ export class ScoreManager {
       const inserted = timeBarrier.set(`${this.projectId}_${runner}`);
       if (inserted && this.notifyFunc) {
         this.notifyFunc({
-          text: `indexer score down to ${score.score}`,
+          text: `indexer score down from ${before} to ${score.score}`,
           blocks: [
             {
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: `*:tada: indexer score down to ${score.score}`,
+                text: `*:tada: indexer score down from ${before} to ${score.score}`,
               },
             },
             {
