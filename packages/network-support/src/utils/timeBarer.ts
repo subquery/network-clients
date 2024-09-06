@@ -26,7 +26,9 @@ class TimeBarrier {
   }
 }
 
-export default new TimeBarrier(1000 * 60 * 5);
+const defaultTTL = 1000 * 60 * 10;
+
+export default new TimeBarrier(defaultTTL);
 
 export function createTimeBarrier(ttl: number) {
   return new TimeBarrier(ttl);
