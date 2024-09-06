@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import BigNumber from 'bignumber.js';
-import { Order, ScoreWithDetail } from './types';
+import { NotifyFunc, Order, ScoreWithDetail } from './types';
 import { Logger, IStore, createStore } from './utils';
 import {
   calculateBigIntPercentile,
@@ -10,12 +10,14 @@ import {
   getLatencyScoreWeight,
 } from './utils/score';
 import { Version } from './utils/version';
+import timeBarrier from './utils/timeBarer';
 
 type Options = {
   logger: Logger;
   projectId: string;
   fallbackServiceUrl?: string;
   scoreStore?: IStore;
+  notifyFunc?: NotifyFunc;
 };
 
 export enum ScoreType {
@@ -64,12 +66,14 @@ export class ScoreManager {
   private scoreStore: IStore;
   private minScore: number;
   private projectId: string;
+  private notifyFunc?: NotifyFunc;
 
   constructor(options: Options) {
     this.logger = options.logger;
     this.scoreStore = options.scoreStore ?? createStore({ ttl: 86_400_000 });
     this.minScore = options.fallbackServiceUrl ? 0 : 1;
     this.projectId = options.projectId;
+    this.notifyFunc = options.notifyFunc;
   }
 
   private async getScore(runner: string): Promise<ScoreStoreType> {
@@ -126,7 +130,7 @@ export class ScoreManager {
     return (await this.scoreStore.get<number>(`${key}:${runner}_${this.projectId}`)) || 1;
   }
 
-  async updateScore(runner: string, errorType: ScoreType, httpVersion?: number) {
+  async updateScore(runner: string, errorType: ScoreType, httpVersion?: number, extraLog?: any) {
     if (!runner) {
       this.logger?.debug('updateScore: runner is empty');
       return;
@@ -158,6 +162,50 @@ export class ScoreManager {
     this.logger?.debug(`updateScore after: ${runner} ${JSON.stringify(score)}`);
 
     this.scoreStore.set(key, score);
+    extraLog = extraLog || {};
+
+    if (score.score <= 1) {
+      const inserted = timeBarrier.set(`${this.projectId}_${runner}`);
+      if (inserted && this.notifyFunc) {
+        this.notifyFunc({
+          text: `indexer score down from ${before} to ${score.score}`,
+          blocks: [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: `*:tada: indexer score down from ${before} to ${score.score}`,
+              },
+            },
+            {
+              type: 'section',
+              fields: [
+                {
+                  type: 'mrkdwn',
+                  text: `*DeploymentId:* ${this.projectId}`,
+                },
+                {
+                  type: 'mrkdwn',
+                  text: `*Indexer:* ${runner}`,
+                },
+                {
+                  type: 'mrkdwn',
+                  text: `*Info:* ${errorType} - ${JSON.stringify(extraLog)}`,
+                },
+                {
+                  type: 'mrkdwn',
+                  text: `*TimeBarrier:* ${timeBarrier.inspect()}`,
+                },
+                {
+                  type: 'mrkdwn',
+                  text: `*Time:* ${new Date().toISOString()}`,
+                },
+              ],
+            },
+          ],
+        });
+      }
+    }
 
     this.logger?.info({
       type: 'updateScore',
@@ -168,6 +216,8 @@ export class ScoreManager {
       deltaValue: delta,
       from: before,
       to: score.score,
+      direction: delta > 0 ? 'add' : 'minus',
+      ...extraLog,
     });
   }
 

@@ -20,6 +20,7 @@ import {
 import { createMemoryStore, fetchOrders, isTokenExpired, IStore, Logger, POST } from './utils';
 import { BlockType, State, StateManager } from './stateManager';
 import { Version } from './utils/version';
+import { NotifyFunc } from './types';
 
 export enum ResponseFormat {
   Inline = 'inline',
@@ -38,6 +39,7 @@ type Options = {
   stateStore?: IStore;
   selector?: RunnerSelector;
   timeout?: number;
+  notifyFunc?: NotifyFunc;
 };
 
 function tokenToAuthHeader(token: string) {
@@ -79,6 +81,7 @@ export class OrderManager {
       stateStore,
       selector,
       responseFormat,
+      notifyFunc,
       timeout = 60000,
     } = this.options;
     this.authUrl = authUrl;
@@ -94,6 +97,7 @@ export class OrderManager {
       projectId,
       fallbackServiceUrl,
       scoreStore,
+      notifyFunc,
     });
     this.stateManager = new StateManager({
       logger,
@@ -467,8 +471,8 @@ export class OrderManager {
     return this.scoreManager.getAdjustedScore(runner, proxyVersion);
   }
 
-  async updateScore(runner: string, errorType: ScoreType, httpVersion?: number) {
-    await this.scoreManager.updateScore(runner, errorType, httpVersion);
+  async updateScore(runner: string, errorType: ScoreType, httpVersion?: number, extraLog?: any) {
+    await this.scoreManager.updateScore(runner, errorType, httpVersion, extraLog);
   }
 
   async collectLatency(indexer: string, latency: number, size: number): Promise<void> {
@@ -477,6 +481,10 @@ export class OrderManager {
 
   async updatePriceScore(orders: FlexPlanOrder[]) {
     await this.scoreManager.updatePriceScore(orders);
+  }
+
+  getProjectId() {
+    return this.projectId;
   }
 
   cleanup() {

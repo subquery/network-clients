@@ -83,3 +83,5 @@ export type ScoreWithDetail = {
   score: number;
   scoreDetail: Record<SCORE_DETAIL_TYPE, number>;
 };
+
+export type NotifyFunc = (data: any, headers?: Record<string, string>) => Promise<void>;

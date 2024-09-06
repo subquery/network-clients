@@ -8,3 +8,4 @@ export * from './auth';
 export * from './uniqueId';
 export * from './common';
 export * from './score';
+export * from './timeBarer';
