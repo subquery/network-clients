@@ -168,41 +168,11 @@ export class ScoreManager {
       const inserted = timeBarrier.set(`${this.projectId}_${runner}`);
       if (inserted && this.notifyFunc) {
         this.notifyFunc({
-          text: `indexer score down from ${before} to ${score.score}`,
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: `*:tada: indexer score down from ${before} to ${score.score}`,
-              },
-            },
-            {
-              type: 'section',
-              fields: [
-                {
-                  type: 'mrkdwn',
-                  text: `*DeploymentId:* ${this.projectId}`,
-                },
-                {
-                  type: 'mrkdwn',
-                  text: `*Indexer:* ${runner}`,
-                },
-                {
-                  type: 'mrkdwn',
-                  text: `*Info:* ${errorType} - ${JSON.stringify(extraLog)}`,
-                },
-                {
-                  type: 'mrkdwn',
-                  text: `*TimeBarrier:* ${timeBarrier.inspect()}`,
-                },
-                {
-                  type: 'mrkdwn',
-                  text: `*Time:* ${new Date().toISOString()}`,
-                },
-              ],
-            },
-          ],
+          text: `*Title*: score down from ${before} to ${score.score}\n*DeploymentId*: ${
+            this.projectId
+          }\n*Indexer*: ${runner}\n*Info*: ${errorType} - ${JSON.stringify(
+            extraLog
+          )}\n*TimeBarrier*: ${timeBarrier.inspect()}\n*Time*: ${new Date().toISOString()}`,
         });
       }
     }
