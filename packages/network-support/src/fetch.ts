@@ -238,7 +238,7 @@ function handle1011Error(
   message: string,
   rawNeedRetry: boolean,
   rawScoreType: ScoreType
-): [boolean, ScoreType] {
+): [overrideRetry: boolean, overrideScoreType: ScoreType] {
   message = message || '';
   let obj = null;
   if (message.startsWith('GraphQL internal:')) {
