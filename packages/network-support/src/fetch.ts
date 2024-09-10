@@ -248,13 +248,11 @@ function handle1011Error(
   }
   if (!obj) return [rawNeedRetry, rawScoreType];
 
-  // 	Method not found
-  if (obj.error?.code === -32601) {
-    return [false, ScoreType.RPC];
-  }
-  // 	Invalid Request
-  if (obj.error?.code === -32600) {
-    return [false, ScoreType.RPC];
+  // -32600: Invalid Request
+  // -32601: Method not found
+  // -32602: Invalid params
+  if (obj.error?.code === -32600 || obj.error?.code === -32601 || obj.error?.code === -32602) {
+    return [false, ScoreType.NONE];
   }
   return [true, ScoreType.FATAL];
 }
