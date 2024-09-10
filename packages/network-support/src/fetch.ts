@@ -154,19 +154,8 @@ export function createFetch(
         errorMsg = (e as Error)?.message || '';
 
         if (!triedFallback && (retries < maxRetries || orderManager.fallbackServiceUrl)) {
-          let needRetry = true;
-          let scoreType = ScoreType.RPC;
-          const errorObj = safeJSONParse(errorMsg);
+          const [needRetry, scoreType] = handleErrorMsg(errorMsg);
 
-          if (errorObj?.code && (errorObj?.error || errorObj?.message)) {
-            if (fatalErrorCodes.has(errorObj.code)) {
-              scoreType = ScoreType.FATAL;
-            } else if (rpcErrorCodes.has(errorObj.code)) {
-              scoreType = ScoreType.RPC;
-            } else {
-              needRetry = false;
-            }
-          }
           if (needRetry) {
             logger?.error({
               type: 'retry',
@@ -179,7 +168,6 @@ export function createFetch(
               stack: e.stack,
               fallbackServiceUrl: orderManager.fallbackServiceUrl,
             });
-
             const extraLog = {
               requestId,
               retry: retries,
@@ -224,4 +212,47 @@ export function createFetch(
 
     return requestResult();
   };
+}
+
+function handleErrorMsg(errorMsg: string): [boolean, ScoreType] {
+  let needRetry = true;
+  let scoreType = ScoreType.RPC;
+  const errorObj = safeJSONParse(errorMsg);
+
+  if (errorObj?.code && (errorObj?.error || errorObj?.message)) {
+    if (fatalErrorCodes.has(errorObj.code)) {
+      scoreType = ScoreType.FATAL;
+      if (errorObj.code === 1011) {
+        [needRetry, scoreType] = handle1011Error(errorObj.message, needRetry, scoreType);
+      }
+    } else if (rpcErrorCodes.has(errorObj.code)) {
+      scoreType = ScoreType.RPC;
+    } else {
+      needRetry = false;
+    }
+  }
+  return [needRetry, scoreType];
+}
+
+function handle1011Error(
+  message: string,
+  rawNeedRetry: boolean,
+  rawScoreType: ScoreType
+): [overrideRetry: boolean, overrideScoreType: ScoreType] {
+  message = message || '';
+  let obj = null;
+  if (message.startsWith('GraphQL internal:')) {
+    obj = safeJSONParse(message.slice(17));
+  } else if (message.startsWith('GraphQL query:')) {
+    obj = safeJSONParse(message.slice(14));
+  }
+  if (!obj) return [rawNeedRetry, rawScoreType];
+
+  // -32600: Invalid Request
+  // -32601: Method not found
+  // -32602: Invalid params
+  if (obj.error?.code === -32600 || obj.error?.code === -32601 || obj.error?.code === -32602) {
+    return [false, ScoreType.NONE];
+  }
+  return [true, ScoreType.FATAL];
 }

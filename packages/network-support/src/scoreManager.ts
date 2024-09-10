@@ -20,6 +20,7 @@ type Options = {
 };
 
 export enum ScoreType {
+  NONE = 'None',
   GRAPHQL = 'Graphql',
   NETWORK = 'network',
   RPC = 'RPC',
@@ -28,6 +29,7 @@ export enum ScoreType {
 }
 
 const scoresDelta = {
+  [ScoreType.NONE]: 0,
   [ScoreType.GRAPHQL]: -50,
   [ScoreType.NETWORK]: -30,
   [ScoreType.RPC]: -10,
