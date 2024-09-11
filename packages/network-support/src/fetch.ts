@@ -223,7 +223,11 @@ function handleErrorMsg(errorMsg: string): [boolean, ScoreType] {
     if (fatalErrorCodes.has(errorObj.code)) {
       scoreType = ScoreType.FATAL;
       if (errorObj.code === 1011) {
-        [needRetry, scoreType] = handle1011Error(errorObj.message, needRetry, scoreType);
+        [needRetry, scoreType] = handle1011Error(
+          errorObj?.error || errorObj?.message,
+          needRetry,
+          scoreType
+        );
       }
     } else if (rpcErrorCodes.has(errorObj.code)) {
       scoreType = ScoreType.RPC;
@@ -254,5 +258,12 @@ function handle1011Error(
   if (obj.error?.code === -32600 || obj.error?.code === -32601 || obj.error?.code === -32602) {
     return [false, ScoreType.NONE];
   }
+
+  // graphql syntax error
+  if (Array.isArray(obj.errors)) {
+    const exists = obj.errors.find((e: any) => e.extensions?.code === 'GRAPHQL_VALIDATION_FAILED');
+    if (exists) return [false, ScoreType.NONE];
+  }
+
   return [true, ScoreType.FATAL];
 }
