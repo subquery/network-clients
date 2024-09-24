@@ -265,7 +265,8 @@ export class OrderManager {
   extractChannelState(
     payload: string | object,
     headers: Headers,
-    channelId?: string
+    channelId?: string,
+    requestId?: string
   ): [object, State | ChannelState, string] {
     switch (headers.get('X-Indexer-Response-Format')) {
       case ResponseFormat.Wrapped: {
@@ -290,15 +291,30 @@ export class OrderManager {
         if (channelId) this.syncChannelState(channelId, state);
         const _signature = headers.get('X-Indexer-Sig') || '';
         // assert(_signature, 'invalid response, missing channel signature');
+        this.logger?.info({
+          type: 'inline',
+          requestId,
+          data: payload,
+        });
         return [typeof payload === 'string' ? JSON.parse(payload) : payload, state, _signature];
       }
       case undefined: {
+        this.logger?.info({
+          type: 'headerUndef',
+          requestId,
+          data: payload,
+        });
         const body = typeof payload === 'string' ? JSON.parse(payload) : payload;
         const state = body.state;
         if (channelId) this.syncChannelState(channelId, state);
         return [body, state, ''];
       }
       default:
+        this.logger?.info({
+          type: 'headerNull',
+          requestId,
+          data: payload,
+        });
         if (typeof payload === 'string') {
           payload = JSON.parse(payload);
         }
