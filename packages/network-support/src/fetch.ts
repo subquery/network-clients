@@ -119,7 +119,8 @@ export function createFetch(
           [res] = orderManager.extractChannelState(
             await _res.text(),
             new Headers(_res.headers),
-            channelId
+            channelId,
+            requestId
           );
         }
         if (type === OrderType.agreement) {
