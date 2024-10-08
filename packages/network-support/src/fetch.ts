@@ -44,7 +44,8 @@ export function createFetch(
   orderManager: OrderManager,
   maxRetries = 5,
   logger?: Logger,
-  overrideFetch?: typeof fetch
+  overrideFetch?: typeof fetch,
+  rid?: string
 ): (init: RequestInit) => Promise<Response> {
   let retries = 0;
   let triedFallback = false;
@@ -132,6 +133,16 @@ export function createFetch(
           };
         }
         if (type === OrderType.fallback) {
+          logger?.info({
+            type: 'fallback',
+            deploymentId: orderManager.getProjectId(),
+            indexer: 'fallback',
+            requestId,
+            retry: retries,
+            fallbackServiceUrl: orderManager.fallbackServiceUrl,
+            rid,
+            status: _res.status,
+          });
           res = await _res.json();
         }
 
@@ -168,6 +179,7 @@ export function createFetch(
               error: errorMsg,
               stack: e.stack,
               fallbackServiceUrl: orderManager.fallbackServiceUrl,
+              rid,
             });
             const extraLog = {
               requestId,
@@ -190,6 +202,7 @@ export function createFetch(
             error: errorMsg,
             stack: e.stack,
             fallbackServiceUrl: orderManager.fallbackServiceUrl,
+            rid,
           });
 
           throw new FetchError(errorMsg, 'SQN');
@@ -205,6 +218,7 @@ export function createFetch(
           error: errorMsg,
           stack: e.stack,
           fallbackServiceUrl: orderManager.fallbackServiceUrl,
+          rid,
         });
 
         throw new FetchError(`reach max retries.${errorMsg ? ' error: ' + errorMsg : ''}`, 'SQN');
