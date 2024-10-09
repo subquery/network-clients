@@ -115,7 +115,7 @@ export function createFetch(
         const after = Date.now();
         httpVersion = Number(_res.headers.get('httpVersion')) || 1;
 
-        let res: object;
+        let res: object | undefined;
         if (type === OrderType.flexPlan) {
           [res] = orderManager.extractChannelState(
             await _res.text(),
@@ -152,6 +152,15 @@ export function createFetch(
           after - before,
           Number(_res.headers.get('Content-Length')) || 1
         );
+
+        if (_res.status !== 200 && type === OrderType.fallback) {
+          logger?.info({
+            type: 'fallbackDetail',
+            body: JSON.stringify(body),
+            res: JSON.stringify(res),
+            rid,
+          });
+        }
 
         return {
           status: _res.status,
