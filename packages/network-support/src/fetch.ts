@@ -156,6 +156,10 @@ export function createFetch(
         if (_res.status !== 200 && type === OrderType.fallback) {
           logger?.info({
             type: 'fallbackDetail',
+            deploymentId: orderManager.getProjectId(),
+            status: _res.status,
+            retry: retries,
+            fallbackServiceUrl: orderManager.fallbackServiceUrl,
             body: JSON.stringify(body),
             res: JSON.stringify(res),
             rid,
