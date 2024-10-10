@@ -99,6 +99,17 @@ export function createFetch(
       let httpVersion = 1;
 
       try {
+        if (type === OrderType.fallback) {
+          logger?.info({
+            type: 'to_fallback',
+            deploymentId: orderManager.getProjectId(),
+            indexer: runner,
+            requestId,
+            retry: retries,
+            rid,
+          });
+        }
+
         const before = Date.now();
         const _res = await customFetch(
           url,
@@ -136,7 +147,7 @@ export function createFetch(
           logger?.info({
             type: 'fallback',
             deploymentId: orderManager.getProjectId(),
-            indexer: 'fallback',
+            indexer: runner,
             requestId,
             retry: retries,
             fallbackServiceUrl: orderManager.fallbackServiceUrl,
