@@ -105,6 +105,7 @@ export function createFetch(
             deploymentId: orderManager.getProjectId(),
             indexer: runner,
             requestId,
+            fallbackServiceUrl: orderManager.fallbackServiceUrl,
             retry: retries,
             rid,
           });
@@ -132,7 +133,7 @@ export function createFetch(
             await _res.text(),
             new Headers(_res.headers),
             channelId,
-            requestId
+            { requestId, deploymentId: orderManager.getProjectId(), indexer: runner }
           );
         }
         if (type === OrderType.agreement) {
@@ -145,7 +146,7 @@ export function createFetch(
         }
         if (type === OrderType.fallback) {
           logger?.info({
-            type: 'fallback',
+            type: 'res_fallback',
             deploymentId: orderManager.getProjectId(),
             indexer: runner,
             requestId,
@@ -166,7 +167,7 @@ export function createFetch(
 
         if (_res.status !== 200 && type === OrderType.fallback) {
           logger?.info({
-            type: 'fallbackDetail',
+            type: 'detail_fallback',
             deploymentId: orderManager.getProjectId(),
             status: _res.status,
             retry: retries,
@@ -209,6 +210,7 @@ export function createFetch(
               requestId,
               retry: retries,
               error: errorMsg,
+              stack: e.stack,
             };
 
             orderManager.updateScore(runner, scoreType, 0, extraLog);
@@ -233,7 +235,7 @@ export function createFetch(
         }
 
         logger?.error({
-          type: 'throwOut',
+          type: type === OrderType.fallback ? 'error_fallback' : 'throwOut',
           deploymentId: orderManager.getProjectId(),
           indexer: runner,
           requestId,
