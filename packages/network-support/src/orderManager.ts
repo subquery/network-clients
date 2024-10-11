@@ -17,7 +17,15 @@ import {
   ServiceAgreementOrder,
   WrappedResponse,
 } from './types';
-import { createMemoryStore, fetchOrders, isTokenExpired, IStore, Logger, POST } from './utils';
+import {
+  createMemoryStore,
+  fetchOrders,
+  isTokenExpired,
+  IStore,
+  Logger,
+  POST,
+  safeJSONParse,
+} from './utils';
 import { BlockType, State, StateManager } from './stateManager';
 import { Version } from './utils/version';
 import { NotifyFunc } from './types';
@@ -266,7 +274,7 @@ export class OrderManager {
     payload: string | object,
     headers: Headers,
     channelId?: string,
-    requestId?: string
+    logData?: any
   ): [object, State | ChannelState, string] {
     switch (headers.get('X-Indexer-Response-Format')) {
       case ResponseFormat.Wrapped: {
@@ -291,18 +299,22 @@ export class OrderManager {
         if (channelId) this.syncChannelState(channelId, state);
         const _signature = headers.get('X-Indexer-Sig') || '';
         // assert(_signature, 'invalid response, missing channel signature');
-        this.logger?.info({
-          type: 'inline',
-          requestId,
-          data: payload,
-        });
+        if (!safeJSONParse(payload as string)) {
+          logData = logData || {};
+          this.logger?.info({
+            type: 'inline',
+            data: payload,
+            ...logData,
+          });
+        }
         return [typeof payload === 'string' ? JSON.parse(payload) : payload, state, _signature];
       }
       case undefined: {
+        logData = logData || {};
         this.logger?.info({
           type: 'headerUndef',
-          requestId,
           data: payload,
+          ...logData,
         });
         const body = typeof payload === 'string' ? JSON.parse(payload) : payload;
         const state = body.state;
@@ -310,10 +322,11 @@ export class OrderManager {
         return [body, state, ''];
       }
       default:
+        logData = logData || {};
         this.logger?.info({
           type: 'headerNull',
-          requestId,
           data: payload,
+          ...logData,
         });
         if (typeof payload === 'string') {
           payload = JSON.parse(payload);
