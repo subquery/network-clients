@@ -133,7 +133,13 @@ export function createFetch(
             await _res.text(),
             new Headers(_res.headers),
             channelId,
-            { requestId, deploymentId: orderManager.getProjectId(), indexer: runner }
+            {
+              rid,
+              requestId,
+              deploymentId: orderManager.getProjectId(),
+              indexer: runner,
+              body: JSON.stringify(body),
+            }
           );
         }
         if (type === OrderType.agreement) {
