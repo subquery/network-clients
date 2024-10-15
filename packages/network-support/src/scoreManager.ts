@@ -26,6 +26,7 @@ export enum ScoreType {
   RPC = 'RPC',
   SUCCESS = 'success',
   FATAL = 'fatal',
+  FATAL_INACTIVE = 'fatal_inactive',
 }
 
 const scoresDelta = {
@@ -35,6 +36,7 @@ const scoresDelta = {
   [ScoreType.RPC]: -10,
   [ScoreType.SUCCESS]: 50,
   [ScoreType.FATAL]: -100,
+  [ScoreType.FATAL_INACTIVE]: -100,
 };
 
 type ScoreStoreType = {
