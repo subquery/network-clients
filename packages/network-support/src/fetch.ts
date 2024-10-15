@@ -1,11 +1,12 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { OrderManager } from './orderManager';
+import { OrderManager, ResponseFormat } from './orderManager';
 import { customFetch, generateUniqueId, Logger, safeJSONParse } from './utils';
 import { OrderType } from './types';
 import { ScoreType } from './scoreManager';
 import { Base64 } from 'js-base64';
+import { ActiveType } from './stateManager';
 
 // prettier-ignore
 const fatalErrorCodes = new Set([
@@ -97,6 +98,7 @@ export function createFetch(
       }
       const { url, headers, type, runner, channelId } = requestParams;
       let httpVersion = 1;
+      let resHeaders: Headers | undefined;
 
       try {
         if (type === OrderType.fallback) {
@@ -116,6 +118,7 @@ export function createFetch(
           url,
           {
             headers: {
+              'x-reqwst-id': requestId,
               ...(init.headers || {}),
               ...headers,
             },
@@ -125,6 +128,7 @@ export function createFetch(
           overrideFetch
         );
         const after = Date.now();
+        resHeaders = _res.headers;
         httpVersion = Number(_res.headers.get('httpVersion')) || 1;
 
         let res: object | undefined;
@@ -197,7 +201,7 @@ export function createFetch(
         errorMsg = (e as Error)?.message || '';
 
         if (!triedFallback && (retries < maxRetries || orderManager.fallbackServiceUrl)) {
-          const [needRetry, scoreType] = handleErrorMsg(errorMsg);
+          const [needRetry, scoreType] = handleErrorMsg(errorMsg, resHeaders);
 
           if (needRetry) {
             logger?.error({
@@ -211,6 +215,7 @@ export function createFetch(
               stack: e.stack,
               fallbackServiceUrl: orderManager.fallbackServiceUrl,
               rid,
+              scoreType,
             });
             const extraLog = {
               requestId,
@@ -261,7 +266,7 @@ export function createFetch(
   };
 }
 
-function handleErrorMsg(errorMsg: string): [boolean, ScoreType] {
+function handleErrorMsg(errorMsg: string, resHeaders?: Headers): [boolean, ScoreType] {
   let needRetry = true;
   let scoreType = ScoreType.RPC;
   const errorObj = safeJSONParse(errorMsg);
@@ -280,6 +285,16 @@ function handleErrorMsg(errorMsg: string): [boolean, ScoreType] {
       scoreType = ScoreType.RPC;
     } else {
       needRetry = false;
+    }
+  } else {
+    const fmt = resHeaders?.get('X-Indexer-Response-Format');
+    const state = resHeaders?.get('X-Channel-State');
+    if (fmt === ResponseFormat.Inline && state) {
+      const data = Base64.toUint8Array(state);
+      const active = data[0] as ActiveType;
+      if (active === ActiveType.Inactive2) {
+        scoreType = ScoreType.FATAL_INACTIVE;
+      }
     }
   }
   return [needRetry, scoreType];
