@@ -131,13 +131,35 @@ export class StateManager {
             });
             this.logger?.debug(`syncChannelState [multiple] succeed`);
           } else {
-            this.logger?.debug(`syncChannelState [multiple] failed: ${convertResult.error}`);
+            // this.logger?.debug(`syncChannelState [multiple] failed: ${convertResult.error}`);
+            this.logger?.error({
+              type: 'state_convert',
+              deploymentId: this.projectId,
+              channelId,
+              res: JSON.stringify(convertResult),
+              state: JSON.stringify(state),
+            });
           }
         } else {
-          this.logger?.debug(`syncChannelState [multiple] failed: ${JSON.stringify(res)}`);
+          // this.logger?.debug(`syncChannelState [multiple] failed: ${JSON.stringify(res)}`);
+          this.logger?.error({
+            type: 'state_empty',
+            deploymentId: this.projectId,
+            channelId,
+            res: JSON.stringify(res),
+            state: JSON.stringify(state),
+          });
         }
-      } catch (e) {
-        this.logger?.debug(`syncChannelState [multiple] failed: ${e}`);
+      } catch (e: any) {
+        // this.logger?.debug(`syncChannelState [multiple] failed: ${e}`);
+        this.logger?.error({
+          type: 'state_error',
+          deploymentId: this.projectId,
+          channelId,
+          error: e.message,
+          stack: e.stack,
+          state: JSON.stringify(state),
+        });
       }
     }
   }
