@@ -114,7 +114,7 @@ export class OrderManager {
       apikey,
       stateStore,
     });
-    this._init = this.refreshOrders();
+    this._init = this.refreshOrders('init');
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this.timer = setInterval(() => this.refreshOrders(), this.interval);
     this.selector = selector;
@@ -158,9 +158,14 @@ export class OrderManager {
     return this.options.fallbackServiceUrl;
   }
 
-  private async refreshOrders() {
-    try {
-      const orders = await fetchOrders(this.authUrl, this.projectId, this.projectType, this.apikey);
+  private async refreshOrders(phase?: string) {
+    const { valid, statusCode, orders, resData, error, stack } = await fetchOrders(
+      this.authUrl,
+      this.projectId,
+      this.projectType,
+      this.apikey
+    );
+    if (valid) {
       if (orders.agreements && orders.agreements.length > 0) {
         this._agreements = orders.agreements;
       }
@@ -170,11 +175,19 @@ export class OrderManager {
         void this.updatePriceScore(orders.plans);
       }
       this.healthy = true;
-    } catch (e) {
-      // it seems cannot reach this code, fetchOrders already handle the errors.
-      this.logger?.error(`fetch orders failed: ${String(e)}`);
-      this.healthy = false;
+      return;
     }
+
+    this.logger?.error({
+      type: 'orders_fetch',
+      deploymentId: this.projectId,
+      phase: phase || 'default',
+      statusCode,
+      resData,
+      error,
+      stack,
+    });
+    this.healthy = false;
   }
 
   private async filterOrdersByRequestId(requestId: string, orders: Order[]) {
@@ -192,10 +205,11 @@ export class OrderManager {
 
   async getRequestParams(
     requestId: string,
-    proxyVersion?: string
+    proxyVersion?: string,
+    logData?: any
   ): Promise<RequestParam | undefined> {
     const innerRequest = async () => {
-      const order = await this.getNextOrder(requestId, proxyVersion);
+      const order = await this.getNextOrder(requestId, proxyVersion, logData);
       const headers: RequestParam['headers'] = {};
       if (order) {
         headers['X-SQ-No-Resp-Sig'] = 'true';
@@ -360,14 +374,15 @@ export class OrderManager {
 
   private async getNextOrder(
     requestId: string,
-    proxyVersion?: string
+    proxyVersion?: string,
+    logData?: any
   ): Promise<OrderWithType | undefined> {
     await this._init;
     const agreementsOrders = await this.getNextAgreement(requestId, proxyVersion);
     if (agreementsOrders) {
       return { ...agreementsOrders, type: OrderType.agreement };
     }
-    const flexPlanOrders = await this.getNextPlan(requestId, proxyVersion);
+    const flexPlanOrders = await this.getNextPlan(requestId, proxyVersion, logData);
     if (flexPlanOrders) {
       return { ...flexPlanOrders, type: OrderType.flexPlan };
     }
@@ -406,20 +421,38 @@ export class OrderManager {
 
   private async getNextPlan(
     requestId: string,
-    proxyVersion?: string
+    proxyVersion?: string,
+    logData?: any
   ): Promise<FlexPlanOrder | undefined> {
     await this._init;
 
     if (!this.plans) return;
 
-    this.logger?.debug(`available plans: ${this.plans.length}`);
+    logData = logData || {};
+    // this.logger?.debug(`available plans: ${this.plans.length}`);
+    this.logger?.info({
+      type: 'plans_init',
+      deploymentId: this.projectId,
+      requestId,
+      plansLen: this.plans.length,
+      ...logData,
+    });
+
     let plans = await this.filterOrdersByRequestId(requestId, this.plans);
-    this.logger?.debug(`available plans after filter: ${plans.length}`);
+    // this.logger?.debug(`available plans after filter: ${plans.length}`);
 
     if (proxyVersion && plans?.length) {
       plans = this.filterOrdersByProxyVersion(plans, proxyVersion);
-      this.logger?.debug(`available plans after proxy version filter: ${plans.length}`);
+      // this.logger?.debug(`available plans after proxy version filter: ${plans.length}`);
     }
+
+    this.logger?.info({
+      type: 'plans_filter',
+      deploymentId: this.projectId,
+      requestId,
+      plansLen: plans.length,
+      ...logData,
+    });
 
     if (!plans?.length) return;
 
@@ -428,6 +461,14 @@ export class OrderManager {
     if (plan) {
       await this.updateSelectedRunner(requestId, plan.indexer);
     }
+
+    this.logger?.info({
+      type: 'plans_final',
+      deploymentId: this.projectId,
+      requestId,
+      plansLen: plans.length,
+      ...logData,
+    });
 
     return plan;
   }

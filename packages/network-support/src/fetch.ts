@@ -76,7 +76,10 @@ export function createFetch(
       }
       let requestParams;
       if (retries < maxRetries) {
-        requestParams = await orderManager.getRequestParams(requestId, proxyVersion);
+        requestParams = await orderManager.getRequestParams(requestId, proxyVersion, {
+          rid,
+          retries,
+        });
       }
       if (!requestParams) {
         if (orderManager.fallbackServiceUrl && !triedFallback) {
