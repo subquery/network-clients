@@ -426,7 +426,15 @@ export class OrderManager {
   ): Promise<FlexPlanOrder | undefined> {
     await this._init;
 
-    if (!this.plans) return;
+    if (!this.plans) {
+      this.logger?.info({
+        type: 'plans_null',
+        deploymentId: this.projectId,
+        requestId,
+        ...logData,
+      });
+      return;
+    }
 
     logData = logData || {};
     // this.logger?.debug(`available plans: ${this.plans.length}`);
