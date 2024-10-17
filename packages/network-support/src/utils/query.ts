@@ -62,6 +62,15 @@ export async function GET<T>(url: string): Promise<T> {
   return res.json();
 }
 
+export async function RAW_GET<T>(url: string): Promise<Response> {
+  const headers = { 'Content-Type': 'application/json' };
+  const res = await customFetch(url, {
+    method: 'get',
+    headers,
+  });
+  return res;
+}
+
 interface OrdersResponse {
   agreements: ServiceAgreementOrder[];
   plans: FlexPlanOrder[];
@@ -73,13 +82,36 @@ export async function fetchOrders(
   projectType: ProjectType,
   apikey?: string
 ) {
+  let statusCode = 0;
   try {
     const ordersURL = new URL(`/orders/${projectType}/${projectId}`, authUrl);
     if (apikey) {
       ordersURL.searchParams.append('apikey', apikey);
     }
-    return await GET<OrdersResponse>(ordersURL.toString());
-  } catch {
-    return { agreements: [], plans: [] };
+    const res = await RAW_GET<OrdersResponse>(ordersURL.toString());
+    statusCode = res.status;
+
+    if (statusCode >= 400) {
+      const resData = await res.text();
+      return {
+        valid: false,
+        statusCode,
+        resData,
+      };
+    }
+
+    const data = await res.json();
+    return {
+      valid: true,
+      statusCode,
+      orders: data,
+    };
+  } catch (e: any) {
+    return {
+      valid: false,
+      statusCode,
+      error: e.message,
+      stack: e.stack,
+    };
   }
 }
