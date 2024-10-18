@@ -53,7 +53,6 @@ type Options = {
 function tokenToAuthHeader(token: string) {
   return `Bearer ${token}`;
 }
-
 export class OrderManager {
   private projectType: ProjectType;
 
@@ -114,9 +113,17 @@ export class OrderManager {
       apikey,
       stateStore,
     });
-    this._init = this.refreshOrders('init');
+    this._init = this.refreshOrders({
+      phase: 'init',
+    });
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    this.timer = setInterval(() => this.refreshOrders(), this.interval);
+    this.timer = setInterval(
+      () =>
+        this.refreshOrders({
+          phase: 'interval',
+        }),
+      this.interval
+    );
     this.selector = selector;
     this.timeout = timeout;
   }
@@ -158,7 +165,7 @@ export class OrderManager {
     return this.options.fallbackServiceUrl;
   }
 
-  private async refreshOrders(phase?: string) {
+  private async refreshOrders(logData?: any) {
     const { valid, statusCode, orders, resData, error, stack } = await fetchOrders(
       this.authUrl,
       this.projectId,
@@ -177,15 +184,15 @@ export class OrderManager {
       this.healthy = true;
       return;
     }
-
+    logData = logData || {};
     this.logger?.error({
       type: 'orders_fetch',
       deploymentId: this.projectId,
-      phase: phase || 'default',
       statusCode,
       resData,
       error,
       stack,
+      ...logData,
     });
     this.healthy = false;
   }
@@ -426,6 +433,7 @@ export class OrderManager {
   ): Promise<FlexPlanOrder | undefined> {
     await this._init;
 
+    logData = logData || {};
     if (!this.plans) {
       this.logger?.info({
         type: 'plans_null',
@@ -436,15 +444,17 @@ export class OrderManager {
       return;
     }
 
-    logData = logData || {};
     // this.logger?.debug(`available plans: ${this.plans.length}`);
-    this.logger?.info({
-      type: 'plans_init',
-      deploymentId: this.projectId,
-      requestId,
-      plansLen: this.plans.length,
-      ...logData,
-    });
+    const rawPlanLen = this.plans.length;
+
+    if (!rawPlanLen && !this.selector?.channelIds?.length && !this.selector?.runnerAddresses) {
+      await this.refreshOrders({
+        phase: 'repair',
+        deploymentId: this.projectId,
+        requestId,
+        ...logData,
+      });
+    }
 
     let plans = await this.filterOrdersByRequestId(requestId, this.plans);
     // this.logger?.debug(`available plans after filter: ${plans.length}`);
@@ -454,13 +464,19 @@ export class OrderManager {
       // this.logger?.debug(`available plans after proxy version filter: ${plans.length}`);
     }
 
-    this.logger?.info({
-      type: 'plans_filter',
-      deploymentId: this.projectId,
-      requestId,
-      plansLen: plans.length,
-      ...logData,
-    });
+    const filteredPlanLen = plans.length;
+    if (!rawPlanLen || !filteredPlanLen) {
+      this.logger?.error({
+        type: 'plans_len_error',
+        deploymentId: this.projectId,
+        requestId,
+        rawPlanLen,
+        filteredPlanLen,
+        selectChannel: JSON.stringify(this.selector?.channelIds),
+        selectRunner: JSON.stringify(this.selector?.runnerAddresses),
+        ...logData,
+      });
+    }
 
     if (!plans?.length) return;
 
@@ -468,15 +484,16 @@ export class OrderManager {
 
     if (plan) {
       await this.updateSelectedRunner(requestId, plan.indexer);
+    } else {
+      this.logger?.error({
+        type: 'plans_score_error',
+        deploymentId: this.projectId,
+        requestId,
+        rawPlanLen,
+        filteredPlanLen,
+        ...logData,
+      });
     }
-
-    this.logger?.info({
-      type: 'plans_final',
-      deploymentId: this.projectId,
-      requestId,
-      plansLen: plans.length,
-      ...logData,
-    });
 
     return plan;
   }
@@ -561,6 +578,11 @@ export class OrderManager {
     await this.scoreManager.updatePriceScore(orders);
   }
 
+  // @mutex
+  async fetchPlans() {
+    await this.refreshOrders('refetch');
+  }
+
   getProjectId() {
     return this.projectId;
   }
@@ -571,3 +593,36 @@ export class OrderManager {
     }
   }
 }
+
+// function mutex(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+//   const original = descriptor.value;
+//   descriptor.value = async function (...args: any[]) {
+//     console.log(`Calling ${propertyKey} with arguments: ${JSON.stringify(args)}`);
+//     try {
+//       if (this.promise) {
+//         console.log('-----waiting for promise----', new Date().toLocaleString());
+//         await this.promise;
+
+//         console.log('-----waiting done----', new Date().toLocaleString());
+//       } else {
+//         this.promise = new Promise((r, j) => {
+//           this.resolve = r;
+//         });
+//         console.log('==== toCall', propertyKey, target.projectId);
+//         await original.apply(this, args);
+//         console.log('==== toCall Done', propertyKey, target.projectId);
+
+//       }
+//     } catch (error) {
+//       console.error(`Error in ${propertyKey}: ${error}`);
+//     } finally {
+//       if (this.resolve) {
+//         console.log('+++++ resolve +++++');
+//         this.resolve();
+//         this.promise = null;
+//         this.resolve = null;
+//       }
+//     }
+//   };
+//   return descriptor;
+// }
