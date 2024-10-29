@@ -32,6 +32,9 @@ export interface Order {
 
 export interface ServiceAgreementOrder extends Order {
   token: string;
+
+  // agreement has expired or not
+  expired?: boolean;
 }
 
 export type FlexPlanOrder = Order;

@@ -3,7 +3,7 @@
 
 import { OrderManager, ResponseFormat } from './orderManager';
 import { customFetch, generateUniqueId, Logger, safeJSONParse } from './utils';
-import { OrderType } from './types';
+import { OrderType, RequestParam } from './types';
 import { ScoreType } from './scoreManager';
 import { Base64 } from 'js-base64';
 import { ActiveType } from './stateManager';
@@ -116,6 +116,19 @@ export function createFetch(
           });
         }
 
+        if (type === OrderType.agreement) {
+          logger?.info({
+            type: 'to_agreement',
+            deploymentId: orderManager.getProjectId(),
+            indexer: runner,
+            agrId: channelId,
+            requestId,
+            fallbackServiceUrl: orderManager.fallbackServiceUrl,
+            retry: retries,
+            rid,
+          });
+        }
+
         const before = Date.now();
         const _res = await customFetch(
           url,
@@ -151,11 +164,18 @@ export function createFetch(
         }
         if (type === OrderType.agreement) {
           const data = await _res.json();
+          // proxy error will return like:
+          // { code: 1006, error: 'Auth expired' } status: 400
+          // { code: 1051, error: 'Exceed daily limit' } status: 400
+          if (data.error) {
+            throw new Error(JSON.stringify(data));
+          }
+          res = data;
           // todo: need to confirm
-          res = {
-            ...data,
-            ...JSON.parse(Base64.decode(data.result)),
-          };
+          // res = {
+          //   ...data,
+          //   ...JSON.parse(Base64.decode(data.result)),
+          // };
         }
         if (type === OrderType.fallback) {
           logger?.info({
@@ -200,17 +220,30 @@ export function createFetch(
           text: () => undefined,
         } as unknown as Response;
       } catch (e: any) {
-        logger?.warn(e);
+        // logger?.warn(e);
         errorMsg = (e as Error)?.message || '';
 
         if (!triedFallback && (retries < maxRetries || orderManager.fallbackServiceUrl)) {
-          const [needRetry, scoreType] = handleErrorMsg(errorMsg, resHeaders);
+          const [needRetry, scoreType] = handleErrorMsg(
+            errorMsg,
+            orderManager,
+            requestParams,
+            resHeaders,
+            {
+              phase: 'response',
+              requestId,
+              retry: retries,
+              causeError: errorMsg,
+              rid,
+            }
+          );
 
           if (needRetry) {
             logger?.error({
               type: 'retry',
               deploymentId: orderManager.getProjectId(),
               indexer: runner,
+              orderType: type,
               requestId,
               triedFallback,
               retry: retries,
@@ -220,14 +253,17 @@ export function createFetch(
               rid,
               scoreType,
             });
-            const extraLog = {
-              requestId,
-              retry: retries,
-              error: errorMsg,
-              stack: e.stack,
-            };
 
-            orderManager.updateScore(runner, scoreType, 0, extraLog);
+            if (scoreType !== ScoreType.NONE) {
+              const extraLog = {
+                requestId,
+                retry: retries,
+                error: errorMsg,
+                stack: e.stack,
+                orderType: type,
+              };
+              orderManager.updateScore(runner, scoreType, 0, extraLog);
+            }
             retries += 1;
             return requestResult();
           }
@@ -236,6 +272,7 @@ export function createFetch(
             type: 'throw',
             deploymentId: orderManager.getProjectId(),
             indexer: runner,
+            orderType: type,
             requestId,
             triedFallback,
             retry: retries,
@@ -253,6 +290,7 @@ export function createFetch(
           deploymentId: orderManager.getProjectId(),
           indexer: runner,
           requestId,
+          orderType: type,
           triedFallback,
           retry: retries,
           error: errorMsg,
@@ -269,7 +307,13 @@ export function createFetch(
   };
 }
 
-function handleErrorMsg(errorMsg: string, resHeaders?: Headers): [boolean, ScoreType] {
+function handleErrorMsg(
+  errorMsg: string,
+  orderManager: OrderManager,
+  requestParams: RequestParam,
+  resHeaders?: Headers,
+  logData?: any
+): [boolean, ScoreType] {
   let needRetry = true;
   let scoreType = ScoreType.RPC;
   const errorObj = safeJSONParse(errorMsg);
@@ -285,7 +329,19 @@ function handleErrorMsg(errorMsg: string, resHeaders?: Headers): [boolean, Score
         );
       }
     } else if (rpcErrorCodes.has(errorObj.code)) {
-      scoreType = ScoreType.RPC;
+      const { type, channelId, runner } = requestParams;
+      // for agreement. { code: 1051, error: 'Exceed daily limit' }
+      if (type === OrderType.agreement && errorObj.code === 1051) {
+        scoreType = ScoreType.NONE;
+        orderManager.setDailyLimitedAgreement(channelId || '');
+
+        // { code: 1006, error: 'Auth expired' }
+      } else if (type === OrderType.agreement && errorObj.code === 1006) {
+        scoreType = ScoreType.NONE;
+        orderManager.refreshAgreementToken(channelId || '', runner, logData);
+      } else {
+        scoreType = ScoreType.RPC;
+      }
     } else {
       needRetry = false;
     }
