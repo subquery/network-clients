@@ -3,14 +3,23 @@
 
 import BigNumber from 'bignumber.js';
 import { IStore } from './store';
+import { OrderType } from '../types';
 
 const BLOCK_WEIGHT_OUTPUT_RANGE: [number, number] = [0.2, 1];
-const LATENCY_WEIGHT_THRESHOLD: [threshold: number, weight: number][] = [
+const PLAN_LATENCY_WEIGHT_THRESHOLD: [threshold: number, weight: number][] = [
   [2_000, 0.2], // >= 2000ms: 0.2
   [1_000, 0.5], //  [1000ms, 2000ms): 0.5
   [500, 1], //  [500ms, 1000ms): 1
   [300, 3], //  [300ms, 500ms): 3
   [0, 6], //  [0ms, 300ms): 6
+];
+
+const AGREEMENT_LATENCY_WEIGHT_THRESHOLD: [threshold: number, weight: number][] = [
+  [2_000, 0.2], // >= 2000ms: 0.2
+  [1_000, 0.5], //  [1000ms, 2000ms): 0.5
+  [500, 1], //  [500ms, 1000ms): 1
+  [300, 6], //  [300ms, 500ms): 6
+  [0, 12], //  [0ms, 300ms): 12
 ];
 
 export enum CurveType {
@@ -83,23 +92,39 @@ export async function updateLatencyScoreWeight(
   }
 
   for (let i = 0; i < indexerLantency.length; i++) {
-    let weight = 1;
-    for (const [threshold, wt] of LATENCY_WEIGHT_THRESHOLD) {
+    let planWeight = 1;
+    for (const [threshold, wt] of PLAN_LATENCY_WEIGHT_THRESHOLD) {
       if (medians[i] && medians[i] >= threshold) {
-        weight = wt;
+        planWeight = wt;
         break;
       }
     }
-    await scoreStore.set(`${key}:${indexerLantency[i].indexer}_${deploymentId}`, weight);
+
+    let agreementWeight = 1;
+    for (const [threshold, wt] of AGREEMENT_LATENCY_WEIGHT_THRESHOLD) {
+      if (medians[i] && medians[i] >= threshold) {
+        agreementWeight = wt;
+        break;
+      }
+    }
+    await scoreStore.set(
+      `${key}:${OrderType.flexPlan}:${indexerLantency[i].indexer}_${deploymentId}`,
+      planWeight
+    );
+    await scoreStore.set(
+      `${key}:${OrderType.agreement}:${indexerLantency[i].indexer}_${deploymentId}`,
+      agreementWeight
+    );
     logger?.debug(
-      `updateLatencyScoreWeight: ${indexerLantency[i].indexer} ${deploymentId}(min:${min}, max:${max}) ${medians[i]} => ${weight}`
+      `updateLatencyScoreWeight: ${indexerLantency[i].indexer} ${deploymentId}(min:${min}, max:${max}) ${medians[i]} => plan:${planWeight}, agreement:${agreementWeight}`
     );
     logger?.info({
       type: 'updateScore',
       target: 'latencyWeight',
       deploymentId,
       indexer: indexerLantency[i].indexer,
-      to: weight,
+      toPlan: planWeight,
+      toAgreement: agreementWeight,
     });
   }
 }
@@ -117,9 +142,12 @@ export async function getBlockScoreWeight(
 export async function getLatencyScoreWeight(
   scoreStore: IStore,
   runner: string,
-  deploymentId: string
+  deploymentId: string,
+  orderType?: OrderType
 ) {
-  const key = `${getLatencyScoreKey()}:${runner}_${deploymentId}`;
+  orderType = orderType || OrderType.flexPlan;
+  const orderKey = orderType as string;
+  const key = `${getLatencyScoreKey()}:${orderKey}:${runner}_${deploymentId}`;
   const latencyWeight = await scoreStore.get<number>(key);
   return latencyWeight || 1;
 }
