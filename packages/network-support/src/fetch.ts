@@ -3,7 +3,7 @@
 
 import { OrderManager, ResponseFormat } from './orderManager';
 import { customFetch, generateUniqueId, Logger, safeJSONParse } from './utils';
-import { OrderType } from './types';
+import { OrderType, RequestParam } from './types';
 import { ScoreType } from './scoreManager';
 import { Base64 } from 'js-base64';
 import { ActiveType } from './stateManager';
@@ -102,6 +102,8 @@ export function createFetch(
       const { url, headers, type, runner, channelId } = requestParams;
       let httpVersion = 1;
       let resHeaders: Headers | undefined;
+      let limit = 0;
+      let limitRemain = 0;
 
       try {
         if (type === OrderType.fallback) {
@@ -133,6 +135,8 @@ export function createFetch(
         const after = Date.now();
         resHeaders = _res.headers;
         httpVersion = Number(_res.headers.get('httpVersion')) || 1;
+        limit = Number(_res.headers.get('x-ratelimit-limit-second')) || 0;
+        limitRemain = Number(_res.headers.get('x-ratelimit-remaining-second')) || 0;
 
         let res: object | undefined;
         if (type === OrderType.flexPlan) {
@@ -172,6 +176,8 @@ export function createFetch(
         }
 
         orderManager.updateScore(runner, ScoreType.SUCCESS, httpVersion);
+        orderManager.updateRatelimit(runner, limit, limitRemain, type);
+
         void orderManager.collectLatency(
           runner,
           after - before,
@@ -204,7 +210,13 @@ export function createFetch(
         errorMsg = (e as Error)?.message || '';
 
         if (!triedFallback && (retries < maxRetries || orderManager.fallbackServiceUrl)) {
-          const [needRetry, scoreType] = handleErrorMsg(errorMsg, resHeaders);
+          const [needRetry, scoreType] = handleErrorMsg(
+            errorMsg,
+            orderManager,
+            requestParams,
+            type,
+            resHeaders
+          );
 
           if (needRetry) {
             logger?.error({
@@ -269,7 +281,13 @@ export function createFetch(
   };
 }
 
-function handleErrorMsg(errorMsg: string, resHeaders?: Headers): [boolean, ScoreType] {
+function handleErrorMsg(
+  errorMsg: string,
+  orderManager: OrderManager,
+  requestParams: RequestParam,
+  type: OrderType,
+  resHeaders?: Headers
+): [boolean, ScoreType] {
   let needRetry = true;
   let scoreType = ScoreType.RPC;
   const errorObj = safeJSONParse(errorMsg);
@@ -286,6 +304,13 @@ function handleErrorMsg(errorMsg: string, resHeaders?: Headers): [boolean, Score
       }
     } else if (rpcErrorCodes.has(errorObj.code)) {
       scoreType = ScoreType.RPC;
+
+      // 1057: Exceed rate limit
+      if (errorObj.code === 1057) {
+        scoreType = ScoreType.NONE;
+        // set ratemlit remain to 0;
+        orderManager.updateRatelimit(requestParams.runner, 999, 0, type);
+      }
     } else {
       needRetry = false;
     }

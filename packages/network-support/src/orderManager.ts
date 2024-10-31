@@ -570,6 +570,12 @@ export class OrderManager {
     await this.scoreManager.updateScore(runner, errorType, httpVersion, extraLog);
   }
 
+  async updateRatelimit(runner: string, limit: number, limitRemain: number, type: OrderType) {
+    if (limit) {
+      await this.scoreManager.updateRatelimit(runner, limit, limitRemain, type);
+    }
+  }
+
   async collectLatency(indexer: string, latency: number, size: number): Promise<void> {
     await this.scoreManager.collectLatency(indexer, latency, size);
   }

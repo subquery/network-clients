@@ -77,7 +77,15 @@ export interface RunnerSelector {
   channelIds?: string[];
 }
 
-type SCORE_DETAIL_TYPE = 'base' | 'http2' | 'manual' | 'multiple' | 'block' | 'latency' | 'price';
+type SCORE_DETAIL_TYPE =
+  | 'base'
+  | 'http2'
+  | 'manual'
+  | 'multiple'
+  | 'block'
+  | 'latency'
+  | 'price'
+  | 'ratelimit';
 
 export type ScoreWithDetail = {
   score: number;
