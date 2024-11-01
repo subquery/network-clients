@@ -46,7 +46,7 @@ export function createFetch(
   maxRetries = 5,
   logger?: Logger,
   overrideFetch?: typeof fetch,
-  rid?: string
+  traceId?: string
 ): (init: RequestInit) => Promise<Response> {
   let retries = 0;
   let triedFallback = false;
@@ -77,7 +77,7 @@ export function createFetch(
       let requestParams;
       if (retries < maxRetries) {
         requestParams = await orderManager.getRequestParams(requestId, proxyVersion, {
-          rid,
+          traceId,
           retries,
         });
       }
@@ -114,7 +114,7 @@ export function createFetch(
             requestId,
             fallbackServiceUrl: orderManager.fallbackServiceUrl,
             retry: retries,
-            rid,
+            traceId,
           });
         }
 
@@ -145,7 +145,7 @@ export function createFetch(
             new Headers(_res.headers),
             channelId,
             {
-              rid,
+              traceId,
               requestId,
               deploymentId: orderManager.getProjectId(),
               indexer: runner,
@@ -169,14 +169,16 @@ export function createFetch(
             requestId,
             retry: retries,
             fallbackServiceUrl: orderManager.fallbackServiceUrl,
-            rid,
+            traceId,
             status: _res.status,
           });
           res = await _res.json();
         }
 
-        orderManager.updateScore(runner, ScoreType.SUCCESS, httpVersion);
-        orderManager.updateRatelimit(runner, limit, limitRemain, type);
+        if (type !== OrderType.fallback) {
+          orderManager.updateScore(runner, ScoreType.SUCCESS, httpVersion);
+          orderManager.updateRatelimit(runner, limit, limitRemain, type);
+        }
 
         void orderManager.collectLatency(
           runner,
@@ -193,7 +195,7 @@ export function createFetch(
             fallbackServiceUrl: orderManager.fallbackServiceUrl,
             body: JSON.stringify(body),
             res: JSON.stringify(res),
-            rid,
+            traceId,
           });
         }
 
@@ -229,7 +231,7 @@ export function createFetch(
               error: errorMsg,
               stack: e.stack,
               fallbackServiceUrl: orderManager.fallbackServiceUrl,
-              rid,
+              traceId,
               scoreType,
             });
             const extraLog = {
@@ -254,7 +256,7 @@ export function createFetch(
             error: errorMsg,
             stack: e.stack,
             fallbackServiceUrl: orderManager.fallbackServiceUrl,
-            rid,
+            traceId,
           });
 
           throw new FetchError(errorMsg, 'SQN');
@@ -270,7 +272,7 @@ export function createFetch(
           error: errorMsg,
           stack: e.stack,
           fallbackServiceUrl: orderManager.fallbackServiceUrl,
-          rid,
+          traceId,
         });
 
         throw new FetchError(`reach max retries.${errorMsg ? ' error: ' + errorMsg : ''}`, 'SQN');

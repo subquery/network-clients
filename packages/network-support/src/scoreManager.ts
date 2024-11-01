@@ -108,7 +108,11 @@ export class ScoreManager {
     const ratelimitWeight = ratelimitInfo.weight;
 
     this.logger?.debug(
-      `getAdjustedScore: ${runner} ${this.projectId} base:${base} http2:${http2} manua:${manual} multiple:${multiple} block:${block} latency:${latency} price:${price} ratelimit:${ratelimitInfo}`
+      `getAdjustedScore: ${runner} ${
+        this.projectId
+      } base:${base} http2:${http2} manua:${manual} multiple:${multiple} block:${block} latency:${latency} price:${price} ratelimit:${JSON.stringify(
+        ratelimitInfo
+      )}`
     );
     return {
       score:
@@ -124,6 +128,8 @@ export class ScoreManager {
         latency,
         price,
         ratelimit: ratelimitWeight,
+        ratelimit_quota: ratelimitInfo.limit,
+        ratelimit_remain: ratelimitInfo.limitRemain,
       },
     };
     // return base * http2 * manual * multiple * block;

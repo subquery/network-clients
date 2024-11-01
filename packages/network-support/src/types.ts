@@ -85,7 +85,9 @@ type SCORE_DETAIL_TYPE =
   | 'block'
   | 'latency'
   | 'price'
-  | 'ratelimit';
+  | 'ratelimit'
+  | 'ratelimit_quota'
+  | 'ratelimit_remain';
 
 export type ScoreWithDetail = {
   score: number;
