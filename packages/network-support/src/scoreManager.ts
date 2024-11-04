@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import BigNumber from 'bignumber.js';
-import { NotifyFunc, Order, ScoreWithDetail } from './types';
+import { NotifyFunc, Order, OrderType, ScoreWithDetail } from './types';
 import { Logger, IStore, createStore } from './utils';
 import {
   calculateBigIntPercentile,
@@ -89,7 +89,11 @@ export class ScoreManager {
     return Math.min(score.score + Math.floor((Date.now() - score.lastUpdate) / 600_000), 100);
   }
 
-  async getAdjustedScore(runner: string, proxyVersion?: string): Promise<ScoreWithDetail> {
+  async getAdjustedScore(
+    runner: string,
+    proxyVersion?: string,
+    orderType?: OrderType
+  ): Promise<ScoreWithDetail> {
     proxyVersion = proxyVersion || '';
     const score = await this.getScore(runner);
     const base = this.getAvailabilityScore(score);
@@ -97,7 +101,7 @@ export class ScoreManager {
     const manual = await this.getManualScoreWeight(runner);
     const multiple = this.getMultipleAuthScoreWeight(proxyVersion);
     const block = await getBlockScoreWeight(this.scoreStore, runner, this.projectId);
-    const latency = await getLatencyScoreWeight(this.scoreStore, runner, this.projectId);
+    const latency = await getLatencyScoreWeight(this.scoreStore, runner, this.projectId, orderType);
     const price = await this.getPriceScoreWeight(runner);
     this.logger?.debug(
       `getAdjustedScore: ${runner} ${this.projectId} base:${base} http2:${http2} manua:${manual} multiple:${multiple} block:${block} latency:${latency} price:${price}`
