@@ -261,8 +261,8 @@ export class StateManager {
     await this.stateStore.set(key, 1, seconds + 60);
   }
 
-  async getDailyLimitedAgreement(agreement: string) {
-    const key = this.agreementLimitKey(agreement);
+  async getDailyLimitedAgreement(agreementId: string) {
+    const key = this.agreementLimitKey(agreementId);
     const reached = await this.stateStore.get(key);
     return reached ? true : false;
   }

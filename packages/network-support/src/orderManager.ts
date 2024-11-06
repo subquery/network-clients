@@ -216,11 +216,15 @@ export class OrderManager {
     });
   }
 
-  filterOrdersByDailyLimit(orders: ServiceAgreementOrder[]) {
-    return orders.filter(async (o) => {
+  async filterOrdersByDailyLimit(orders: ServiceAgreementOrder[]) {
+    const res = [];
+    for (const o of orders) {
       const reached = await this.stateManager.getDailyLimitedAgreement(o.id);
-      return !reached;
-    });
+      if (!reached) {
+        res.push(o);
+      }
+    }
+    return res;
   }
 
   async getRequestParams(
