@@ -471,16 +471,21 @@ export class OrderManager {
   handleAgreementError(agreementId: string, error: string) {
     // error like these:
     // {"statusCode":401,"message":"{\"code\":1001,\"error\":\"Auth create failure\"}"}
-    const obj = safeJSONParse(error);
-    if (obj) {
-      const m = safeJSONParse(obj.message);
-      if (m.code === 1001) {
-        this.expireAgrement(agreementId);
-      }
+    if (this.isAgreementExpired(error)) {
+      this.setAgrementExpired(agreementId);
     }
   }
 
-  expireAgrement(agreementId: string) {
+  isAgreementExpired(error: string) {
+    const obj = safeJSONParse(error);
+    if (obj) {
+      const m = safeJSONParse(obj.message);
+      return m.code === 1001;
+    }
+    return false;
+  }
+
+  setAgrementExpired(agreementId: string) {
     const index = this._agreements?.findIndex((a) => a.id === agreementId);
     if (index === -1) return;
     this._agreements[index].expired = true;
