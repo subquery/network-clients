@@ -311,7 +311,7 @@ function handleErrorMsg(
       if (errorObj.code === 1057) {
         scoreType = ScoreType.NONE;
         // set ratemlit remain to 0;
-        orderManager.updateRatelimit(requestParams.runner, 0, 0, type);
+        orderManager.updateRatelimit(requestParams.runner, 1, 0, type);
       }
     } else {
       needRetry = false;
