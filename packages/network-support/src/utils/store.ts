@@ -6,7 +6,7 @@ import { LRUCache as LRU } from 'lru-cache';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export interface IStore {
   get<T>(key: string): Promise<T | undefined>;
-  set<T>(key: string, value: T): Promise<void>; // ttl in milliseconds
+  set<T>(key: string, value: T, ttl?: number): Promise<void>; // ttl in milliseconds
   remove(key: string): Promise<void>;
 
   lpush(key: string, value: any): Promise<number>;

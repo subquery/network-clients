@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import BigNumber from 'bignumber.js';
-import { NotifyFunc, Order, ScoreWithDetail } from './types';
+import { NotifyFunc, Order, OrderType, ScoreWithDetail } from './types';
 import { Logger, IStore, createStore } from './utils';
 import {
   calculateBigIntPercentile,
@@ -89,8 +89,13 @@ export class ScoreManager {
     return Math.min(score.score + Math.floor((Date.now() - score.lastUpdate) / 600_000), 100);
   }
 
-  async getAdjustedScore(runner: string, proxyVersion?: string): Promise<ScoreWithDetail> {
+  async getAdjustedScore(
+    runner: string,
+    proxyVersion?: string,
+    type?: OrderType
+  ): Promise<ScoreWithDetail> {
     proxyVersion = proxyVersion || '';
+    type = type || OrderType.flexPlan;
     const score = await this.getScore(runner);
     const base = this.getAvailabilityScore(score);
     const http2 = this.getHttpVersionWeight(score);
@@ -99,11 +104,21 @@ export class ScoreManager {
     const block = await getBlockScoreWeight(this.scoreStore, runner, this.projectId);
     const latency = await getLatencyScoreWeight(this.scoreStore, runner, this.projectId);
     const price = await this.getPriceScoreWeight(runner);
+    const ratelimitInfo = await this.getRatelimitWeightInfo(runner, type);
+    const ratelimitWeight = ratelimitInfo.weight;
+
     this.logger?.debug(
-      `getAdjustedScore: ${runner} ${this.projectId} base:${base} http2:${http2} manua:${manual} multiple:${multiple} block:${block} latency:${latency} price:${price}`
+      `getAdjustedScore: ${runner} ${
+        this.projectId
+      } base:${base} http2:${http2} manua:${manual} multiple:${multiple} block:${block} latency:${latency} price:${price} ratelimit:${JSON.stringify(
+        ratelimitInfo
+      )}`
     );
     return {
-      score: Math.floor(base * http2 * manual * multiple * block * latency * price * 10) / 10,
+      score:
+        Math.floor(
+          base * http2 * manual * multiple * block * latency * price * ratelimitWeight * 10
+        ) / 10,
       scoreDetail: {
         base,
         http2,
@@ -112,6 +127,9 @@ export class ScoreManager {
         block,
         latency,
         price,
+        ratelimit: ratelimitWeight,
+        ratelimit_quota: ratelimitInfo.limit,
+        ratelimit_remain: ratelimitInfo.limitRemain,
       },
     };
     // return base * http2 * manual * multiple * block;
@@ -131,6 +149,26 @@ export class ScoreManager {
   async getPriceScoreWeight(runner: string) {
     const key = this.getPriceScoreKey();
     return (await this.scoreStore.get<number>(`${key}:${runner}_${this.projectId}`)) || 1;
+  }
+
+  async getRatelimitWeightInfo(runner: string, type: OrderType) {
+    const key = this.getRatelimitKey();
+    const now = Math.floor(Date.now() / 1000);
+    const limitRes = (await this.scoreStore.get<string>(`${key}:${type}:${runner}:${now}`)) || '';
+
+    let [limit, limitRemain] = limitRes.split('_').map((v) => Number(v) || 0);
+    limit = Number(limit) || 0;
+    limitRemain = Number(limitRemain) || 0;
+
+    let weight = 1;
+    if (limit) {
+      weight = Math.pow(limitRemain / limit, 3);
+    }
+    return {
+      weight,
+      limit,
+      limitRemain,
+    };
   }
 
   async updateScore(runner: string, errorType: ScoreType, httpVersion?: number, extraLog?: any) {
@@ -189,6 +227,12 @@ export class ScoreManager {
       direction: delta > 0 ? 'add' : 'minus',
       ...extraLog,
     });
+  }
+
+  async updateRatelimit(runner: string, limit: number, limitRemain: number, type: OrderType) {
+    const key = this.getRatelimitKey();
+    const now = Math.floor(Date.now() / 1000);
+    await this.scoreStore.set(`${key}:${type}:${runner}:${now}`, `${limit}_${limitRemain}`, 1);
   }
 
   async collectLatency(indexer: string, latency: number, size: number): Promise<void> {
@@ -255,5 +299,9 @@ export class ScoreManager {
 
   private getPriceScoreKey(): string {
     return 'score:price';
+  }
+
+  private getRatelimitKey(): string {
+    return `sample:ratelimit`;
   }
 }

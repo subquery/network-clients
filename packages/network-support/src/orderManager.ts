@@ -415,7 +415,10 @@ export class OrderManager {
 
     if (!agreements.length) return;
 
-    const agreement = (await this.selectRunner(agreements)) as ServiceAgreementOrder;
+    const agreement = (await this.selectRunner(
+      agreements,
+      OrderType.agreement
+    )) as ServiceAgreementOrder;
 
     this.logger?.debug(`next agreement: ${JSON.stringify(agreement.indexer)}`);
 
@@ -480,7 +483,7 @@ export class OrderManager {
 
     if (!plans?.length) return;
 
-    const plan = await this.selectRunner(plans);
+    const plan = await this.selectRunner(plans, OrderType.flexPlan);
 
     if (plan) {
       await this.updateSelectedRunner(requestId, plan.indexer);
@@ -498,10 +501,12 @@ export class OrderManager {
     return plan;
   }
 
-  private async selectRunner(orders: Order[]): Promise<Order | undefined> {
+  private async selectRunner(orders: Order[], type: OrderType): Promise<Order | undefined> {
     if (!orders.length) return;
     const scores = await Promise.all(
-      orders.map((o) => this.scoreManager.getAdjustedScore(o.indexer, o.metadata?.proxyVersion))
+      orders.map((o) =>
+        this.scoreManager.getAdjustedScore(o.indexer, o.metadata?.proxyVersion, type)
+      )
     );
     const random = Math.random() * scores.reduce((a, b) => a + b.score, 0);
     this.logger?.debug(`selectRunner: indexers: ${orders.map((o) => o.indexer)}`);
@@ -568,6 +573,12 @@ export class OrderManager {
 
   async updateScore(runner: string, errorType: ScoreType, httpVersion?: number, extraLog?: any) {
     await this.scoreManager.updateScore(runner, errorType, httpVersion, extraLog);
+  }
+
+  async updateRatelimit(runner: string, limit: number, limitRemain: number, type: OrderType) {
+    if (limit) {
+      await this.scoreManager.updateRatelimit(runner, limit, limitRemain, type);
+    }
   }
 
   async collectLatency(indexer: string, latency: number, size: number): Promise<void> {
