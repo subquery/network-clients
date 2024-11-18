@@ -99,7 +99,7 @@ export class ScoreManager {
     const score = await this.getScore(runner);
     const base = this.getAvailabilityScore(score);
     const http2 = this.getHttpVersionWeight(score);
-    const manual = await this.getManualScoreWeight(runner);
+    const manual = await this.getManualScoreWeight(runner, this.projectId);
     const multiple = this.getMultipleAuthScoreWeight(proxyVersion);
     const block = await getBlockScoreWeight(this.scoreStore, runner, this.projectId);
     const latency = await getLatencyScoreWeight(this.scoreStore, runner, this.projectId);
@@ -135,10 +135,10 @@ export class ScoreManager {
     // return base * http2 * manual * multiple * block;
   }
 
-  async getManualScoreWeight(runner: string) {
+  async getManualScoreWeight(runner: string, deploymentId: string) {
     const key = this.getManualScoreKey();
     const manualScore = (await this.scoreStore.get<Record<string, number>>(key)) || {};
-    return manualScore[runner] || 1;
+    return manualScore[`${runner}_${deploymentId}`] || manualScore[runner] || 1;
   }
 
   getMultipleAuthScoreWeight(proxyVersion: string) {
