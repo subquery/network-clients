@@ -217,13 +217,15 @@ export class OrderManager {
   }
 
   async filterOrdersByDailyLimit(orders: ServiceAgreementOrder[]) {
-    const res = [];
-    for (const o of orders) {
-      const reached = await this.stateManager.getDailyLimitedAgreement(o.id);
-      if (!reached) {
-        res.push(o);
-      }
-    }
+    const res: any = [];
+    await Promise.all(
+      orders.map(async (o) => {
+        const reached = await this.stateManager.getDailyLimitedAgreement(o.id);
+        if (!reached) {
+          res.push(o);
+        }
+      })
+    );
     return res;
   }
 
@@ -479,8 +481,9 @@ export class OrderManager {
   isAgreementExpired(error: string) {
     const obj = safeJSONParse(error);
     if (obj) {
+      // error maybe: {"statusCode":500,"message":"Internal server error"}
       const m = safeJSONParse(obj.message);
-      return m.code === 1001;
+      return m?.code === 1001;
     }
     return false;
   }
