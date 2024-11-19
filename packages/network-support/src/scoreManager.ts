@@ -92,19 +92,19 @@ export class ScoreManager {
   async getAdjustedScore(
     runner: string,
     proxyVersion?: string,
-    type?: OrderType
+    orderType?: OrderType
   ): Promise<ScoreWithDetail> {
     proxyVersion = proxyVersion || '';
-    type = type || OrderType.flexPlan;
+    orderType = orderType || OrderType.flexPlan;
     const score = await this.getScore(runner);
     const base = this.getAvailabilityScore(score);
     const http2 = this.getHttpVersionWeight(score);
     const manual = await this.getManualScoreWeight(runner, this.projectId);
     const multiple = this.getMultipleAuthScoreWeight(proxyVersion);
     const block = await getBlockScoreWeight(this.scoreStore, runner, this.projectId);
-    const latency = await getLatencyScoreWeight(this.scoreStore, runner, this.projectId);
+    const latency = await getLatencyScoreWeight(this.scoreStore, runner, this.projectId, orderType);
     const price = await this.getPriceScoreWeight(runner);
-    const ratelimitInfo = await this.getRatelimitWeightInfo(runner, type);
+    const ratelimitInfo = await this.getRatelimitWeightInfo(runner, orderType);
     const ratelimitWeight = ratelimitInfo.weight;
 
     this.logger?.debug(

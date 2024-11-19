@@ -505,11 +505,11 @@ export class OrderManager {
     return plan;
   }
 
-  private async selectRunner(orders: Order[], type: OrderType): Promise<Order | undefined> {
+  private async selectRunner(orders: Order[], orderType: OrderType): Promise<Order | undefined> {
     if (!orders.length) return;
     const scores = await Promise.all(
       orders.map((o) =>
-        this.scoreManager.getAdjustedScore(o.indexer, o.metadata?.proxyVersion, type)
+        this.scoreManager.getAdjustedScore(o.indexer, o.metadata?.proxyVersion, orderType)
       )
     );
     const random = Math.random() * scores.reduce((a, b) => a + b.score, 0);
@@ -529,6 +529,7 @@ export class OrderManager {
           indexer: orders[i].indexer,
           score: scores[i].score,
           detail: scores[i].scoreDetail,
+          orderType,
         });
         return orders[i];
       }
@@ -568,11 +569,19 @@ export class OrderManager {
     this.agreements[index].token = token;
   }
 
-  async getScore(runner: string) {
-    const plans = this._plans || [];
+  async getScore(runner: string, orderType?: OrderType) {
+    orderType = orderType || OrderType.flexPlan;
+
+    let plans = this._plans;
+    if (orderType === OrderType.agreement) {
+      plans = this._agreements;
+    }
+    plans = plans || [];
+
     const plan = plans.find((p) => p.indexer === runner);
     const proxyVersion = plan?.metadata?.proxyVersion || '';
-    return this.scoreManager.getAdjustedScore(runner, proxyVersion);
+
+    return this.scoreManager.getAdjustedScore(runner, proxyVersion, orderType);
   }
 
   async updateScore(runner: string, errorType: ScoreType, httpVersion?: number, extraLog?: any) {

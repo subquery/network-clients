@@ -235,6 +235,7 @@ export function createFetch(
               scoreType,
             });
             const extraLog = {
+              traceId,
               requestId,
               retry: retries,
               error: errorMsg,
