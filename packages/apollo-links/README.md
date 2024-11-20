@@ -50,7 +50,7 @@ const options = {
   authUrl: 'https://kepler-auth.subquery.network',
   deploymentId: 'your_deployment_id_here',
   // ... other optional configurations
-  // fallbackUrl:
+  // fallbackUrl: 
 };
 
 const { link, cleanup } = deploymentHttpLink(options);
