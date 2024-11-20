@@ -3,7 +3,7 @@
 
 import buffer from 'buffer';
 import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
-import { POST } from '@subql/network-support';
+import { POST, RAW_POST } from '@subql/network-support';
 
 import { AuthMessage, buildTypedMessage, createAuthRequestBody } from './eip712';
 
@@ -31,4 +31,18 @@ export async function requestAuthToken(
   const body = createAuthRequestBody(msg, signature, chainId);
   const res = await POST<{ token: string }>(authUrl, body);
   return res.token;
+}
+
+export async function rawRequestAuthToken(
+  authUrl: string,
+  msg: AuthMessage,
+  sk: string,
+  chainId: number
+): Promise<Response | null> {
+  const signature = signMessage(msg, sk, chainId);
+  if (!signature) return null;
+
+  const body = createAuthRequestBody(msg, signature, chainId);
+  const res = await RAW_POST(authUrl, body);
+  return res;
 }

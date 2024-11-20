@@ -50,6 +50,23 @@ export async function POST<T>(
   return res.json();
 }
 
+export async function RAW_POST(
+  url: string,
+  body: Record<string, string | number | boolean | undefined>,
+  headers?: Record<string, string>
+): Promise<Response> {
+  if (!headers) {
+    headers = {};
+  }
+  headers['Content-Type'] = 'application/json';
+  const res = await customFetch(url, {
+    body: JSON.stringify(body),
+    method: 'post',
+    headers,
+  });
+  return res;
+}
+
 export async function GET<T>(url: string): Promise<T> {
   const headers = { 'Content-Type': 'application/json' };
   const res = await customFetch(url, {

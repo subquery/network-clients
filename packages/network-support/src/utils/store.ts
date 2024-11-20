@@ -18,7 +18,7 @@ export class BaseStorage implements IStore {
   get<T>(key: string): Promise<T | undefined> {
     return Promise.resolve(undefined);
   }
-  set<T>(key: string, value: T): Promise<void> {
+  set<T>(key: string, value: T, ttl?: number): Promise<void> {
     return Promise.resolve();
   }
   remove(key: string): Promise<void> {
@@ -65,7 +65,7 @@ export class LocalStorageCache extends BaseStorage {
     }
   }
 
-  override async set<T>(key: string, value: T): Promise<void> {
+  override async set<T>(key: string, value: T, ttl?: number): Promise<void> {
     const expiry = this.ttl ? Date.now() + this.ttl : undefined;
     const data = { value, expiry };
 

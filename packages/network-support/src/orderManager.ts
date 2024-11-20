@@ -23,7 +23,7 @@ import {
   isTokenExpired,
   IStore,
   Logger,
-  POST,
+  RAW_POST,
   safeJSONParse,
 } from './utils';
 import { BlockType, State, StateManager } from './stateManager';
@@ -210,6 +210,25 @@ export class OrderManager {
     });
   }
 
+  filterOrdersByExpired(orders: ServiceAgreementOrder[]) {
+    return orders.filter(({ expired }) => {
+      return !expired;
+    });
+  }
+
+  async filterOrdersByDailyLimit(orders: ServiceAgreementOrder[]) {
+    const res: any = [];
+    await Promise.all(
+      orders.map(async (o) => {
+        const reached = await this.stateManager.getDailyLimitedAgreement(o.id);
+        if (!reached) {
+          res.push(o);
+        }
+      })
+    );
+    return res;
+  }
+
   async getRequestParams(
     requestId: string,
     proxyVersion?: string,
@@ -222,19 +241,11 @@ export class OrderManager {
         headers['X-SQ-No-Resp-Sig'] = 'true';
         const { type, indexer: runner, url, id, metadata } = order;
         if (type === OrderType.agreement) {
-          const channelId = id;
+          const agreementId = id;
           headers['X-Indexer-Response-Format'] = this.responseFormat ?? 'inline';
-          let { token } = order as ServiceAgreementOrder;
-          if (isTokenExpired(token)) {
-            try {
-              token = await this.refreshAgreementToken(id, runner);
-            } catch (error) {
-              this.logger?.debug(`request new token for indexer ${runner} and url: ${url} failed`);
-              throw new RequestParamError((error as any).message, runner);
-            }
-          }
+          const token = await this.handleAgreementToken(order as ServiceAgreementOrder, logData);
           headers.authorization = tokenToAuthHeader(token);
-          return { url, runner, channelId, headers, type } as RequestParam;
+          return { url, runner, channelId: agreementId, headers, type } as RequestParam;
         } else if (type === OrderType.flexPlan) {
           const channelId = id;
           headers['X-Indexer-Response-Format'] = this.responseFormat ?? 'inline';
@@ -371,6 +382,123 @@ export class OrderManager {
     }
   }
 
+  async handleAgreementToken(order: ServiceAgreementOrder, logData?: any): Promise<string> {
+    logData = logData || {};
+    const { id: agreementId, indexer: runner } = order;
+    let { token, source, error } = await this.getAgreementToken(order as ServiceAgreementOrder);
+    if (!token) {
+      const fresh = await this.refreshAgreementToken(agreementId, runner, {
+        phase: 'get',
+        ...logData,
+      });
+      token = fresh.token;
+      error = fresh.error;
+      source = 'proxy';
+    }
+
+    if (!token) {
+      this.logger?.error({
+        type: 'token_null',
+        agrId: agreementId,
+        deploymentId: this.projectId,
+        indexer: runner,
+        source,
+        error,
+        ...logData,
+      });
+      this.handleAgreementError(agreementId, error);
+      throw new Error(`Token response is null. ${logData?.rid}`);
+    }
+
+    if (!isTokenExpired(token)) {
+      this.setAgreementToken(agreementId, token, source);
+      return token;
+    }
+
+    const fresh = await this.refreshAgreementToken(agreementId, runner, {
+      phase: 'expire',
+      ...logData,
+    });
+
+    token = fresh.token;
+    error = fresh.error;
+    if (token) {
+      return token;
+    }
+
+    this.handleAgreementError(agreementId, error);
+    const message = `request new token failed. ${error}`;
+    throw new RequestParamError(message, runner);
+  }
+
+  async getAgreementToken(order: ServiceAgreementOrder) {
+    const error = '';
+    const { token, id: agreementId } = order;
+
+    // 1. try from redis.
+    const cachedToken = await this.stateManager.getAgreementToken(agreementId);
+    if (cachedToken) {
+      return {
+        token: cachedToken,
+        source: 'red',
+        error,
+      };
+    }
+
+    // 2. try from memory
+    if (token) {
+      return {
+        token,
+        source: 'mem',
+        error,
+      };
+    }
+
+    return {
+      token: '',
+      source: '',
+      error,
+    };
+  }
+
+  async setAgreementToken(agreementId: string, token: string, source: string) {
+    this.updateTokenById(agreementId, token);
+
+    // newest token
+    if (source === 'proxy') {
+      await this.stateManager.setAgreementToken(agreementId, token);
+    }
+  }
+
+  handleAgreementError(agreementId: string, error: string) {
+    // error like these:
+    // {"statusCode":401,"message":"{\"code\":1001,\"error\":\"Auth create failure\"}"}
+    if (this.isAgreementExpired(error)) {
+      this.setAgrementExpired(agreementId);
+    }
+  }
+
+  isAgreementExpired(error: string) {
+    const obj = safeJSONParse(error);
+    if (obj) {
+      // error maybe: {"statusCode":500,"message":"Internal server error"}
+      const m = safeJSONParse(obj.message);
+      return m?.code === 1001;
+    }
+    return false;
+  }
+
+  setAgrementExpired(agreementId: string) {
+    const index = this._agreements?.findIndex((a) => a.id === agreementId);
+    if (index === -1) return;
+    this._agreements[index].expired = true;
+  }
+
+  async setDailyLimitedAgreement(agreementId: string) {
+    if (!agreementId) return;
+    await this.stateManager.setDailyLimitedAgreement(agreementId);
+  }
+
   async getSignedState(channelId: string, block: BlockType): Promise<State> {
     return this.stateManager.getSignedState(channelId, block);
   }
@@ -416,6 +544,8 @@ export class OrderManager {
       agreements = this.filterOrdersByProxyVersion(agreements, proxyVersion);
       this.logger?.debug(`available agreements after proxy version filter: ${agreements.length}`);
     }
+    agreements = this.filterOrdersByExpired(agreements as ServiceAgreementOrder[]);
+    agreements = await this.filterOrdersByDailyLimit(agreements as ServiceAgreementOrder[]);
 
     if (!agreements.length) return;
 
@@ -536,17 +666,47 @@ export class OrderManager {
     }
   }
 
-  async refreshAgreementToken(agreementId: string, runner: string): Promise<string> {
-    this.logger?.debug(`request new token for runner ${runner}`);
-    const tokenUrl = new URL('/orders/token', this.authUrl);
-    const res = await POST<{ token: string }>(tokenUrl.toString(), {
-      projectId: this.projectId,
-      indexer: runner,
-      agreementId,
-    });
-    this.logger?.debug(`request new token for indexer ${runner} success`);
-    this.updateTokenById(agreementId, res.token);
-    return res.token;
+  async refreshAgreementToken(
+    agreementId: string,
+    runner: string,
+    logData?: any
+  ): Promise<{ error: string; token: string }> {
+    let error = '';
+    let token = '';
+    try {
+      this.logger?.debug(`request new token for runner ${runner}`);
+      const tokenUrl = new URL('/orders/token', this.authUrl);
+      const response = await RAW_POST(tokenUrl.toString(), {
+        projectId: this.projectId,
+        indexer: runner,
+        agreementId,
+      });
+      if (response.status >= 400) {
+        const content = await response.text();
+        error = content;
+      } else {
+        const res = await response.json();
+        this.logger?.debug(`request new token for indexer ${runner} success`);
+        this.setAgreementToken(agreementId, token, 'proxy');
+        token = res.token;
+      }
+    } catch (err: any) {
+      error = err.message;
+    }
+    if (!token) {
+      this.logger?.error({
+        type: 'token_refresh',
+        agrId: agreementId,
+        deploymentId: this.projectId,
+        indexer: runner,
+        error,
+        ...logData,
+      });
+    }
+    return {
+      error,
+      token,
+    };
   }
 
   private async getSelectedRunners(requestId: string): Promise<string[]> {

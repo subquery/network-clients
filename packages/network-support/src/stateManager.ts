@@ -237,4 +237,43 @@ export class StateManager {
   private getCacheKey(channelId: string) {
     return `state:${this.projectId}:${channelId}:${computeMD5(this.apikey ?? '')}`;
   }
+
+  private agreementTokenKey(agreementId: string) {
+    return `token:agreement:${agreementId}`;
+  }
+
+  private agreementLimitKey(agreementId: string) {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day}`;
+    return `dlimit:${formattedDate}:${agreementId}`;
+  }
+
+  async getAgreementToken(agreementId: string): Promise<string> {
+    const key = this.agreementTokenKey(agreementId);
+    return (await this.stateStore.get<string>(key)) || '';
+  }
+
+  async setAgreementToken(agreementId: string, token: string) {
+    const key = this.agreementTokenKey(agreementId);
+    await this.stateStore.set(key, token);
+  }
+
+  async setDailyLimitedAgreement(agreementId: string) {
+    const key = this.agreementLimitKey(agreementId);
+    const now = new Date();
+    const midnight = new Date(now);
+    midnight.setHours(24, 0, 0, 0);
+    const mills = midnight.getTime() - now.getTime();
+    const seconds = Math.floor(mills / 1000);
+    await this.stateStore.set(key, 1, seconds + 60);
+  }
+
+  async getDailyLimitedAgreement(agreementId: string) {
+    const key = this.agreementLimitKey(agreementId);
+    const reached = await this.stateStore.get(key);
+    return reached ? true : false;
+  }
 }
