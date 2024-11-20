@@ -308,6 +308,9 @@ export class OrderManager {
     channelId?: string,
     logData?: any
   ): [object, State | ChannelState, string] {
+    logData = logData || {};
+    const traceId = logData.traceId || '';
+
     switch (headers.get('X-Indexer-Response-Format')) {
       case ResponseFormat.Wrapped: {
         const body = (
@@ -328,11 +331,10 @@ export class OrderManager {
             authorization: _state,
           } as State;
         }
-        if (channelId) this.syncChannelState(channelId, state);
+        if (channelId) this.syncChannelState(channelId, state, traceId);
         const _signature = headers.get('X-Indexer-Sig') || '';
         // assert(_signature, 'invalid response, missing channel signature');
         if (!safeJSONParse(payload as string)) {
-          logData = logData || {};
           this.logger?.info({
             type: 'inline',
             data: payload,
@@ -342,7 +344,6 @@ export class OrderManager {
         return [typeof payload === 'string' ? JSON.parse(payload) : payload, state, _signature];
       }
       case undefined: {
-        logData = logData || {};
         this.logger?.info({
           type: 'headerUndef',
           data: payload,
@@ -354,7 +355,6 @@ export class OrderManager {
         return [body, state, ''];
       }
       default:
-        logData = logData || {};
         this.logger?.info({
           type: 'headerNull',
           data: payload,
@@ -503,8 +503,12 @@ export class OrderManager {
     return this.stateManager.getSignedState(channelId, block);
   }
 
-  async syncChannelState(channelId: string, state: State | ChannelState): Promise<void> {
-    await this.stateManager.syncState(channelId, state);
+  async syncChannelState(
+    channelId: string,
+    state: State | ChannelState,
+    traceId?: string
+  ): Promise<void> {
+    await this.stateManager.syncState(channelId, state, traceId);
   }
 
   private async getNextOrder(
@@ -742,6 +746,12 @@ export class OrderManager {
 
   async updateScore(runner: string, errorType: ScoreType, httpVersion?: number, extraLog?: any) {
     await this.scoreManager.updateScore(runner, errorType, httpVersion, extraLog);
+  }
+
+  async updateRatelimit(runner: string, limit: number, limitRemain: number, type: OrderType) {
+    if (limit) {
+      await this.scoreManager.updateRatelimit(runner, limit, limitRemain, type);
+    }
   }
 
   async collectLatency(indexer: string, latency: number, size: number): Promise<void> {

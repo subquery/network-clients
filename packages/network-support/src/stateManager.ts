@@ -82,7 +82,8 @@ export class StateManager {
     return state;
   }
 
-  async syncState(channelId: string, state: State | ChannelState): Promise<void> {
+  async syncState(channelId: string, state: State | ChannelState, traceId?: string): Promise<void> {
+    traceId = traceId || 'xx';
     if ('consumerSign' in state) {
       // ChannelState
       const stateUrl = new URL('/channel/state', this.authUrl);
@@ -116,12 +117,18 @@ export class StateManager {
         }
         this.channelIdStateTime[channelId] = now;
         const stateUrl = new URL('/channel/state', this.authUrl);
-        const res = await POST<{ authorization: string }>(stateUrl.toString(), {
-          channelId,
-          auth: state.authorization,
-          block: BlockType.Multiple,
-          apikey: this.apikey,
-        });
+        const res = await POST<{ authorization: string }>(
+          stateUrl.toString(),
+          {
+            channelId,
+            auth: state.authorization,
+            block: BlockType.Multiple,
+            apikey: this.apikey,
+          },
+          {
+            'x-traceid': traceId,
+          }
+        );
         // const res = await this.requestState(channelId, BlockType.Multiple);
         if (res.authorization) {
           const convertResult = this.tryConvertJson(res.authorization);
@@ -138,6 +145,7 @@ export class StateManager {
               channelId,
               res: JSON.stringify(convertResult),
               state: JSON.stringify(state),
+              traceId,
             });
           }
         } else {
@@ -148,6 +156,7 @@ export class StateManager {
             channelId,
             res: JSON.stringify(res),
             state: JSON.stringify(state),
+            traceId,
           });
         }
       } catch (e: any) {
@@ -159,6 +168,7 @@ export class StateManager {
           error: e.message,
           stack: e.stack,
           state: JSON.stringify(state),
+          traceId,
         });
       }
     }

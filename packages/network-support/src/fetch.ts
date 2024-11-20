@@ -46,7 +46,7 @@ export function createFetch(
   maxRetries = 5,
   logger?: Logger,
   overrideFetch?: typeof fetch,
-  rid?: string
+  traceId?: string
 ): (init: RequestInit) => Promise<Response> {
   let retries = 0;
   let triedFallback = false;
@@ -77,7 +77,7 @@ export function createFetch(
       let requestParams;
       if (retries < maxRetries) {
         requestParams = await orderManager.getRequestParams(requestId, proxyVersion, {
-          rid,
+          traceId,
           retries,
         });
       }
@@ -102,6 +102,8 @@ export function createFetch(
       const { url, headers, type, runner, channelId } = requestParams;
       let httpVersion = 1;
       let resHeaders: Headers | undefined;
+      let limit = 0;
+      let limitRemain = 0;
 
       try {
         if (type === OrderType.fallback) {
@@ -112,7 +114,7 @@ export function createFetch(
             requestId,
             fallbackServiceUrl: orderManager.fallbackServiceUrl,
             retry: retries,
-            rid,
+            traceId,
           });
         }
 
@@ -125,7 +127,7 @@ export function createFetch(
             requestId,
             fallbackServiceUrl: orderManager.fallbackServiceUrl,
             retry: retries,
-            rid,
+            traceId,
           });
         }
 
@@ -146,6 +148,8 @@ export function createFetch(
         const after = Date.now();
         resHeaders = _res.headers;
         httpVersion = Number(_res.headers.get('httpVersion')) || 1;
+        limit = Number(_res.headers.get('x-ratelimit-limit-second')) || 0;
+        limitRemain = Number(_res.headers.get('x-ratelimit-remaining-second')) || 0;
 
         let res: object | undefined;
         if (type === OrderType.flexPlan) {
@@ -154,7 +158,7 @@ export function createFetch(
             new Headers(_res.headers),
             channelId,
             {
-              rid,
+              traceId,
               requestId,
               deploymentId: orderManager.getProjectId(),
               indexer: runner,
@@ -185,13 +189,17 @@ export function createFetch(
             requestId,
             retry: retries,
             fallbackServiceUrl: orderManager.fallbackServiceUrl,
-            rid,
+            traceId,
             status: _res.status,
           });
           res = await _res.json();
         }
 
-        orderManager.updateScore(runner, ScoreType.SUCCESS, httpVersion);
+        if (type !== OrderType.fallback) {
+          orderManager.updateScore(runner, ScoreType.SUCCESS, httpVersion);
+          orderManager.updateRatelimit(runner, limit, limitRemain, type);
+        }
+
         void orderManager.collectLatency(
           runner,
           after - before,
@@ -207,7 +215,7 @@ export function createFetch(
             fallbackServiceUrl: orderManager.fallbackServiceUrl,
             body: JSON.stringify(body),
             res: JSON.stringify(res),
-            rid,
+            traceId,
           });
         }
 
@@ -234,7 +242,7 @@ export function createFetch(
               requestId,
               retry: retries,
               causeError: errorMsg,
-              rid,
+              traceId,
             }
           );
 
@@ -250,7 +258,7 @@ export function createFetch(
               error: errorMsg,
               stack: e.stack,
               fallbackServiceUrl: orderManager.fallbackServiceUrl,
-              rid,
+              traceId,
               scoreType,
             });
 
@@ -261,6 +269,7 @@ export function createFetch(
                 error: errorMsg,
                 stack: e.stack,
                 orderType: type,
+                traceId,
               };
               orderManager.updateScore(runner, scoreType, 0, extraLog);
             }
@@ -279,7 +288,7 @@ export function createFetch(
             error: errorMsg,
             stack: e.stack,
             fallbackServiceUrl: orderManager.fallbackServiceUrl,
-            rid,
+            traceId,
           });
 
           throw new FetchError(errorMsg, 'SQN');
@@ -296,7 +305,7 @@ export function createFetch(
           error: errorMsg,
           stack: e.stack,
           fallbackServiceUrl: orderManager.fallbackServiceUrl,
-          rid,
+          traceId,
         });
 
         throw new FetchError(`reach max retries.${errorMsg ? ' error: ' + errorMsg : ''}`, 'SQN');
@@ -339,6 +348,12 @@ function handleErrorMsg(
       } else if (type === OrderType.agreement && errorObj.code === 1006) {
         scoreType = ScoreType.NONE;
         orderManager.refreshAgreementToken(channelId || '', runner, logData);
+
+        // 1057: Exceed rate limit
+      } else if (errorObj.code === 1057) {
+        scoreType = ScoreType.NONE;
+        // set ratemlit remain to 0;
+        orderManager.updateRatelimit(requestParams.runner, 1, 0, type);
       } else {
         scoreType = ScoreType.RPC;
       }
