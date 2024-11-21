@@ -173,10 +173,10 @@ export class OrderManager {
       this.apikey
     );
     if (valid) {
-      if (orders.agreements && orders.agreements.length > 0) {
+      if (orders.agreements) {
         this._agreements = orders.agreements;
       }
-      if (orders.plans && orders.plans.length > 0) {
+      if (orders.plans) {
         this._plans = orders.plans;
 
         void this.updatePriceScore(orders.plans);
