@@ -406,7 +406,7 @@ export class OrderManager {
         error,
         ...logData,
       });
-      this.handleAgreementError(agreementId, error);
+      this.handleAgreementError(agreementId, runner, error, logData);
       throw new Error(`Token response is null. ${logData?.rid}`);
     }
 
@@ -426,7 +426,7 @@ export class OrderManager {
       return token;
     }
 
-    this.handleAgreementError(agreementId, error);
+    await this.handleAgreementError(agreementId, runner, error, logData);
     const message = `request new token failed. ${error}`;
     throw new RequestParamError(message, runner);
   }
@@ -470,11 +470,18 @@ export class OrderManager {
     }
   }
 
-  handleAgreementError(agreementId: string, error: string) {
+  async handleAgreementError(agreementId: string, indexer: string, error: string, logData?: any) {
     // error like these:
     // {"statusCode":401,"message":"{\"code\":1001,\"error\":\"Auth create failure\"}"}
     if (this.isAgreementExpired(error)) {
       this.setAgrementExpired(agreementId);
+      return;
+    }
+
+    // "{\"statusCode\":500,\"message\":\"{\\\"code\\\":1024,\\\"error\\\":\\\"Service exception\\\"}\"}"
+    if (this.isAgreementServiceException(error)) {
+      // await this.updateScore(indexer, ScoreType.FATAL, 0, logData);
+      return;
     }
   }
 
@@ -484,6 +491,15 @@ export class OrderManager {
       // error maybe: {"statusCode":500,"message":"Internal server error"}
       const m = safeJSONParse(obj.message);
       return m?.code === 1001;
+    }
+    return false;
+  }
+
+  isAgreementServiceException(error: string) {
+    const obj = safeJSONParse(error);
+    if (obj) {
+      const m = safeJSONParse(obj.message);
+      return m?.code === 1024;
     }
     return false;
   }

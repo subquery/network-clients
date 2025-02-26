@@ -76,10 +76,23 @@ export function createFetch(
       }
       let requestParams;
       if (retries < maxRetries) {
-        requestParams = await orderManager.getRequestParams(requestId, proxyVersion, {
-          traceId,
-          retries,
-        });
+        try {
+          requestParams = await orderManager.getRequestParams(requestId, proxyVersion, {
+            traceId,
+            retries,
+          });
+        } catch (err: any) {
+          logger?.error({
+            type: 'request_param_error',
+            deploymentId: orderManager.getProjectId(),
+            requestId,
+            retry: retries,
+            traceId,
+            error: err.message,
+          });
+          retries++;
+          return requestResult();
+        }
       }
       if (!requestParams) {
         if (orderManager.fallbackServiceUrl && !triedFallback) {
