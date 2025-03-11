@@ -46,7 +46,8 @@ export function createFetch(
   maxRetries = 5,
   logger?: Logger,
   overrideFetch?: typeof fetch,
-  traceId?: string
+  traceId?: string,
+  hv?: string
 ): (init: RequestInit) => Promise<Response> {
   let retries = 0;
   let triedFallback = false;
@@ -149,6 +150,7 @@ export function createFetch(
           url,
           {
             headers: {
+              'x-hv': hv || '',
               'x-reqwst-id': requestId,
               ...(init.headers || {}),
               ...headers,
