@@ -88,8 +88,17 @@ query GetIndexerDeployment($indexerAddress: String!, $deploymentId: String!) {
   }
 }
 
-query GetDeploymentIndexersByIndexer($indexerAddress: String!) {
-  indexerDeployments(filter: { indexerId: { equalTo: $indexerAddress } }, orderBy: ID_DESC) {
+query GetDeploymentIndexersByIndexer(
+  $indexerAddress: String!
+  $first: Int = 100
+  $offset: Int = 0
+) {
+  indexerDeployments(
+    filter: { indexerId: { equalTo: $indexerAddress } }
+    orderBy: ID_DESC
+    first: $first
+    offset: $offset
+  ) {
     totalCount
     pageInfo {
       startCursor
