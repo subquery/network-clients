@@ -268,9 +268,17 @@ export class OrderManager {
               headers['X-Channel-Block'] = 'single';
             }
             if (headers['X-Channel-Block'] === 'single') {
-              this.logger?.debug(
-                `requested state signature of [${headers['X-Channel-Block']}] for runner ${runner}`
-              );
+              // this.logger?.debug(
+              //   `requested state signature of [${headers['X-Channel-Block']}] for runner ${runner}`
+              // );
+              logData = logData || {};
+              this.logger?.info({
+                type: 'single_req',
+                indexer: runner,
+                deploymentId: this.projectId,
+                ...logData,
+                signedState,
+              });
             }
             return {
               type,
