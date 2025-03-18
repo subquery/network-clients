@@ -276,6 +276,7 @@ export class OrderManager {
                 type: 'single_req',
                 indexer: runner,
                 deploymentId: this.projectId,
+                higherVersion,
                 ...logData,
                 signedState,
               });
