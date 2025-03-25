@@ -45,11 +45,13 @@ export const useStableCoin = (contracts: ContractSDK | undefined, network: SQNet
 
   const getPriceOracle = async () => {
     if (!contracts) return;
+    const decimal = Number.isInteger(STABLE_COIN_DECIMAL)
+      ? STABLE_COIN_DECIMAL
+      : STABLE_COIN_DECIMAL[network];
     const assetPrice = await contracts.priceOracle.convertPrice(
       toChecksumAddress(STABLE_COIN_ADDRESS),
       toChecksumAddress(contracts.sqToken.address),
-      10 **
-        (Number.isInteger(STABLE_COIN_DECIMAL) ? STABLE_COIN_DECIMAL : STABLE_COIN_DECIMAL[network])
+      10 ** (decimal as number)
     );
 
     const oneUsdcToOneSqt = +formatEther(assetPrice.toString());
@@ -80,9 +82,12 @@ export const useStableCoin = (contracts: ContractSDK | undefined, network: SQNet
           sqtPrice: '0',
         };
       }
+      const decimal = Number.isInteger(STABLE_COIN_DECIMAL)
+        ? STABLE_COIN_DECIMAL
+        : STABLE_COIN_DECIMAL[network];
       const sortedPrice = isSQT
         ? formatSQT(price.toString())
-        : formatUnits(price, STABLE_COIN_DECIMAL);
+        : formatUnits(price, decimal as number);
 
       const resultCalc = BigNumber(sortedPrice).multipliedBy(
         isSQT ? rates.sqtToUsdc : rates.usdcToSqt
