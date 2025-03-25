@@ -57,7 +57,7 @@ export const STABLE_COIN_DECIMAL = {
   [SQNetworks.MAINNET]: 6,
   [SQNetworks.TESTNET]: 18,
   [SQNetworks.LOCAL]: 6,
-};
+} as const;
 export const SQT_DECIMAL = 18;
 
 export function gqlEndpoints(network: SQNetworks) {
