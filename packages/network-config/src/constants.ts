@@ -37,7 +37,7 @@ export const LEADERBOARD_SUBQL_ENDPOINTS = {
 
 export const STABLE_COIN_ADDRESSES = {
   [SQNetworks.MAINNET]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-  [SQNetworks.TESTNET]: '0x3148eb6A6689a5a8A64B50ea8f845231d4617f9B',
+  [SQNetworks.TESTNET]: '0x2d9dcE396FcD6543Da1Ba7c9029c4B77E7716C74', // it's base sepolia eth
   [SQNetworks.LOCAL]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
 } as const;
 
@@ -53,7 +53,11 @@ export const TOKEN_SYMBOLS = {
   [SQNetworks.LOCAL]: 'SQT',
 } as const;
 
-export const STABLE_COIN_DECIMAL = 6;
+export const STABLE_COIN_DECIMAL = {
+  [SQNetworks.MAINNET]: 6,
+  [SQNetworks.TESTNET]: 18,
+  [SQNetworks.LOCAL]: 6,
+};
 export const SQT_DECIMAL = 18;
 
 export function gqlEndpoints(network: SQNetworks) {
