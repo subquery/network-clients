@@ -51,7 +51,7 @@ export const useStableCoin = (contracts: ContractSDK | undefined, network: SQNet
     const assetPrice = await contracts.priceOracle.convertPrice(
       toChecksumAddress(STABLE_COIN_ADDRESS),
       toChecksumAddress(contracts.sqToken.address),
-      10 ** (decimal as number)
+      `${10 ** (decimal as number)}`
     );
 
     const oneUsdcToOneSqt = +formatEther(assetPrice.toString());
