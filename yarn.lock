@@ -3204,10 +3204,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/contract-sdk@npm:1.0.3":
-  version: 1.0.3
-  resolution: "@subql/contract-sdk@npm:1.0.3"
-  checksum: 1597020abedd946dd377b5dfe9335ff237a4578038e3f287e981ea6a53853c1a3903f930160c2ab89f791bc8fdcf0aa21966a824786cae119291d9698d735e41
+"@subql/contract-sdk@npm:1.7.0":
+  version: 1.7.0
+  resolution: "@subql/contract-sdk@npm:1.7.0"
+  checksum: 2273bfbfc0edf8464b47c5723c2ceec9cbe814c205ea41a0dbfe81f88ddbb87b9395d672026ed3ce688f331a23cc5c2c87fc64cf08e76847955b02998e687f96
   languageName: node
   linkType: hard
 
@@ -3299,7 +3299,7 @@ __metadata:
     "@apollo/client": ^3.8.8
     "@metamask/eth-sig-util": ^4.0.1
     "@octokit/request": ^5.6.3
-    "@subql/contract-sdk": 1.0.3
+    "@subql/contract-sdk": 1.7.0
     "@testing-library/react": ^14.0.0
     "@types/jest": ^28.1.6
     "@types/react": ^18.2.28
@@ -3355,7 +3355,7 @@ __metadata:
     prettier: ^2.7.1
     typescript: ^4.6.4
   peerDependencies:
-    "@subql/contract-sdk": ^1.0.3
+    "@subql/contract-sdk": ^1.7.0
     graphql: ^16.5.0
     react: ^18
   languageName: unknown
