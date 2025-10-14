@@ -8,7 +8,6 @@ import {
   InMemoryCache,
   NormalizedCacheObject,
 } from '@apollo/client/core';
-import fetch from 'cross-fetch';
 import {
   GetDelegation,
   GetDelegationQuery,

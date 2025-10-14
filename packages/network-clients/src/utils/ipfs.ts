@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { utils } from 'ethers';
-import buffer from 'buffer';
-
-const Buffer = buffer.Buffer;
+import { Buffer } from 'node:buffer';
 
 export const CIDv0 = new RegExp(/Qm[1-9A-HJ-NP-Za-km-z]{44}/i);
 export const CIDv1 = new RegExp(
