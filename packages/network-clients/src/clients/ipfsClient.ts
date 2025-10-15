@@ -1,11 +1,9 @@
 // Copyright 2020-2022 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import buffer from 'buffer';
+import { Buffer } from 'node:buffer';
 import { IPFSHTTPClient, create } from 'ipfs-http-client';
 import { concatU8A, isCID } from '../utils';
-
-const Buffer = buffer.Buffer;
 
 export class IPFSClient {
   private _client: IPFSHTTPClient;
